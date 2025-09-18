@@ -7,6 +7,9 @@ class Planet
     public function __construct(
         private readonly int $id,
         private readonly int $userId,
+        private int $galaxy,
+        private int $system,
+        private int $position,
         private string $name,
         private int $metal,
         private int $crystal,
@@ -32,6 +35,33 @@ class Planet
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getGalaxy(): int
+    {
+        return $this->galaxy;
+    }
+
+    public function getSystem(): int
+    {
+        return $this->system;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    /**
+     * @return array{galaxy: int, system: int, position: int}
+     */
+    public function getCoordinates(): array
+    {
+        return [
+            'galaxy' => $this->galaxy,
+            'system' => $this->system,
+            'position' => $this->position,
+        ];
     }
 
     public function rename(string $name): void

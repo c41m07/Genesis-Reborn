@@ -163,7 +163,7 @@ ob_start();
                         <?php endif; ?>
                         <footer class="production-card__footer">
                             <span><?= number_format($queues['buildings']['count'] ?? 0) ?> amélioration(s) en attente</span>
-                            <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/buildings?planet=<?= $selectedPlanetId ?>">Ouvrir les bâtiments</a>
+                            <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">Ouvrir la colonie</a>
                         </footer>
                     </div>
                     <div class="production-card">
@@ -247,7 +247,7 @@ ob_start();
                         </ul>
                         <p class="planet-summary__update">Mise à jour : <?= $now->format('d/m/Y H:i') ?></p>
                         <div class="planet-summary__actions">
-                            <a class="button button--primary" href="<?= htmlspecialchars($baseUrl) ?>/buildings?planet=<?= $selectedPlanetId ?>">Gérer les bâtiments</a>
+                            <a class="button button--primary" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">Gérer la colonie</a>
                             <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Programme scientifique</a>
                         </div>
                     <?php else: ?>

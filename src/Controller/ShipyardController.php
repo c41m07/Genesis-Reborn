@@ -39,7 +39,8 @@ class ShipyardController extends AbstractController
         $planets = $this->planets->findByUser($userId);
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
-            return $this->render('pages/shipyard/index.php', [
+
+            return $this->render('shipyard/index.php', [
                 'title' => 'Chantier spatial',
                 'planets' => [],
                 'overview' => null,
@@ -49,6 +50,7 @@ class ShipyardController extends AbstractController
                 'activeSection' => 'shipyard',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'csrf_logout' => $this->generateCsrfToken('logout'),
             ]);
         }
 
@@ -101,7 +103,7 @@ class ShipyardController extends AbstractController
             ],
         ];
 
-        return $this->render('pages/shipyard/index.php', [
+        return $this->render('shipyard/index.php', [
             'title' => 'Chantier spatial',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
