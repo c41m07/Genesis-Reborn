@@ -25,6 +25,16 @@ $selectedPlanetId = $selectedPlanetId ?? null;
 $activeSection = $activeSection ?? null;
 $activePlanetSummary = $activePlanetSummary ?? null;
 $isAuthenticated = !empty($currentUserId);
+
+$activePlanet = null;
+if (is_array($activePlanetSummary) && isset($activePlanetSummary['planet']) && $activePlanetSummary['planet'] instanceof \App\Domain\Entity\Planet) {
+    $activePlanet = $activePlanetSummary['planet'];
+}
+
+$activePlanetName = $activePlanet ? $activePlanet->getName() : 'Planète active';
+$currentPlanetId = $selectedPlanetId ?? ($activePlanet ? $activePlanet->getId() : null);
+$resourceSummary = is_array($activePlanetSummary) ? ($activePlanetSummary['resources'] ?? []) : [];
+
 $menu = [
     'dashboard' => ['label' => 'Tableau de bord', 'path' => '/dashboard', 'icon' => 'overview'],
     'buildings' => ['label' => 'Bâtiments', 'path' => '/buildings', 'icon' => 'buildings'],
@@ -33,9 +43,6 @@ $menu = [
     'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
 ];
 $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
-$resourceSummary = $activePlanetSummary['resources'] ?? [];
-$activePlanetName = isset($activePlanetSummary['planet']) ? $activePlanetSummary['planet']->getName() : 'Planète active';
-$currentPlanetId = $selectedPlanetId ?? ($activePlanetSummary['planet']->getId() ?? null);
 ?>
 <body class="app <?= $isAuthenticated ? 'app--secured' : 'app--guest' ?>">
 <div class="app-shell">
