@@ -59,7 +59,7 @@ INSERT INTO players (email, username, password_hash, created_at, updated_at, las
 VALUES ('demo@genesis.test', 'demo', '$2y$12$e0UmNdog/qnt2fpgT6oGk.bhVZkN6nECqIFznKbkUM3bgzuHzMcpW', NOW(), NOW(), NULL);
 
 -- Home planet for demo player
-INSERT INTO planets (player_id, name, galaxy, system, position, diameter, temperature_min, temperature_max, is_homeworld,
+INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld,
     metal, crystal, hydrogen, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
 VALUES
     (LAST_INSERT_ID(), 'Nova Prime', 1, 7, 8, 12800, -10, 45, 1, 12000, 6000, 3000, 80, 120000, 90000, 60000, 150, NOW(), NOW(), NOW());

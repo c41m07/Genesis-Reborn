@@ -52,8 +52,8 @@ CREATE TABLE planets (
     player_id BIGINT UNSIGNED NOT NULL,
     name VARCHAR(120) NOT NULL,
     galaxy SMALLINT UNSIGNED NOT NULL DEFAULT 1,
-    system SMALLINT UNSIGNED NOT NULL DEFAULT 1,
-    position SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+    `system` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+    `position` SMALLINT UNSIGNED NOT NULL DEFAULT 1,
     diameter INT UNSIGNED NULL,
     temperature_min SMALLINT NULL,
     temperature_max SMALLINT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE planets (
     last_resource_tick DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_planet_coordinates (galaxy, system, position),
+    UNIQUE KEY uniq_planet_coordinates (galaxy, `system`, `position`),
     INDEX idx_planets_player (player_id),
     CONSTRAINT fk_planets_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
