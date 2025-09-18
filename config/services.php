@@ -127,6 +127,7 @@ return function (Container $container): void {
 
     $container->set(RegisterUser::class, fn (Container $c) => new RegisterUser(
         $c->get(UserRepositoryInterface::class),
+        $c->get(PlanetRepositoryInterface::class),
         $c->get(SessionInterface::class)
     ));
     $container->set(LoginUser::class, fn (Container $c) => new LoginUser(

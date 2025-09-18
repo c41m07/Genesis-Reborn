@@ -6,6 +6,7 @@ use App\Domain\Entity\ShipBuildJob;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use DateTimeImmutable;
 use PDO;
+use RuntimeException;
 
 class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
 {
@@ -37,9 +38,12 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
 
     public function enqueue(int $planetId, string $shipKey, int $quantity, int $durationSeconds): void
     {
-        $stmt = $this->pdo->prepare('INSERT INTO ship_build_queue (planet_id, skey, quantity, ends_at)
-            VALUES (:planet, :key, :quantity, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
+        $playerId = $this->getPlayerIdForPlanet($planetId);
+
+        $stmt = $this->pdo->prepare('INSERT INTO ship_build_queue (player_id, planet_id, skey, quantity, ends_at)
+            VALUES (:player, :planet, :key, :quantity, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
         $stmt->execute([
+            'player' => $playerId,
             'planet' => $planetId,
             'key' => $shipKey,
             'quantity' => $quantity,
@@ -82,5 +86,18 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
             (int) $row['quantity'],
             new DateTimeImmutable($row['ends_at'])
         );
+    }
+
+    private function getPlayerIdForPlanet(int $planetId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT player_id FROM planets WHERE id = :planet');
+        $stmt->execute(['planet' => $planetId]);
+        $playerId = $stmt->fetchColumn();
+
+        if ($playerId === false) {
+            throw new RuntimeException('Planète inconnue pour la file de construction spatiale.');
+        }
+
+        return (int) $playerId;
     }
 }

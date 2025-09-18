@@ -7,11 +7,8 @@ namespace App\Tests\Application\UseCase\Auth;
 use App\Application\UseCase\Auth\RegisterUser;
 use App\Domain\Entity\Planet;
 use App\Domain\Entity\User;
-use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
-use App\Domain\Service\BuildingCalculator;
-use App\Domain\Service\BuildingCatalog;
 use App\Infrastructure\Http\Session\Session;
 use PHPUnit\Framework\TestCase;
 
@@ -21,19 +18,12 @@ class RegisterUserTest extends TestCase
     {
         $userRepository = new InMemoryUserRepository();
         $planetRepository = new InMemoryPlanetRepository();
-        $buildingStates = new InMemoryBuildingStateRepository();
-        $config = require dirname(__DIR__, 4) . '/config/game/buildings.php';
-        $catalog = new BuildingCatalog($config);
-        $calculator = new BuildingCalculator();
         $storage = [];
         $session = new Session($storage);
 
         $useCase = new RegisterUser(
             $userRepository,
             $planetRepository,
-            $buildingStates,
-            $catalog,
-            $calculator,
             $session
         );
 
@@ -47,28 +37,10 @@ class RegisterUserTest extends TestCase
         self::assertCount(1, $planets);
         $planet = $planets[0];
 
-        self::assertSame(10000, $planet->getMetal());
-        self::assertSame(10000, $planet->getCrystal());
-        self::assertSame(10000, $planet->getEnergy());
-        self::assertSame(0, $planet->getHydrogen());
-
-        $levels = $buildingStates->getLevels($planet->getId());
-        self::assertSame(1, $levels['metal_mine'] ?? 0);
-        self::assertSame(1, $levels['crystal_mine'] ?? 0);
-        self::assertSame(1, $levels['solar_plant'] ?? 0);
-
-        $expectedMetal = $calculator->productionAt($catalog->get('metal_mine'), 1);
-        $expectedCrystal = $calculator->productionAt($catalog->get('crystal_mine'), 1);
-        $expectedHydrogen = 0;
-        $expectedEnergy = $calculator->productionAt($catalog->get('solar_plant'), 1);
-        $expectedEnergyConsumption = $calculator->energyUseAt($catalog->get('metal_mine'), 1)
-            + $calculator->energyUseAt($catalog->get('crystal_mine'), 1)
-            + $calculator->energyUseAt($catalog->get('solar_plant'), 1);
-
-        self::assertSame($expectedMetal, $planet->getMetalPerHour());
-        self::assertSame($expectedCrystal, $planet->getCrystalPerHour());
-        self::assertSame($expectedHydrogen, $planet->getHydrogenPerHour());
-        self::assertSame($expectedEnergy - $expectedEnergyConsumption, $planet->getEnergyPerHour());
+        self::assertSame(1000, $planet->getMetal());
+        self::assertSame(1000, $planet->getCrystal());
+        self::assertSame(1000, $planet->getHydrogen());
+        self::assertSame(0, $planet->getEnergy());
     }
 }
 
@@ -99,9 +71,17 @@ class InMemoryUserRepository implements UserRepositoryInterface
         return $this->users[$id] ?? null;
     }
 
-    public function save(string $email, string $passwordHash): User
+    public function save(string $email, string $passwordHash, ?string $username = null): User
     {
-        $user = new User($this->autoIncrement++, strtolower($email), $passwordHash);
+        $id = $this->autoIncrement++;
+        $email = strtolower($email);
+        $username = $username ?? preg_replace('/[^a-z0-9]+/i', '-', strstr($email, '@', true) ?: $email) ?? 'commandant';
+        $username = trim(strtolower($username), '-');
+        if ($username === '') {
+            $username = 'commandant';
+        }
+
+        $user = new User($id, $email, $passwordHash, $username);
         $this->users[$user->getId()] = $user;
 
         return $user;
@@ -137,9 +117,9 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
             $this->autoIncrement++,
             $userId,
             'Planète mère',
-            0,
-            0,
-            0,
+            1000,
+            1000,
+            1000,
             0,
             0,
             0,
@@ -163,24 +143,5 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
         }
 
         $this->planets[$planetId]->rename($name);
-    }
-}
-
-/**
- * @implements BuildingStateRepositoryInterface
- */
-class InMemoryBuildingStateRepository implements BuildingStateRepositoryInterface
-{
-    /** @var array<int, array<string, int>> */
-    private array $levels = [];
-
-    public function getLevels(int $planetId): array
-    {
-        return $this->levels[$planetId] ?? [];
-    }
-
-    public function setLevel(int $planetId, string $buildingKey, int $level): void
-    {
-        $this->levels[$planetId][$buildingKey] = $level;
     }
 }

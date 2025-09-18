@@ -10,5 +10,5 @@ interface UserRepositoryInterface
 
     public function find(int $id): ?User;
 
-    public function save(string $email, string $passwordHash): User;
+    public function save(string $email, string $passwordHash, ?string $username = null): User;
 }
