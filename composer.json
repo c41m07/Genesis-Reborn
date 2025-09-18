@@ -1,0 +1,33 @@
+{
+    "name": "genesis-reborn/game",
+    "description": "Browser strategy game refactored to PSR-4 architecture",
+    "type": "project",
+    "require": {
+        "php": "^8.1",
+        "ext-pdo": "*",
+        "vlucas/phpdotenv": "^5.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "friendsofphp/php-cs-fixer": "^3.65",
+        "phpstan/phpstan": "^1.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs": "php-cs-fixer fix --diff",
+        "stan": "phpstan analyse src --level=5"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

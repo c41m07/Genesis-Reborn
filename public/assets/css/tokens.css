@@ -1,0 +1,49 @@
+:root {
+    color-scheme: dark;
+    --bg-body: var(--color-bg-gradient);
+    --bg-surface: var(--color-surface);
+    --bg-surface-glass: rgba(13, 25, 46, 0.82);
+    --bg-panel: var(--color-surface-alt);
+    --bg-soft: var(--color-surface-soft);
+
+    --text-primary: var(--color-text);
+    --text-muted: var(--color-muted);
+    --text-inverse: #041021;
+
+    --primary: var(--color-primary);
+    --primary-strong: var(--color-primary-strong);
+    --accent: var(--color-accent);
+    --accent-soft: rgba(108, 216, 255, 0.16);
+    --disabled-surface: rgba(255, 255, 255, 0.1);
+    --surface-input: rgba(255, 255, 255, 0.08);
+
+    --success: var(--color-success);
+    --success-soft: rgba(77, 214, 178, 0.15);
+    --success-border: rgba(77, 214, 178, 0.4);
+    --danger: var(--color-danger);
+    --danger-soft: rgba(255, 122, 122, 0.15);
+    --danger-border: rgba(255, 122, 122, 0.4);
+    --info-soft: rgba(108, 216, 255, 0.18);
+    --info-border: rgba(108, 216, 255, 0.4);
+
+    --border-soft: rgba(102, 128, 175, 0.18);
+    --shadow-card: var(--shadow);
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+
+    --space-xxs: var(--space-1);
+    --space-xs: var(--space-2);
+    --space-sm: var(--space-3);
+    --space-md: var(--space-4);
+    --space-lg: var(--space-5);
+    --space-xl: var(--space-6);
+    --space-xxl: calc(var(--space-6) + 1rem);
+
+    --font-family-base: var(--font-family-base);
+    --font-size-base: var(--font-size-md);
+
+    --focus-outline: var(--focus-ring);
+    --transition-base: var(--transition);
+}

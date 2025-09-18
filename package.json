@@ -1,0 +1,14 @@
+{
+  "name": "genesis-reborn",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "svgo:build": "svgo -f public/assets/svg/icons -o public/assets/svg/icons --config=tools/svgo.config.mjs && node tools/build-sprite.mjs",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "svgo": "^3.0.2",
+    "vite": "^4.5.0"
+  }
+}

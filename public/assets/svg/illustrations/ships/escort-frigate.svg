@@ -1,0 +1,18 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ef-bg" x1="16" y1="12" x2="82" y2="84" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#74F2C4"/>
+      <stop offset="1" stop-color="#21866C"/>
+    </linearGradient>
+    <linearGradient id="ef-hull" x1="48" y1="24" x2="48" y2="72" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F0FFF9"/>
+      <stop offset="1" stop-color="#9BDDC0"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="80" height="80" rx="18" fill="url(#ef-bg)"/>
+  <path d="M26 44C26 38 42 28 48 28C54 28 70 38 70 44V52C70 58 54 68 48 68C42 68 26 58 26 52V44Z" fill="url(#ef-hull)" stroke="#0C2B26" stroke-opacity="0.28" stroke-width="2"/>
+  <path d="M32 48H64" stroke="#1A574A" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="48" cy="48" r="6" fill="#0F2923" fill-opacity="0.45"/>
+  <path d="M30 40L36 36" stroke="#BDF5DF" stroke-width="3" stroke-linecap="round"/>
+  <path d="M66 40L60 36" stroke="#BDF5DF" stroke-width="3" stroke-linecap="round"/>
+</svg>
