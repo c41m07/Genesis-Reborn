@@ -30,8 +30,12 @@ use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Domain\Service\CostService;
+use App\Domain\Service\FleetNavigationService;
+use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
+use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Database\ConnectionFactory;
@@ -77,6 +81,11 @@ return function (Container $container): void {
     });
 
     $container->set(BuildingCalculator::class, fn () => new BuildingCalculator());
+
+    $container->set(ResourceTickService::class, fn () => new ResourceTickService());
+    $container->set(CostService::class, fn () => new CostService());
+    $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
+    $container->set(FleetResolutionService::class, fn () => new FleetResolutionService());
 
     $container->set(ResearchCatalog::class, function () {
         $config = require __DIR__ . '/game/research.php';
