@@ -37,10 +37,13 @@ $resourceSummary = is_array($activePlanetSummary) ? ($activePlanetSummary['resou
 
 $menu = [
     'dashboard' => ['label' => 'Tableau de bord', 'path' => '/dashboard', 'icon' => 'overview'],
-    'buildings' => ['label' => 'Bâtiments', 'path' => '/buildings', 'icon' => 'buildings'],
+    'colony' => ['label' => 'Colonie', 'path' => '/colony', 'icon' => 'planet'],
     'research' => ['label' => 'Recherche', 'path' => '/research', 'icon' => 'research'],
     'shipyard' => ['label' => 'Chantier spatial', 'path' => '/shipyard', 'icon' => 'shipyard'],
+    'fleet' => ['label' => 'Flottes', 'path' => '/fleet', 'icon' => 'shipyard'],
+    'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
     'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
+    'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
 ];
 $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
 ?>
@@ -125,7 +128,7 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
                     <?php endforeach; ?>
                 </div>
                 <div class="topbar__actions">
-                    <a class="button button--ghost" href="#">Profil</a>
+                    <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/profile">Profil</a>
                     <?php if (!empty($csrf_logout)): ?>
                         <form method="post" action="<?= htmlspecialchars($baseUrl) ?>/logout" class="logout-form">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_logout ?? '') ?>">

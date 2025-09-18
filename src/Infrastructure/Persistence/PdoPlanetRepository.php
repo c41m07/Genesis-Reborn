@@ -143,6 +143,9 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
         return new Planet(
             (int) $data['id'],
             (int) $data['player_id'],
+            (int) ($data['galaxy'] ?? 0),
+            (int) ($data['system'] ?? 0),
+            (int) ($data['position'] ?? 0),
             $data['name'],
             (int) $data['metal'],
             (int) $data['crystal'],

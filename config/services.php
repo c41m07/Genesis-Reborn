@@ -15,8 +15,11 @@ use App\Application\UseCase\Research\StartResearch;
 use App\Application\UseCase\Shipyard\BuildShips;
 use App\Application\UseCase\Shipyard\GetShipyardOverview;
 use App\Controller\AuthController;
-use App\Controller\BuildingController;
+use App\Controller\ColonyController;
 use App\Controller\DashboardController;
+use App\Controller\FleetController;
+use App\Controller\JournalController;
+use App\Controller\ProfileController;
 use App\Controller\ResearchController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
@@ -235,7 +238,7 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
-    $container->set(BuildingController::class, fn (Container $c) => new BuildingController(
+    $container->set(ColonyController::class, fn (Container $c) => new ColonyController(
         $c->get(PlanetRepositoryInterface::class),
         $c->get(GetBuildingsOverview::class),
         $c->get(UpgradeBuilding::class),
@@ -264,6 +267,47 @@ return function (Container $container): void {
         $c->get(GetShipyardOverview::class),
         $c->get(BuildShips::class),
         $c->get(ProcessShipBuildQueue::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(FleetController::class, fn (Container $c) => new FleetController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(FleetNavigationService::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(JournalController::class, fn (Container $c) => new JournalController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(ResearchCatalog::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(ProfileController::class, fn (Container $c) => new ProfileController(
+        $c->get(UserRepositoryInterface::class),
+        $c->get(GetDashboard::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

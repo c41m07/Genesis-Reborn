@@ -39,7 +39,8 @@ class ResearchController extends AbstractController
         $planets = $this->planets->findByUser($userId);
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
-            return $this->render('pages/research/index.php', [
+
+            return $this->render('research/index.php', [
                 'title' => 'Recherche',
                 'planets' => [],
                 'overview' => null,
@@ -49,6 +50,7 @@ class ResearchController extends AbstractController
                 'activeSection' => 'research',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'csrf_logout' => $this->generateCsrfToken('logout'),
             ]);
         }
 
@@ -99,7 +101,7 @@ class ResearchController extends AbstractController
             ],
         ];
 
-        return $this->render('pages/research/index.php', [
+        return $this->render('research/index.php', [
             'title' => 'Recherche',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,

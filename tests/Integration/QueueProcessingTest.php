@@ -18,9 +18,13 @@ use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Domain\Service\FleetNavigationService;
+use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ShipCatalog;
+use DateInterval;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 class QueueProcessingTest extends TestCase
@@ -28,7 +32,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingUpgradeIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -76,7 +80,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchStartIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -120,7 +124,7 @@ class QueueProcessingTest extends TestCase
     public function testShipProductionIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 2],
@@ -157,6 +161,92 @@ class QueueProcessingTest extends TestCase
 
         self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
         self::assertSame(0, $shipQueue->countActive(1));
+    }
+
+    public function testFleetLaunchAndReturnLifecycle(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 7, 1, 20, 7, 'Helios', 10000, 6000, 4000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['shipyard' => 2],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
+        $shipQueue = new InMemoryShipBuildQueueRepository();
+        $fleetRepository = new InMemoryFleetRepository();
+        $catalog = new ShipCatalog([
+            'fighter' => [
+                'label' => 'Chasseur',
+                'category' => 'Escadre',
+                'role' => 'Intercepteur',
+                'description' => '',
+                'base_cost' => ['metal' => 200, 'crystal' => 100, 'hydrogen' => 50],
+                'build_time' => 4,
+                'stats' => ['vitesse' => 12000],
+                'requires_research' => [],
+                'image' => '',
+            ],
+        ]);
+
+        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $catalog);
+        $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
+
+        $result = $buildShips->execute(1, 7, 'fighter', 4);
+        self::assertTrue($result['success']);
+        $shipQueue->forceComplete(1);
+        $shipProcessor->process(1);
+        self::assertSame(['fighter' => 4], $fleetRepository->getFleet(1));
+
+        $navigation = new FleetNavigationService();
+        $departure = new DateTimeImmutable('2025-09-21 09:00:00');
+        $origin = ['galaxy' => 1, 'system' => 20, 'position' => 7];
+        $destination = ['galaxy' => 1, 'system' => 21, 'position' => 10];
+        $composition = ['fighter' => 3];
+        $shipStats = [
+            'fighter' => ['speed' => 12000, 'fuel_per_distance' => 0.4],
+        ];
+
+        $plan = $navigation->plan($origin, $destination, $composition, $shipStats, $departure);
+
+        self::assertSame(120, $plan['distance']);
+        self::assertSame(12000, $plan['speed']);
+        self::assertSame(36, $plan['travel_time']);
+        self::assertSame(144, $plan['fuel']);
+
+        $mission = [
+            'mission_type' => 'pve',
+            'status' => 'outbound',
+            'arrival_at' => $plan['arrival_time'],
+            'return_at' => null,
+            'travel_time_seconds' => $plan['travel_time'],
+            'mission_payload' => [
+                'mission' => 'derelict_station',
+                'composition' => $composition,
+                'origin_planet' => 1,
+                'fuel_used' => $plan['fuel'],
+            ],
+        ];
+
+        $resolution = new FleetResolutionService();
+        $afterArrival = $plan['arrival_time']->add(new DateInterval('PT1S'));
+        $stateAfterArrival = $resolution->advance([$mission], $afterArrival);
+
+        $fleetAfterArrival = $stateAfterArrival[0];
+        self::assertSame('returning', $fleetAfterArrival['status']);
+        self::assertEquals($afterArrival, $fleetAfterArrival['arrival_at']);
+        $expectedReturnAt = $afterArrival->add(new DateInterval('PT' . $plan['travel_time'] . 'S'));
+        self::assertEquals($expectedReturnAt, $fleetAfterArrival['return_at']);
+        self::assertSame('victory', $fleetAfterArrival['mission_payload']['last_resolution']['result']);
+
+        $afterReturn = $expectedReturnAt->add(new DateInterval('PT5S'));
+        $stateAfterReturn = $resolution->advance($stateAfterArrival, $afterReturn);
+        $fleetAfterReturn = $stateAfterReturn[0];
+
+        self::assertSame('completed', $fleetAfterReturn['status']);
+        self::assertEquals($afterReturn, $fleetAfterReturn['return_at']);
+        self::assertSame('victory', $fleetAfterReturn['mission_payload']['last_resolution']['result']);
     }
 }
 

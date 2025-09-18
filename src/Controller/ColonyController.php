@@ -13,7 +13,7 @@ use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Security\CsrfTokenManager;
 
-class BuildingController extends AbstractController
+class ColonyController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
@@ -39,16 +39,18 @@ class BuildingController extends AbstractController
         $planets = $this->planets->findByUser($userId);
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
-            return $this->render('pages/buildings/index.php', [
-                'title' => 'Bâtiments',
+
+            return $this->render('colony/index.php', [
+                'title' => 'Colonie',
                 'planets' => [],
                 'overview' => null,
                 'flashes' => $this->flashBag->consume(),
                 'baseUrl' => $this->baseUrl,
                 'currentUserId' => $userId,
-                'activeSection' => 'buildings',
+                'activeSection' => 'colony',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'csrf_logout' => $this->generateCsrfToken('logout'),
             ]);
         }
 
@@ -74,7 +76,7 @@ class BuildingController extends AbstractController
             $data = $request->getBodyParams();
             if (!$this->isCsrfTokenValid('upgrade_building_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $this->addFlash('danger', 'Session expirée, veuillez réessayer.');
-                return $this->redirect($this->baseUrl . '/buildings?planet=' . $selectedId);
+                return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
             }
 
             $result = $this->upgradeBuilding->execute($selectedId, $userId, $data['building'] ?? '');
@@ -84,7 +86,7 @@ class BuildingController extends AbstractController
                 $this->addFlash('danger', $result['message'] ?? 'Action impossible.');
             }
 
-            return $this->redirect($this->baseUrl . '/buildings?planet=' . $selectedId);
+            return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
         }
 
         $overview = $this->getOverview->execute($selectedId);
@@ -99,8 +101,8 @@ class BuildingController extends AbstractController
             ],
         ];
 
-        return $this->render('pages/buildings/index.php', [
-            'title' => 'Bâtiments',
+        return $this->render('colony/index.php', [
+            'title' => 'Colonie',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
             'overview' => $overview,
@@ -109,7 +111,7 @@ class BuildingController extends AbstractController
             'csrf_upgrade' => $this->generateCsrfToken('upgrade_building_' . $selectedId),
             'csrf_logout' => $this->generateCsrfToken('logout'),
             'currentUserId' => $userId,
-            'activeSection' => 'buildings',
+            'activeSection' => 'colony',
             'activePlanetSummary' => $activePlanetSummary,
         ]);
     }

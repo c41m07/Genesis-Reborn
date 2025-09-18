@@ -29,6 +29,7 @@ class GetShipyardOverview
      *     planet: \App\Domain\Entity\Planet,
      *     shipyardLevel: int,
      *     fleet: array<string, int>,
+     *     fleetSummary: array<int, array{key: string, label: string, quantity: int}>,
      *     queue: array{count: int, jobs: array<int, array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}>},
      *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ShipDefinition, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canBuild: bool}>>>
      * }
@@ -45,12 +46,22 @@ class GetShipyardOverview
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $shipyardLevel = $buildingLevels['shipyard'] ?? 0;
         $researchLevels = $this->researchStates->getLevels($planetId);
-        $fleet = $this->fleets->getFleet($planetId);
-
         $catalogMap = [];
         foreach ($this->catalog->all() as $definition) {
             $catalogMap[$definition->getKey()] = ['label' => $definition->getLabel()];
         }
+
+        $fleet = $this->fleets->getFleet($planetId);
+        $fleetView = [];
+        foreach ($fleet as $shipKey => $quantity) {
+            $label = $catalogMap[$shipKey]['label'] ?? $shipKey;
+            $fleetView[] = [
+                'key' => $shipKey,
+                'label' => $label,
+                'quantity' => (int) $quantity,
+            ];
+        }
+        usort($fleetView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
 
         $queueJobs = $this->shipQueue->getActiveQueue($planetId);
         $queueView = [];
@@ -91,6 +102,7 @@ class GetShipyardOverview
             'planet' => $planet,
             'shipyardLevel' => $shipyardLevel,
             'fleet' => $fleet,
+            'fleetSummary' => $fleetView,
             'queue' => [
                 'count' => count($queueView),
                 'jobs' => $queueView,
