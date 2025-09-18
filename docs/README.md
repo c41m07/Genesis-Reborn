@@ -118,3 +118,11 @@ Les contrôleurs renvoient des vues HTML et exigent un jeton CSRF pour toute act
 5. **Alliances & diplomatie** : introduire des entités `alliances`, des statuts diplomatiques et des journaux partagés, puis étendre la résolution de missions pour les guerres collectives.
 6. **Scalabilité** : planifier des workers et crons horizontaux (queues par shards, idempotence des services `Process*`, notifications d’événements) pour supporter plusieurs milliers de joueurs simultanés.
 
+## Bug connue a coriger
+1. **Les ressource ne s'incremente pas correctement** : Le service de tick des ressources doit être revu pour garantir que les ressources s'incrémentent correctement en fonction de la production et de la consommation énergétique.
+2. ** le design , l'UI/UX** : Certaines parties de l'interface utilisateur peuvent être améliorées pour une
+   meilleure expérience utilisateur, notamment en rendant les éléments plus intuitifs et accessibles et en évitant
+   les doublons
+3. ** le tech-tree ** : Le tech-tree ne fonctionne pas correctement, il ne s'affiche pas correctement et il ne
+   fonctionne pas correctement les recherches terminer  / bloqué  / le niveau de recherche.
+4. ** le profil utilisateur ** : rajouter une supression de compte et une modification du mot de passe.
