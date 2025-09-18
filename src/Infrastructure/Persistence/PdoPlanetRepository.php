@@ -148,10 +148,10 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             (int) $data['crystal'],
             (int) $data['hydrogen'],
             (int) $data['energy'],
-            (int) $data['prod_metal_per_hour'],
-            (int) $data['prod_crystal_per_hour'],
-            (int) $data['prod_hydrogen_per_hour'],
-            (int) $data['prod_energy_per_hour']
+            (int) ($data['prod_metal_per_hour'] ?? 0),
+            (int) ($data['prod_crystal_per_hour'] ?? 0),
+            (int) ($data['prod_hydrogen_per_hour'] ?? 0),
+            (int) ($data['prod_energy_per_hour'] ?? 0)
         );
     }
 }
