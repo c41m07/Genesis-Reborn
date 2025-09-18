@@ -2,13 +2,16 @@
 
 namespace App\Application\UseCase\Auth;
 
+use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 use App\Infrastructure\Http\Session\SessionInterface;
+use Throwable;
 
 class RegisterUser
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
+        private readonly PlanetRepositoryInterface $planets,
         private readonly SessionInterface $session
     ) {
     }
@@ -35,6 +38,13 @@ class RegisterUser
 
         $hash = password_hash($password, PASSWORD_BCRYPT);
         $user = $this->users->save($email, $hash);
+
+        try {
+            $this->planets->createHomeworld($user->getId());
+        } catch (Throwable $exception) {
+            return ['success' => false, 'message' => 'Impossible de créer la planète de départ.'];
+        }
+
         $this->session->set('user_id', $user->getId());
 
         return ['success' => true];

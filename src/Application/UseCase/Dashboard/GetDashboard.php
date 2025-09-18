@@ -16,6 +16,7 @@ use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ShipCatalog;
+use InvalidArgumentException;
 
 class GetDashboard
 {
@@ -112,13 +113,21 @@ class GetDashboard
             $researchSum += array_sum($researchLevels);
             $unlockedResearch += count(array_filter($researchLevels, static fn (int $level): bool => $level > 0));
             foreach ($researchLevels as $researchKey => $researchLevel) {
-                if ($researchLevel > $highestTech['level']) {
-                    $definition = $this->researchCatalog->get($researchKey);
-                    $highestTech = [
-                        'label' => $definition->getLabel(),
-                        'level' => $researchLevel,
-                    ];
+                if ($researchLevel <= $highestTech['level']) {
+                    continue;
                 }
+
+                try {
+                    $definition = $this->researchCatalog->get($researchKey);
+                } catch (InvalidArgumentException $exception) {
+                    // Configuration catalogue manquante pour cette technologie – on ignore l'entrée.
+                    continue;
+                }
+
+                $highestTech = [
+                    'label' => $definition->getLabel(),
+                    'level' => $researchLevel,
+                ];
             }
 
             $buildingQueue = $this->buildQueue->getActiveQueue($planetId);
@@ -228,10 +237,17 @@ class GetDashboard
 
         usort($jobs, static fn ($a, $b) => $a->getEndsAt() <=> $b->getEndsAt());
         $job = $jobs[0];
-        $definition = $this->researchCatalog->get($job->getResearchKey());
+
+        try {
+            $definition = $this->researchCatalog->get($job->getResearchKey());
+            $label = $definition->getLabel();
+        } catch (InvalidArgumentException $exception) {
+            $label = $job->getResearchKey();
+        }
+
         $summary['next'] = [
             'research' => $job->getResearchKey(),
-            'label' => $definition->getLabel(),
+            'label' => $label,
             'targetLevel' => $job->getTargetLevel(),
             'endsAt' => $job->getEndsAt(),
             'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),

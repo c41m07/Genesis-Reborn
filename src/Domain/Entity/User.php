@@ -7,7 +7,8 @@ class User
     public function __construct(
         private readonly int $id,
         private readonly string $email,
-        private readonly string $passwordHash
+        private readonly string $passwordHash,
+        private readonly string $username
     ) {
     }
 
@@ -24,5 +25,10 @@ class User
     public function getPasswordHash(): string
     {
         return $this->passwordHash;
+    }
+
+    public function getUsername(): string
+    {
+        return $this->username;
     }
 }

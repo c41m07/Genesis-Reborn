@@ -17,8 +17,8 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
     /** @return Planet[] */
     public function findByUser(int $userId): array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE user_id = :user ORDER BY id ASC');
-        $stmt->execute(['user' => $userId]);
+        $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE player_id = :player ORDER BY id ASC');
+        $stmt->execute(['player' => $userId]);
         $planets = [];
 
         while ($row = $stmt->fetch()) {
@@ -41,8 +41,8 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
     {
         $this->pdo->beginTransaction();
         try {
-            $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE user_id = :user FOR UPDATE');
-            $stmt->execute(['user' => $userId]);
+            $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE player_id = :player AND is_homeworld = 1 FOR UPDATE');
+            $stmt->execute(['player' => $userId]);
             $row = $stmt->fetch();
 
             if ($row) {
@@ -50,18 +50,46 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
                 return $this->hydrate($row);
             }
 
-            $this->pdo->prepare('INSERT INTO planets (user_id, name, metal, crystal, hydrogen, energy, prod_metal_per_hour, prod_crystal_per_hour, prod_hydrogen_per_hour, prod_energy_per_hour)
-                VALUES (:user, :name, :metal, :crystal, :hydrogen, :energy, :mPH, :cPH, :hPH, :ePH)')->execute([
-                'user' => $userId,
+            $system = 1000 + $userId;
+            $position = 1;
+            $diameter = 12000;
+            $temperatureMin = -20;
+            $temperatureMax = 40;
+
+            $initialMetal = 1000;
+            $initialCrystal = 1000;
+            $initialHydrogen = 1000;
+            $initialEnergy = 0;
+
+            $metalCapacity = 80000;
+            $crystalCapacity = 60000;
+            $hydrogenCapacity = 40000;
+            $energyCapacity = 1000;
+
+            $this->pdo->prepare(
+                'INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld, metal, crystal, hydrogen, prod_metal_per_hour, prod_crystal_per_hour, prod_hydrogen_per_hour, prod_energy_per_hour, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
+                VALUES (:player, :name, :galaxy, :system, :position, :diameter, :tmin, :tmax, 1, :metal, :crystal, :hydrogen, :mPH, :cPH, :hPH, :ePH, :energy, :metalCap, :crystalCap, :hydrogenCap, :energyCap, NOW(), NOW(), NOW())'
+            )->execute([
+                'player' => $userId,
                 'name' => 'Planète mère',
-                'metal' => 500,
-                'crystal' => 250,
-                'hydrogen' => 0,
-                'energy' => 0,
-                'mPH' => 100,
-                'cPH' => 50,
+                'galaxy' => 1,
+                'system' => $system,
+                'position' => $position,
+                'diameter' => $diameter,
+                'tmin' => $temperatureMin,
+                'tmax' => $temperatureMax,
+                'metal' => $initialMetal,
+                'crystal' => $initialCrystal,
+                'hydrogen' => $initialHydrogen,
+                'mPH' => 0,
+                'cPH' => 0,
                 'hPH' => 0,
                 'ePH' => 0,
+                'energy' => $initialEnergy,
+                'metalCap' => $metalCapacity,
+                'crystalCap' => $crystalCapacity,
+                'hydrogenCap' => $hydrogenCapacity,
+                'energyCap' => $energyCapacity,
             ]);
 
             $id = (int) $this->pdo->lastInsertId();
@@ -114,16 +142,16 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
     {
         return new Planet(
             (int) $data['id'],
-            (int) $data['user_id'],
+            (int) $data['player_id'],
             $data['name'],
             (int) $data['metal'],
             (int) $data['crystal'],
             (int) $data['hydrogen'],
             (int) $data['energy'],
-            (int) $data['prod_metal_per_hour'],
-            (int) $data['prod_crystal_per_hour'],
-            (int) $data['prod_hydrogen_per_hour'],
-            (int) $data['prod_energy_per_hour']
+            (int) ($data['prod_metal_per_hour'] ?? 0),
+            (int) ($data['prod_crystal_per_hour'] ?? 0),
+            (int) ($data['prod_hydrogen_per_hour'] ?? 0),
+            (int) ($data['prod_energy_per_hour'] ?? 0)
         );
     }
 }

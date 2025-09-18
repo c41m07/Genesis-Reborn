@@ -6,6 +6,7 @@ use App\Domain\Entity\ResearchJob;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use DateTimeImmutable;
 use PDO;
+use RuntimeException;
 
 class PdoResearchQueueRepository implements ResearchQueueRepositoryInterface
 {
@@ -37,9 +38,12 @@ class PdoResearchQueueRepository implements ResearchQueueRepositoryInterface
 
     public function enqueue(int $planetId, string $researchKey, int $targetLevel, int $durationSeconds): void
     {
-        $stmt = $this->pdo->prepare('INSERT INTO research_queue (planet_id, rkey, target_level, ends_at)
-            VALUES (:planet, :key, :level, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
+        $playerId = $this->getPlayerIdForPlanet($planetId);
+
+        $stmt = $this->pdo->prepare('INSERT INTO research_queue (player_id, planet_id, rkey, target_level, ends_at)
+            VALUES (:player, :planet, :key, :level, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
         $stmt->execute([
+            'player' => $playerId,
             'planet' => $planetId,
             'key' => $researchKey,
             'level' => $targetLevel,
@@ -82,5 +86,18 @@ class PdoResearchQueueRepository implements ResearchQueueRepositoryInterface
             (int) $row['target_level'],
             new DateTimeImmutable($row['ends_at'])
         );
+    }
+
+    private function getPlayerIdForPlanet(int $planetId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT player_id FROM planets WHERE id = :planet');
+        $stmt->execute(['planet' => $planetId]);
+        $playerId = $stmt->fetchColumn();
+
+        if ($playerId === false) {
+            throw new RuntimeException('Planète inconnue pour la file de recherche.');
+        }
+
+        return (int) $playerId;
     }
 }
