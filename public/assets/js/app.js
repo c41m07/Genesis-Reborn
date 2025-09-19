@@ -33,29 +33,110 @@ const formatSeconds = (value) => {
     return parts.join(' ');
 };
 
-const updateResourceMeters = (resources = {}) => {
+const resourceTicker = {
+    states: new Map(),
+    intervalId: null,
+};
+
+const renderResourceMeter = (key, value, perHour) => {
+    const meter = document.querySelector(`.resource-meter[data-resource="${CSS.escape(key)}"]`);
+    if (!meter) {
+        return;
+    }
+
+    const valueElement = meter.querySelector('[data-resource-value]');
+    const rateElement = meter.querySelector('[data-resource-rate]');
+    const normalizedValue = Math.floor(Number.isFinite(value) ? value : 0);
+    const normalizedPerHour = Number.isFinite(perHour) ? perHour : 0;
+
+    if (valueElement) {
+        valueElement.textContent = formatNumber(normalizedValue);
+    }
+
+    if (rateElement) {
+        const ratePrefix = key !== 'energy' && normalizedPerHour > 0 ? '+' : '';
+        rateElement.textContent = `${ratePrefix}${formatNumber(Math.round(normalizedPerHour))}/h`;
+        rateElement.classList.toggle('is-positive', normalizedPerHour >= 0);
+        rateElement.classList.toggle('is-negative', normalizedPerHour < 0);
+    }
+};
+
+const stopResourceTicker = () => {
+    if (resourceTicker.intervalId !== null) {
+        window.clearInterval(resourceTicker.intervalId);
+        resourceTicker.intervalId = null;
+    }
+};
+
+const startResourceTicker = () => {
+    stopResourceTicker();
+
+    if (resourceTicker.states.size === 0) {
+        return;
+    }
+
+    resourceTicker.intervalId = window.setInterval(() => {
+        const now = Date.now();
+        resourceTicker.states.forEach((state, key) => {
+            const elapsedSeconds = Math.max(0, Math.floor((now - state.timestamp) / 1000));
+            if (elapsedSeconds === 0) {
+                return;
+            }
+
+            const increment = state.perHour * (elapsedSeconds / 3600);
+            state.value += increment;
+            state.timestamp = now;
+            renderResourceMeter(key, state.value, state.perHour);
+        });
+    }, 1000);
+};
+
+const applyResourceSnapshot = (resources = {}) => {
+    const now = Date.now();
+    resourceTicker.states.clear();
+
     Object.entries(resources).forEach(([key, data]) => {
-        const meter = document.querySelector(`.resource-meter[data-resource="${CSS.escape(key)}"]`);
-        if (!meter) {
+        const source = data && typeof data === 'object' ? data : {};
+        const value = Number(source.value ?? 0);
+        const perHour = Number(source.perHour ?? 0);
+
+        resourceTicker.states.set(key, {
+            value,
+            perHour,
+            timestamp: now,
+        });
+
+        renderResourceMeter(key, value, perHour);
+    });
+
+    startResourceTicker();
+};
+
+const bootstrapResourceTicker = () => {
+    const meters = document.querySelectorAll('.resource-meter[data-resource]');
+    if (meters.length === 0) {
+        return;
+    }
+
+    const snapshot = {};
+    meters.forEach((meter) => {
+        const key = meter.getAttribute('data-resource');
+        if (!key) {
             return;
         }
 
-        const valueElement = meter.querySelector('[data-resource-value]');
-        const rateElement = meter.querySelector('[data-resource-rate]');
-        const value = data && typeof data === 'object' ? data.value ?? 0 : 0;
-        const perHour = data && typeof data === 'object' ? data.perHour ?? 0 : 0;
+        const valueText = meter.querySelector('[data-resource-value]')?.textContent ?? '0';
+        const rateText = meter.querySelector('[data-resource-rate]')?.textContent ?? '0';
+        const numericValue = Number(valueText.replace(/[^0-9-]/g, ''));
+        const numericRate = Number(rateText.replace(/[^0-9-]/g, ''));
 
-        if (valueElement) {
-            valueElement.textContent = formatNumber(value);
-        }
-
-        if (rateElement) {
-            const ratePrefix = key !== 'energy' && perHour > 0 ? '+' : '';
-            rateElement.textContent = `${ratePrefix}${formatNumber(perHour)}/h`;
-            rateElement.classList.toggle('is-positive', perHour >= 0);
-            rateElement.classList.toggle('is-negative', perHour < 0);
-        }
+        snapshot[key] = {
+            value: Number.isFinite(numericValue) ? numericValue : 0,
+            perHour: Number.isFinite(numericRate) ? numericRate : 0,
+        };
     });
+
+    applyResourceSnapshot(snapshot);
 };
 
 const renderQueue = (queue, target) => {
@@ -167,7 +248,7 @@ const submitAsyncForm = async (form) => {
         if (!response.ok || data.success === false) {
             showFlashMessage('danger', data.message ?? 'Action impossible.');
             if (data.resources) {
-                updateResourceMeters(data.resources);
+                applyResourceSnapshot(data.resources);
             }
             if (form.dataset.queueTarget && data.queue) {
                 renderQueue(data.queue, form.dataset.queueTarget);
@@ -178,7 +259,7 @@ const submitAsyncForm = async (form) => {
 
         showFlashMessage('success', data.message ?? 'Action effectuée.');
         if (data.resources) {
-            updateResourceMeters(data.resources);
+            applyResourceSnapshot(data.resources);
         }
         if (form.dataset.queueTarget && data.queue) {
             renderQueue(data.queue, form.dataset.queueTarget);
@@ -239,7 +320,7 @@ const initResourcePolling = () => {
             });
             const data = await response.json().catch(() => null);
             if (data?.success && data.resources) {
-                updateResourceMeters(data.resources);
+                applyResourceSnapshot(data.resources);
             }
         } catch (_error) {
             // Ignore polling errors silently.
@@ -437,6 +518,7 @@ const ready = () => {
     initSidebar();
     initAutoSubmitSelects();
     initAsyncForms();
+    bootstrapResourceTicker();
     initResourcePolling();
     initTechTree();
 };

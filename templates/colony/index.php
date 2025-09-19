@@ -12,7 +12,6 @@ $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $buildings = $overview['buildings'] ?? [];
 
 $icon = require __DIR__ . '/../components/_icon.php';
-$resourceBar = require __DIR__ . '/../components/_resource_bar.php';
 $card = require __DIR__ . '/../components/_card.php';
 
 if (!function_exists('format_duration')) {
@@ -44,17 +43,6 @@ $resourceLabels = [
     'hydrogen' => 'Hydrogène',
     'energy' => 'Énergie',
 ];
-
-$resourceSummaryData = [];
-if (is_array($activePlanetSummary)) {
-    foreach ($activePlanetSummary['resources'] as $key => $data) {
-        $resourceSummaryData[$key] = [
-            'label' => $resourceLabels[$key] ?? ucfirst((string) $key),
-            'value' => $data['value'] ?? 0,
-            'perHour' => $data['perHour'] ?? 0,
-        ];
-    }
-}
 
 $assetBase = rtrim($baseUrl, '/');
 
@@ -94,16 +82,6 @@ ob_start();
         },
     ]) ?>
 <?php else: ?>
-    <?php if ($resourceSummaryData !== []): ?>
-        <?= $card([
-            'title' => 'Ressources planétaires',
-            'subtitle' => 'Production horaire actuelle',
-            'body' => static function () use ($resourceBar, $resourceSummaryData, $baseUrl): void {
-                echo $resourceBar($resourceSummaryData, ['baseUrl' => $baseUrl]);
-            },
-        ]) ?>
-    <?php endif; ?>
-
     <?= $card([
         'title' => 'File de construction',
         'subtitle' => 'Suivi des améliorations en cours',

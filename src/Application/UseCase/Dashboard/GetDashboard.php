@@ -61,7 +61,8 @@ class GetDashboard
         $planets = $this->planets->findByUser($userId);
         $planetSummaries = [];
         $totals = ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
-        $empirePoints = 0;
+        $buildingPoints = 0;
+        $sciencePoints = 0;
         $researchSum = 0;
         $unlockedResearch = 0;
         $highestTech = ['label' => 'Aucune technologie', 'level' => 0];
@@ -110,9 +111,13 @@ class GetDashboard
             $totals['hydrogen'] += $planet->getHydrogen();
             $totals['energy'] += $planet->getEnergy();
 
-            $empirePoints += array_sum($levels) + array_sum($researchLevels);
+            $buildingTotal = array_sum($levels);
+            $researchTotal = array_sum($researchLevels);
 
-            $researchSum += array_sum($researchLevels);
+            $buildingPoints += $buildingTotal;
+            $sciencePoints += $researchTotal;
+
+            $researchSum += $researchTotal;
             $unlockedResearch += count(array_filter($researchLevels, static fn (int $level): bool => $level > 0));
             foreach ($researchLevels as $researchKey => $researchLevel) {
                 if ($researchLevel <= $highestTech['level']) {
@@ -182,6 +187,8 @@ class GetDashboard
         $scienceSpent = $this->playerStats->getScienceSpending($userId);
         $sciencePower = (int) floor($scienceSpent / 1000);
 
+        $empireScore = $buildingPoints + $sciencePoints + $militaryPower;
+
         return [
             'planets' => $planetSummaries,
             'totals' => $totals,
@@ -191,7 +198,10 @@ class GetDashboard
                 'best' => $highestTech,
             ],
             'empire' => [
-                'points' => $empirePoints,
+                'points' => $empireScore,
+                'buildingPoints' => $buildingPoints,
+                'sciencePoints' => $sciencePoints,
+                'militaryPoints' => $militaryPower,
                 'militaryPower' => $militaryPower,
                 'planetCount' => count($planets),
                 'scienceSpent' => $scienceSpent,

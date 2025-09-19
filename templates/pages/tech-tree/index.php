@@ -36,7 +36,8 @@ foreach ($categories as $category) {
         }
     }
 }
-$nodesJson = htmlspecialchars(json_encode($nodes, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+$nodesJson = json_encode($nodes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+$nodesJson = $nodesJson !== false ? $nodesJson : '{}';
 ob_start();
 ?>
 <section class="page-header">

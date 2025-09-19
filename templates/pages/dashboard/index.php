@@ -31,7 +31,14 @@ if (!function_exists('format_duration')) {
     }
 }
 
-$empire = $dashboard['empire'] ?? ['points' => 0, 'militaryPower' => 0, 'planetCount' => 0];
+$empire = $dashboard['empire'] ?? [
+    'points' => 0,
+    'buildingPoints' => 0,
+    'sciencePoints' => 0,
+    'militaryPoints' => 0,
+    'militaryPower' => 0,
+    'planetCount' => 0,
+];
 $planetSummaries = $dashboard['planets'] ?? [];
 $selectedPlanetId = $selectedPlanetId ?? null;
 if ($selectedPlanetId === null && $activePlanetSummary) {
@@ -76,11 +83,7 @@ ob_start();
                 <strong class="dashboard-banner__value"><?= $activePlanet ? htmlspecialchars($activePlanet->getName()) : 'Aucune planète' ?></strong>
             </li>
             <li>
-                <span class="dashboard-banner__label">Puissance scientifique</span>
-                <strong class="dashboard-banner__value"><?= number_format($empire['sciencePower'] ?? 0) ?></strong>
-            </li>
-            <li>
-                <span class="dashboard-banner__label">Points d’empire</span>
+                <span class="dashboard-banner__label">Score impérial</span>
                 <strong class="dashboard-banner__value"><?= number_format($empire['points'] ?? 0) ?></strong>
             </li>
         </ul>
@@ -90,30 +93,35 @@ ob_start();
             <article class="panel panel--highlight">
                 <header class="panel__header">
                     <h2>Vue d’ensemble</h2>
-                    <p class="panel__subtitle">Bilan rapide de votre progression impériale.</p>
+                    <p class="panel__subtitle">Synthèse des forces civiles, scientifiques et militaires.</p>
                 </header>
                 <div class="panel__body metrics metrics--compact">
                     <div class="metric">
-                        <span class="metric__label">Points d’empire</span>
+                        <span class="metric__label">Score impérial</span>
                         <strong class="metric__value"><?= number_format($empire['points'] ?? 0) ?></strong>
-                        <span class="metric__hint">Somme des niveaux de bâtiments et de recherches.</span>
+                        <span class="metric__hint">Bâtiments + recherches + puissance militaire.</span>
                     </div>
                     <div class="metric">
-                        <span class="metric__label">Puissance scientifique</span>
-                        <strong class="metric__value"><?= number_format($empire['sciencePower'] ?? 0) ?></strong>
-                        <span class="metric__hint">1 point = 1 000 ressources investies dans vos programmes.</span>
+                        <span class="metric__label">Points d’infrastructure</span>
+                        <strong class="metric__value"><?= number_format($empire['buildingPoints'] ?? 0) ?></strong>
+                        <span class="metric__hint">Total des niveaux de bâtiments développés.</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric__label">Points scientifiques</span>
+                        <strong class="metric__value"><?= number_format($empire['sciencePoints'] ?? 0) ?></strong>
+                        <span class="metric__hint">Somme des niveaux de recherches actives.</span>
                     </div>
                     <div class="metric">
                         <span class="metric__label">Puissance militaire</span>
-                        <strong class="metric__value"><?= number_format($empire['militaryPower'] ?? 0) ?></strong>
-                        <span class="metric__hint">Indice basé sur l’armement et la défense de votre flotte.</span>
+                        <strong class="metric__value"><?= number_format($empire['militaryPoints'] ?? ($empire['militaryPower'] ?? 0)) ?></strong>
+                        <span class="metric__hint">Valeur combinée d’attaque et de défense de la flotte.</span>
                     </div>
                 </div>
             </article>
             <article class="panel">
                 <header class="panel__header">
                     <h2>Production en cours</h2>
-                    <p class="panel__subtitle">Suivi des files de construction et de chantier spatial.</p>
+                    <p class="panel__subtitle">Bâtiments, recherches et chantiers spatiaux alignés.</p>
                 </header>
                 <div class="panel__body production-grid">
                     <div class="production-card">
@@ -165,7 +173,7 @@ ob_start();
             <article class="panel planet-summary">
                 <header class="panel__header">
                     <h2>Planète sélectionnée</h2>
-                    <p class="panel__subtitle">Ressources et état énergétique.</p>
+                    <p class="panel__subtitle">Ressources stockées et rythme de production.</p>
                 </header>
                 <div class="panel__body planet-summary__body">
                     <div class="planet-summary__preview"></div>
