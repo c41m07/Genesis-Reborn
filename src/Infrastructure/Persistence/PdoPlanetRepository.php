@@ -67,9 +67,11 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             $hydrogenCapacity = 40000;
             $energyCapacity = 1000;
 
+            $now = new DateTimeImmutable('now');
+
             $this->pdo->prepare(
                 'INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld, metal, crystal, hydrogen, prod_metal_per_hour, prod_crystal_per_hour, prod_hydrogen_per_hour, prod_energy_per_hour, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
-                VALUES (:player, :name, :galaxy, :system, :position, :diameter, :tmin, :tmax, 1, :metal, :crystal, :hydrogen, :mPH, :cPH, :hPH, :ePH, :energy, :metalCap, :crystalCap, :hydrogenCap, :energyCap, NOW(), NOW(), NOW())'
+                VALUES (:player, :name, :galaxy, :system, :position, :diameter, :tmin, :tmax, 1, :metal, :crystal, :hydrogen, :mPH, :cPH, :hPH, :ePH, :energy, :metalCap, :crystalCap, :hydrogenCap, :energyCap, :now, :now, :now)'
             )->execute([
                 'player' => $userId,
                 'name' => 'Planète mère',
@@ -91,6 +93,7 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
                 'crystalCap' => $crystalCapacity,
                 'hydrogenCap' => $hydrogenCapacity,
                 'energyCap' => $energyCapacity,
+                'now' => $now->format('Y-m-d H:i:s'),
             ]);
 
             $id = (int) $this->pdo->lastInsertId();
