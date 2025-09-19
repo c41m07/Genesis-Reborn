@@ -68,9 +68,7 @@ class ColonyController extends AbstractController
             $selectedId = $selectedPlanet->getId();
         }
 
-        if ($selectedPlanet) {
-            $this->buildQueueProcessor->process($selectedId);
-        }
+        $this->buildQueueProcessor->process($selectedId);
 
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();

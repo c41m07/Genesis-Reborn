@@ -51,6 +51,7 @@ $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $categories = $overview['categories'] ?? [];
 $totals = $overview['totals'] ?? ['completedLevels' => 0, 'unlockedResearch' => 0, 'highestLevel' => 0];
 $labLevel = $overview['labLevel'] ?? 0;
+$assetBase = rtrim($baseUrl, '/');
 
 ob_start();
 ?>
@@ -139,10 +140,11 @@ ob_start();
 
     <div class="grid grid--stacked">
         <?php foreach ($categories as $category): ?>
+            <?php $categoryImage = $category['image'] ?? null; ?>
             <?= $card([
                 'title' => $category['label'],
                 'subtitle' => 'Technologies associées à ce domaine stratégique',
-                'illustration' => !empty($category['image']) ? htmlspecialchars($baseUrl . '/' . $category['image'], ENT_QUOTES) : null,
+                'illustration' => !empty($categoryImage) ? $assetBase . '/' . ltrim($categoryImage, '/') : null,
                 'body' => static function () use ($category, $baseUrl, $icon, $csrf_start, $selectedPlanetId): void {
                     echo '<div class="research-list">';
                     foreach ($category['items'] as $item) {

@@ -25,7 +25,7 @@
     "scripts": {
         "test": "phpunit",
         "cs": "php-cs-fixer fix --diff",
-        "stan": "phpstan analyse src --level=5"
+        "stan": "phpstan analyse src --level=5 --memory-limit=256M"
     },
     "config": {
         "sort-packages": true

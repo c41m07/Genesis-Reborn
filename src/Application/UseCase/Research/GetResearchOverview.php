@@ -30,7 +30,7 @@ class GetResearchOverview
      *     labLevel: int,
      *     researchLevels: array<string, int>,
      *     queue: array{count: int, jobs: array<int, array{research: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ResearchDefinition, level: int, maxLevel: int, progress: float, nextCost: array<string, int>, nextTime: int, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canResearch: bool}>>,
+     *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>,
      *     totals: array{completedLevels: int, unlockedResearch: int, highestLevel: int}
      * }
      */

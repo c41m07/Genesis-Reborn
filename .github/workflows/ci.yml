@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+jobs:
+  php:
+    name: PHP quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          extensions: pdo
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Validate composer configuration
+        run: composer validate --strict
+      - name: Run PHP CS Fixer (dry run)
+        run: |
+          vendor/bin/php-cs-fixer fix src --rules=@PSR12 --dry-run --diff
+          vendor/bin/php-cs-fixer fix tests --rules=@PSR12 --dry-run --diff
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse src --level=5
+      - name: Run PHPUnit
+        run: composer test
+
+  frontend:
+    name: Frontend build & lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linters
+        run: npm run lint
+      - name: Build assets
+        run: npm run build

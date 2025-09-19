@@ -27,7 +27,7 @@ class ResourceTickService
      *     player_id?: int,
      *     resources: array<string, int|float>,
      *     capacities: array<string, int|float>,
-     *     last_tick: DateTimeInterface,
+     *     last_tick?: DateTimeInterface,
      *     building_levels: array<string, int>,
      * }> $planetStates
      * @param DateTimeInterface $now
@@ -187,7 +187,7 @@ class ResourceTickService
     }
 
     /**
-     * @param array{base: float|int, growth?: float|int, linear?: bool} $config
+     * @param array{base?: float|int, growth?: float|int, linear?: bool} $config
      */
     private function valueForLevel(array $config, int $level): float
     {
