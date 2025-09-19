@@ -459,6 +459,85 @@ class QueueProcessingTest extends TestCase
         self::assertGreaterThan(0, $updatedPlanet->getMetalPerHour());
     }
 
+    public function testResourceApiRealignsFutureTickAndAllowsProgression(): void
+    {
+        $futureTick = new DateTimeImmutable('+1 hour');
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 0, 0, 0, 0, 0, 0, 0, 0, 500000, 500000, 500000, 500000, $futureTick),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['metal_mine' => 1, 'solar_plant' => 1],
+        ]);
+
+        $buildQueue = $this->createMock(ProcessBuildQueue::class);
+        $buildQueue->expects($this->exactly(2))->method('process')->with(1);
+
+        $researchQueue = $this->createMock(ProcessResearchQueue::class);
+        $researchQueue->expects($this->exactly(2))->method('process')->with(1);
+
+        $shipQueue = $this->createMock(ProcessShipBuildQueue::class);
+        $shipQueue->expects($this->exactly(2))->method('process')->with(1);
+
+        $buildingConfig = [
+            'metal_mine' => [
+                'affects' => 'metal',
+                'prod_base' => 7200,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+            ],
+            'solar_plant' => [
+                'affects' => 'energy',
+                'prod_base' => 7200,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+            ],
+        ];
+
+        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+
+        $sessionStorage = ['user_id' => 5];
+        $session = new Session($sessionStorage);
+        $flashBag = new FlashBag($session);
+        $csrf = new CsrfTokenManager($session);
+        $renderer = new ViewRenderer(__DIR__ . '/../../templates');
+
+        $controller = new ResourceApiController(
+            $planetRepository,
+            $buildQueue,
+            $researchQueue,
+            $shipQueue,
+            $buildingStates,
+            $resourceTick,
+            $renderer,
+            $session,
+            $flashBag,
+            $csrf,
+            'http://localhost'
+        );
+
+        $request = new Request('GET', '/api/resources', ['planet' => 1], [], $session);
+
+        $firstResponse = $controller->show($request);
+        $firstPayload = json_decode($firstResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($firstPayload['success']);
+        $firstPlanet = $planetRepository->find(1);
+        self::assertNotNull($firstPlanet);
+        self::assertLessThan($futureTick->getTimestamp(), $firstPlanet->getLastResourceTick()->getTimestamp());
+
+        $initialMetal = $firstPayload['resources']['metal']['value'];
+
+        usleep(1_200_000);
+
+        $secondResponse = $controller->show($request);
+        $secondPayload = json_decode($secondResponse->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($secondPayload['success']);
+        self::assertGreaterThan($initialMetal, $secondPayload['resources']['metal']['value']);
+    }
+
     public function testFleetLaunchAndReturnLifecycle(): void
     {
         $planetRepository = new InMemoryPlanetRepository([

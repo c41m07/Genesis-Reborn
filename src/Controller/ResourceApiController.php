@@ -69,6 +69,15 @@ class ResourceApiController extends AbstractController
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $now = new DateTimeImmutable();
 
+        $correctedFutureTick = false;
+        $lastTick = $planet->getLastResourceTick();
+        if ($lastTick > $now) {
+            $planet->setLastResourceTick($now);
+            $this->planets->update($planet);
+            $lastTick = $now;
+            $correctedFutureTick = true;
+        }
+
         $tickStates = [
             $planetId => [
                 'planet_id' => $planetId,
@@ -85,7 +94,7 @@ class ResourceApiController extends AbstractController
                     'hydrogen' => $planet->getHydrogenCapacity(),
                     'energy' => $planet->getEnergyCapacity(),
                 ],
-                'last_tick' => $planet->getLastResourceTick(),
+                'last_tick' => $lastTick,
                 'building_levels' => $buildingLevels,
             ],
         ];
@@ -141,7 +150,7 @@ class ResourceApiController extends AbstractController
                 $planet->setEnergyCapacity((int) $capacities['energy']);
             }
 
-            if ($elapsed > 0) {
+            if ($elapsed > 0 || $correctedFutureTick) {
                 $planet->setLastResourceTick($now);
                 $this->planets->update($planet);
             }
