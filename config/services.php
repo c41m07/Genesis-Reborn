@@ -40,6 +40,7 @@ use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
+use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Container\Container;
@@ -88,7 +89,12 @@ return function (Container $container): void {
 
     $container->set(BuildingCalculator::class, fn () => new BuildingCalculator());
 
-    $container->set(ResourceTickService::class, fn () => new ResourceTickService());
+    $container->set(ResourceTickService::class, function () {
+        $config = require __DIR__ . '/game/buildings.php';
+        $effects = ResourceEffectFactory::fromBuildingConfig($config);
+
+        return new ResourceTickService($effects);
+    });
     $container->set(CostService::class, fn () => new CostService());
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
     $container->set(FleetResolutionService::class, fn () => new FleetResolutionService());
@@ -287,6 +293,8 @@ return function (Container $container): void {
         $c->get(ProcessBuildQueue::class),
         $c->get(ProcessResearchQueue::class),
         $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(ResourceTickService::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

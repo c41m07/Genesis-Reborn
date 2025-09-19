@@ -8,6 +8,7 @@ use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Research\StartResearch;
 use App\Application\UseCase\Shipyard\BuildShips;
+use App\Controller\ResourceApiController;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
@@ -23,7 +24,14 @@ use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
+use App\Domain\Service\ResourceEffectFactory;
+use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
+use App\Infrastructure\Http\Request;
+use App\Infrastructure\Http\Session\FlashBag;
+use App\Infrastructure\Http\Session\Session;
+use App\Infrastructure\Http\ViewRenderer;
+use App\Infrastructure\Security\CsrfTokenManager;
 use DateInterval;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -33,7 +41,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingUpgradeIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -83,7 +91,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchStartIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -129,7 +137,7 @@ class QueueProcessingTest extends TestCase
     public function testShipProductionIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 2],
@@ -173,7 +181,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueSequentialTargets(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 99, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 99, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -215,7 +223,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueRejectsWhenFull(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 77, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 77, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -254,7 +262,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueAdvancesAfterCompletion(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -295,7 +303,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchQueueSequentialTargets(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 11, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 11, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -337,7 +345,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchQueueRejectsWhenFull(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 21, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 21, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -376,10 +384,85 @@ class QueueProcessingTest extends TestCase
         self::assertSame(5, $researchQueue->countActive(1));
     }
 
+    public function testResourceApiTicksResourcesBeforeResponding(): void
+    {
+        $lastTick = new DateTimeImmutable('-2 hours');
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 4000, 2000, 1000, 0, 0, 0, 0, 0, 200000, 200000, 200000, 5000, $lastTick),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['metal_mine' => 3, 'solar_plant' => 3],
+        ]);
+
+        $buildQueue = $this->createMock(ProcessBuildQueue::class);
+        $buildQueue->expects($this->once())->method('process')->with(1);
+
+        $researchQueue = $this->createMock(ProcessResearchQueue::class);
+        $researchQueue->expects($this->once())->method('process')->with(1);
+
+        $shipQueue = $this->createMock(ProcessShipBuildQueue::class);
+        $shipQueue->expects($this->once())->method('process')->with(1);
+
+        $buildingConfig = [
+            'metal_mine' => [
+                'affects' => 'metal',
+                'prod_base' => 100,
+                'prod_growth' => 1.15,
+                'energy_use_base' => 10,
+                'energy_use_growth' => 1.1,
+                'energy_use_linear' => true,
+            ],
+            'solar_plant' => [
+                'affects' => 'energy',
+                'prod_base' => 100,
+                'prod_growth' => 1.12,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+            ],
+        ];
+
+        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+
+        $sessionStorage = ['user_id' => 5];
+        $session = new Session($sessionStorage);
+        $flashBag = new FlashBag($session);
+        $csrf = new CsrfTokenManager($session);
+        $renderer = new ViewRenderer(__DIR__ . '/../../templates');
+
+        $controller = new ResourceApiController(
+            $planetRepository,
+            $buildQueue,
+            $researchQueue,
+            $shipQueue,
+            $buildingStates,
+            $resourceTick,
+            $renderer,
+            $session,
+            $flashBag,
+            $csrf,
+            'http://localhost'
+        );
+
+        $request = new Request('GET', '/api/resources', ['planet' => 1], [], $session);
+
+        $response = $controller->show($request);
+        $payload = json_decode($response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+
+        self::assertTrue($payload['success']);
+        self::assertSame(1, $payload['planetId']);
+        self::assertGreaterThan(4000, $payload['resources']['metal']['value']);
+        self::assertGreaterThan(0, $payload['resources']['metal']['perHour']);
+
+        $updatedPlanet = $planetRepository->find(1);
+        self::assertNotNull($updatedPlanet);
+        self::assertGreaterThan($lastTick->getTimestamp(), $updatedPlanet->getLastResourceTick()->getTimestamp());
+        self::assertGreaterThan(0, $updatedPlanet->getMetalPerHour());
+    }
+
     public function testFleetLaunchAndReturnLifecycle(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 7, 1, 20, 7, 'Helios', 10000, 6000, 4000, 0, 0, 0, 0, 0),
+            1 => new Planet(1, 7, 1, 20, 7, 'Helios', 10000, 6000, 4000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 2],

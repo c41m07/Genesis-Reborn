@@ -2,8 +2,12 @@
 
 namespace App\Domain\Entity;
 
+use DateTimeImmutable;
+
 class Planet
 {
+    private DateTimeImmutable $lastResourceTick;
+
     public function __construct(
         private readonly int $id,
         private readonly int $userId,
@@ -18,8 +22,14 @@ class Planet
         private int $metalPerHour,
         private int $crystalPerHour,
         private int $hydrogenPerHour,
-        private int $energyPerHour
+        private int $energyPerHour,
+        private int $metalCapacity,
+        private int $crystalCapacity,
+        private int $hydrogenCapacity,
+        private int $energyCapacity,
+        ?DateTimeImmutable $lastResourceTick = null
     ) {
+        $this->lastResourceTick = $lastResourceTick ?? new DateTimeImmutable();
     }
 
     public function getId(): int
@@ -147,5 +157,55 @@ class Planet
     public function setEnergyPerHour(int $value): void
     {
         $this->energyPerHour = $value;
+    }
+
+    public function getMetalCapacity(): int
+    {
+        return $this->metalCapacity;
+    }
+
+    public function setMetalCapacity(int $value): void
+    {
+        $this->metalCapacity = $value;
+    }
+
+    public function getCrystalCapacity(): int
+    {
+        return $this->crystalCapacity;
+    }
+
+    public function setCrystalCapacity(int $value): void
+    {
+        $this->crystalCapacity = $value;
+    }
+
+    public function getHydrogenCapacity(): int
+    {
+        return $this->hydrogenCapacity;
+    }
+
+    public function setHydrogenCapacity(int $value): void
+    {
+        $this->hydrogenCapacity = $value;
+    }
+
+    public function getEnergyCapacity(): int
+    {
+        return $this->energyCapacity;
+    }
+
+    public function setEnergyCapacity(int $value): void
+    {
+        $this->energyCapacity = $value;
+    }
+
+    public function getLastResourceTick(): DateTimeImmutable
+    {
+        return $this->lastResourceTick;
+    }
+
+    public function setLastResourceTick(DateTimeImmutable $lastResourceTick): void
+    {
+        $this->lastResourceTick = $lastResourceTick;
     }
 }
