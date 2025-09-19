@@ -108,26 +108,27 @@ ob_start();
         'title' => 'File de construction',
         'subtitle' => 'Suivi des améliorations en cours',
         'body' => static function () use ($queue): void {
+            $emptyMessage = 'Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.';
+            echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
-                echo '<p class="empty-state">Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.</p>';
-
-                return;
-            }
-
-            echo '<ul class="queue-list">';
-            foreach ($queue['jobs'] as $job) {
-                $label = $job['label'] ?? $job['building'] ?? '';
-                echo '<li class="queue-list__item">';
-                echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
-                echo '<div class="queue-list__timing">';
-                echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
-                if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
-                    echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
+            } else {
+                echo '<ul class="queue-list">';
+                foreach ($queue['jobs'] as $job) {
+                    $label = $job['label'] ?? $job['building'] ?? '';
+                    echo '<li class="queue-list__item">';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
+                    echo '<div class="queue-list__timing">';
+                    echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
+                    if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
+                        echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                    }
+                    echo '</div>';
+                    echo '</li>';
                 }
-                echo '</div>';
-                echo '</li>';
+                echo '</ul>';
             }
-            echo '</ul>';
+            echo '</div>';
         },
     ]) ?>
 
@@ -198,7 +199,7 @@ ob_start();
                         return;
                     }
 
-                    echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/colony?planet=' . $planet->getId() . '">';
+                    echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/colony?planet=' . $planet->getId() . '" data-async="queue" data-queue-target="buildings">';
                     echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_upgrade) . '">';
                     echo '<input type="hidden" name="building" value="' . htmlspecialchars($definition->getKey()) . '">';
                     $label = $canUpgrade ? 'Améliorer' : 'Conditions non remplies';

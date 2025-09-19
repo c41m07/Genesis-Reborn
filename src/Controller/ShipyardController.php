@@ -73,6 +73,13 @@ class ShipyardController extends AbstractController
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();
             if (!$this->isCsrfTokenValid('shipyard_' . $selectedId, $data['csrf_token'] ?? null)) {
+                if ($request->wantsJson()) {
+                    return $this->json([
+                        'success' => false,
+                        'message' => 'Session expirée, veuillez réessayer.',
+                    ], 400);
+                }
+
                 $this->addFlash('danger', 'Session expirée, veuillez réessayer.');
                 return $this->redirect($this->baseUrl . '/shipyard?planet=' . $selectedId);
             }
@@ -80,6 +87,19 @@ class ShipyardController extends AbstractController
             $quantity = isset($data['quantity']) ? (int) $data['quantity'] : 1;
             $quantity = max(1, $quantity);
             $result = $this->buildShips->execute($selectedId, $userId, $data['ship'] ?? '', $quantity);
+            if ($request->wantsJson()) {
+                $overview = $this->getOverview->execute($selectedId);
+                $planet = $overview['planet'];
+
+                return $this->json([
+                    'success' => $result['success'],
+                    'message' => $result['message'] ?? ($result['success'] ? 'Production planifiée.' : 'Action impossible.'),
+                    'resources' => $this->formatResourceSnapshot($planet),
+                    'queue' => $overview['queue'],
+                    'planetId' => $selectedId,
+                ], $result['success'] ? 200 : 400);
+            }
+
             if ($result['success']) {
                 $this->addFlash('success', $result['message'] ?? 'Production planifiée.');
             } else {
@@ -114,5 +134,15 @@ class ShipyardController extends AbstractController
             'activeSection' => 'shipyard',
             'activePlanetSummary' => $activePlanetSummary,
         ]);
+    }
+
+    private function formatResourceSnapshot(\App\Domain\Entity\Planet $planet): array
+    {
+        return [
+            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
+            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
+            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
+            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
+        ];
     }
 }

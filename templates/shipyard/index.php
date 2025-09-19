@@ -113,26 +113,27 @@ ob_start();
         'title' => 'Commandes de vaisseaux',
         'subtitle' => 'Suivi des constructions orbitales',
         'body' => static function () use ($queue): void {
+            $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
+            echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
-                echo '<p class="empty-state">Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.</p>';
-
-                return;
-            }
-
-            echo '<ul class="queue-list">';
-            foreach ($queue['jobs'] as $job) {
-                $label = $job['label'] ?? $job['ship'] ?? '';
-                echo '<li class="queue-list__item">';
-                echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>' . number_format((int) ($job['quantity'] ?? 0)) . ' unité(s)</span></div>';
-                echo '<div class="queue-list__timing">';
-                echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
-                if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
-                    echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
+            } else {
+                echo '<ul class="queue-list">';
+                foreach ($queue['jobs'] as $job) {
+                    $label = $job['label'] ?? $job['ship'] ?? '';
+                    echo '<li class="queue-list__item">';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>' . number_format((int) ($job['quantity'] ?? 0)) . ' unité(s)</span></div>';
+                    echo '<div class="queue-list__timing">';
+                    echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
+                    if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
+                        echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                    }
+                    echo '</div>';
+                    echo '</li>';
                 }
-                echo '</div>';
-                echo '</li>';
+                echo '</ul>';
             }
-            echo '</ul>';
+            echo '</div>';
         },
     ]) ?>
 
@@ -210,7 +211,7 @@ ob_start();
                         }
                         echo '</div>';
                         echo '<footer class="ship-card__footer">';
-                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '">';
+                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
                         echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_shipyard) . '">';
                         echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
                         echo '<label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '></label>';

@@ -73,11 +73,31 @@ class ColonyController extends AbstractController
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();
             if (!$this->isCsrfTokenValid('upgrade_building_' . $selectedId, $data['csrf_token'] ?? null)) {
+                if ($request->wantsJson()) {
+                    return $this->json([
+                        'success' => false,
+                        'message' => 'Session expirée, veuillez réessayer.',
+                    ], 400);
+                }
+
                 $this->addFlash('danger', 'Session expirée, veuillez réessayer.');
                 return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
             }
 
             $result = $this->upgradeBuilding->execute($selectedId, $userId, $data['building'] ?? '');
+            if ($request->wantsJson()) {
+                $overview = $this->getOverview->execute($selectedId);
+                $planet = $overview['planet'];
+
+                return $this->json([
+                    'success' => $result['success'],
+                    'message' => $result['message'] ?? ($result['success'] ? 'Construction planifiée.' : 'Action impossible.'),
+                    'resources' => $this->formatResourceSnapshot($planet),
+                    'queue' => $overview['queue'],
+                    'planetId' => $selectedId,
+                ], $result['success'] ? 200 : 400);
+            }
+
             if ($result['success']) {
                 $this->addFlash('success', $result['message'] ?? 'Construction planifiée.');
             } else {
@@ -112,5 +132,15 @@ class ColonyController extends AbstractController
             'activeSection' => 'colony',
             'activePlanetSummary' => $activePlanetSummary,
         ]);
+    }
+
+    private function formatResourceSnapshot(\App\Domain\Entity\Planet $planet): array
+    {
+        return [
+            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
+            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
+            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
+            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
+        ];
     }
 }

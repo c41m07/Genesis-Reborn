@@ -21,12 +21,14 @@ use App\Controller\FleetController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
 use App\Controller\ResearchController;
+use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
@@ -50,6 +52,7 @@ use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoBuildingStateRepository;
 use App\Infrastructure\Persistence\PdoFleetRepository;
 use App\Infrastructure\Persistence\PdoPlanetRepository;
+use App\Infrastructure\Persistence\PdoPlayerStatsRepository;
 use App\Infrastructure\Persistence\PdoResearchQueueRepository;
 use App\Infrastructure\Persistence\PdoResearchStateRepository;
 use App\Infrastructure\Persistence\PdoShipBuildQueueRepository;
@@ -106,6 +109,7 @@ return function (Container $container): void {
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
     $container->set(PlanetRepositoryInterface::class, fn (Container $c) => new PdoPlanetRepository($c->get(\PDO::class)));
+    $container->set(PlayerStatsRepositoryInterface::class, fn (Container $c) => new PdoPlayerStatsRepository($c->get(\PDO::class)));
     $container->set(BuildingStateRepositoryInterface::class, fn (Container $c) => new PdoBuildingStateRepository($c->get(\PDO::class)));
     $container->set(BuildQueueRepositoryInterface::class, fn (Container $c) => new PdoBuildQueueRepository($c->get(\PDO::class)));
     $container->set(ResearchQueueRepositoryInterface::class, fn (Container $c) => new PdoResearchQueueRepository($c->get(\PDO::class)));
@@ -145,6 +149,7 @@ return function (Container $container): void {
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
@@ -169,6 +174,7 @@ return function (Container $container): void {
         $c->get(PlanetRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class)
     ));
@@ -188,6 +194,7 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ResearchCatalog::class),
         $c->get(ResearchCalculator::class)
     ));
@@ -215,6 +222,7 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ShipCatalog::class)
     ));
 
@@ -266,6 +274,18 @@ return function (Container $container): void {
         $c->get(PlanetRepositoryInterface::class),
         $c->get(GetShipyardOverview::class),
         $c->get(BuildShips::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
         $c->get(ProcessShipBuildQueue::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),

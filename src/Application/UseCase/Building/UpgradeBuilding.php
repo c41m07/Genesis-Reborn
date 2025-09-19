@@ -2,9 +2,11 @@
 
 namespace App\Application\UseCase\Building;
 
+use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 
@@ -14,6 +16,7 @@ class UpgradeBuilding
         private readonly PlanetRepositoryInterface $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly BuildQueueRepositoryInterface $buildQueue,
+        private readonly PlayerStatsRepositoryInterface $playerStats,
         private readonly BuildingCatalog $catalog,
         private readonly BuildingCalculator $calculator
     ) {
@@ -31,20 +34,35 @@ class UpgradeBuilding
         $levels = $this->buildingStates->getLevels($planetId);
         $currentLevel = $levels[$buildingKey] ?? 0;
 
+        if ($this->buildQueue->countActive($planetId) >= 5) {
+            return ['success' => false, 'message' => 'La file de construction est pleine (5 actions maximum).'];
+        }
+
+        $existingJobs = $this->buildQueue->getActiveQueue($planetId);
+        $queuedOccurrences = 0;
+        foreach ($existingJobs as $job) {
+            if ($job->getBuildingKey() === $buildingKey) {
+                ++$queuedOccurrences;
+            }
+        }
+
+        $targetLevel = $currentLevel + $queuedOccurrences + 1;
+
         $requirements = $this->calculator->checkRequirements($definition, $levels, []);
         if (!$requirements['ok']) {
             return ['success' => false, 'message' => 'Pré-requis manquants.'];
         }
 
-        $cost = $this->calculator->nextCost($definition, $currentLevel);
+        $cost = $this->calculator->nextCost($definition, $targetLevel - 1);
         if (!$this->canAfford($planet, $cost)) {
             return ['success' => false, 'message' => 'Ressources insuffisantes.'];
         }
 
         $this->deductCost($planet, $cost);
 
-        $duration = $this->calculator->nextTime($definition, $currentLevel);
-        $this->buildQueue->enqueue($planetId, $buildingKey, $currentLevel + 1, $duration);
+        $duration = $this->calculator->nextTime($definition, $targetLevel - 1);
+        $this->buildQueue->enqueue($planetId, $buildingKey, $targetLevel, $duration);
+        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Construction planifiée.'];
@@ -53,7 +71,7 @@ class UpgradeBuilding
     /**
      * @param array<string, int> $cost
      */
-    private function canAfford(\App\Domain\Entity\Planet $planet, array $cost): bool
+    private function canAfford(Planet $planet, array $cost): bool
     {
         foreach ($cost as $resource => $amount) {
             if ($amount <= 0) {
@@ -78,7 +96,7 @@ class UpgradeBuilding
     /**
      * @param array<string, int> $cost
      */
-    private function deductCost(\App\Domain\Entity\Planet $planet, array $cost): void
+    private function deductCost(Planet $planet, array $cost): void
     {
         foreach ($cost as $resource => $amount) {
             if ($amount <= 0) {
@@ -99,4 +117,18 @@ class UpgradeBuilding
         }
     }
 
+    /**
+     * @param array<string, int> $cost
+     */
+    private function sumCost(array $cost): int
+    {
+        $total = 0;
+        foreach ($cost as $amount) {
+            if ($amount > 0) {
+                $total += (int) $amount;
+            }
+        }
+
+        return $total;
+    }
 }

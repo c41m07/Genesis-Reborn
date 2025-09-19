@@ -13,6 +13,7 @@ use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
@@ -55,7 +56,8 @@ class QueueProcessingTest extends TestCase
         ]);
         $calculator = new BuildingCalculator();
 
-        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $catalog, $calculator);
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
 
         $result = $useCase->execute(1, 42, 'metal_mine');
@@ -75,6 +77,7 @@ class QueueProcessingTest extends TestCase
         $planetAfter = $planetRepository->find(1);
         self::assertNotNull($planetAfter);
         self::assertGreaterThan(0, $planetAfter->getMetalPerHour());
+        self::assertSame(100, $playerStats->getScienceSpending(42));
     }
 
     public function testResearchStartIsQueuedAndProcessed(): void
@@ -106,7 +109,8 @@ class QueueProcessingTest extends TestCase
         ]);
         $calculator = new ResearchCalculator();
 
-        $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $catalog, $calculator);
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
         $processor = new ProcessResearchQueue($researchQueue, $researchStates);
 
         $result = $useCase->execute(1, 42, 'energy_tech');
@@ -119,6 +123,7 @@ class QueueProcessingTest extends TestCase
 
         self::assertSame(1, $researchStates->getLevels(1)['energy_tech']);
         self::assertSame(0, $researchQueue->countActive(1));
+        self::assertSame(100, $playerStats->getScienceSpending(42));
     }
 
     public function testShipProductionIsQueuedAndProcessed(): void
@@ -148,7 +153,8 @@ class QueueProcessingTest extends TestCase
             ],
         ]);
 
-        $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $catalog);
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
         $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $useCase->execute(1, 42, 'fighter', 3);
@@ -161,6 +167,213 @@ class QueueProcessingTest extends TestCase
 
         self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
         self::assertSame(0, $shipQueue->countActive(1));
+        self::assertSame(600, $playerStats->getScienceSpending(42));
+    }
+
+    public function testBuildingQueueSequentialTargets(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 99, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
+        ]);
+        $buildQueue = new InMemoryBuildQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new BuildingCatalog([
+            'metal_mine' => [
+                'label' => 'Mine de métal',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.5,
+                'base_time' => 10,
+                'growth_time' => 1.2,
+                'prod_base' => 30,
+                'prod_growth' => 1.2,
+                'energy_use_base' => 5,
+                'energy_use_growth' => 1.1,
+                'energy_use_linear' => false,
+                'affects' => 'metal',
+            ],
+        ]);
+        $calculator = new BuildingCalculator();
+
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $useCase->execute(1, 99, 'metal_mine');
+        $useCase->execute(1, 99, 'metal_mine');
+        $useCase->execute(1, 99, 'metal_mine');
+
+        $jobs = $buildQueue->getActiveQueue(1);
+        usort($jobs, static fn ($a, $b) => $a->getTargetLevel() <=> $b->getTargetLevel());
+        $targets = array_map(static fn ($job) => $job->getTargetLevel(), $jobs);
+
+        self::assertSame([1, 2, 3], $targets);
+        $endTimes = array_map(static fn ($job) => $job->getEndsAt()->getTimestamp(), $jobs);
+        self::assertTrue($endTimes[0] < $endTimes[1]);
+        self::assertTrue($endTimes[1] < $endTimes[2]);
+    }
+
+    public function testBuildingQueueRejectsWhenFull(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 77, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
+        ]);
+        $buildQueue = new InMemoryBuildQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new BuildingCatalog([
+            'metal_mine' => [
+                'label' => 'Mine de métal',
+                'base_cost' => ['metal' => 50],
+                'growth_cost' => 1.5,
+                'base_time' => 5,
+                'growth_time' => 1.1,
+                'prod_base' => 10,
+                'prod_growth' => 1.2,
+                'energy_use_base' => 2,
+                'energy_use_growth' => 1.05,
+                'energy_use_linear' => false,
+                'affects' => 'metal',
+            ],
+        ]);
+        $calculator = new BuildingCalculator();
+
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        for ($i = 0; $i < 5; ++$i) {
+            $result = $useCase->execute(1, 77, 'metal_mine');
+            self::assertTrue($result['success']);
+        }
+
+        $sixth = $useCase->execute(1, 77, 'metal_mine');
+        self::assertFalse($sixth['success']);
+        self::assertSame('La file de construction est pleine (5 actions maximum).', $sixth['message']);
+        self::assertSame(5, $buildQueue->countActive(1));
+    }
+
+    public function testBuildingQueueAdvancesAfterCompletion(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
+        ]);
+        $buildQueue = new InMemoryBuildQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new BuildingCatalog([
+            'metal_mine' => [
+                'label' => 'Mine de métal',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.5,
+                'base_time' => 10,
+                'growth_time' => 1.2,
+                'prod_base' => 30,
+                'prod_growth' => 1.2,
+                'energy_use_base' => 5,
+                'energy_use_growth' => 1.1,
+                'energy_use_linear' => false,
+                'affects' => 'metal',
+            ],
+        ]);
+        $calculator = new BuildingCalculator();
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
+
+        $useCase->execute(1, 55, 'metal_mine');
+        $useCase->execute(1, 55, 'metal_mine');
+
+        $buildQueue->forceCompleteNext(1);
+        $processor->process(1);
+
+        self::assertSame(1, $buildingStates->getLevels(1)['metal_mine']);
+        $remainingJobs = $buildQueue->getActiveQueue(1);
+        self::assertCount(1, $remainingJobs);
+        self::assertSame(2, $remainingJobs[0]->getTargetLevel());
+    }
+
+    public function testResearchQueueSequentialTargets(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 11, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['research_lab' => 3],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => ['energy_tech' => 0],
+        ]);
+        $researchQueue = new InMemoryResearchQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new ResearchCatalog([
+            'energy_tech' => [
+                'label' => 'Technologie énergétique',
+                'category' => 'Sciences',
+                'description' => '',
+                'base_cost' => ['metal' => 100],
+                'base_time' => 5,
+                'growth_cost' => 1.5,
+                'growth_time' => 2.0,
+                'max_level' => 5,
+                'requires' => [],
+                'requires_lab' => 1,
+                'image' => '',
+            ],
+        ]);
+        $calculator = new ResearchCalculator();
+        $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
+
+        $useCase->execute(1, 11, 'energy_tech');
+        $useCase->execute(1, 11, 'energy_tech');
+        $useCase->execute(1, 11, 'energy_tech');
+
+        $jobs = $researchQueue->getActiveQueue(1);
+        usort($jobs, static fn ($a, $b) => $a->getTargetLevel() <=> $b->getTargetLevel());
+        $targets = array_map(static fn ($job) => $job->getTargetLevel(), $jobs);
+
+        self::assertSame([1, 2, 3], $targets);
+    }
+
+    public function testResearchQueueRejectsWhenFull(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 21, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['research_lab' => 3],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => ['energy_tech' => 0],
+        ]);
+        $researchQueue = new InMemoryResearchQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new ResearchCatalog([
+            'energy_tech' => [
+                'label' => 'Technologie énergétique',
+                'category' => 'Sciences',
+                'description' => '',
+                'base_cost' => ['metal' => 50],
+                'base_time' => 4,
+                'growth_cost' => 1.5,
+                'growth_time' => 2.0,
+                'max_level' => 0,
+                'requires' => [],
+                'requires_lab' => 1,
+                'image' => '',
+            ],
+        ]);
+        $calculator = new ResearchCalculator();
+        $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
+
+        for ($i = 0; $i < 5; ++$i) {
+            $result = $useCase->execute(1, 21, 'energy_tech');
+            self::assertTrue($result['success']);
+        }
+
+        $sixth = $useCase->execute(1, 21, 'energy_tech');
+        self::assertFalse($sixth['success']);
+        self::assertSame('La file de recherche est pleine (5 programmes maximum).', $sixth['message']);
+        self::assertSame(5, $researchQueue->countActive(1));
     }
 
     public function testFleetLaunchAndReturnLifecycle(): void
@@ -190,7 +403,8 @@ class QueueProcessingTest extends TestCase
             ],
         ]);
 
-        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $catalog);
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
         $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $buildShips->execute(1, 7, 'fighter', 4);
@@ -402,6 +616,16 @@ class InMemoryBuildQueueRepository implements BuildQueueRepositoryInterface
             }
         }
     }
+
+    public function forceCompleteNext(int $planetId): void
+    {
+        foreach ($this->jobs as &$job) {
+            if ($job['planet_id'] === $planetId) {
+                $job['ends_at'] = new \DateTimeImmutable('-1 second');
+                break;
+            }
+        }
+    }
 }
 
 /**
@@ -591,6 +815,26 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
                 $job['ends_at'] = new \DateTimeImmutable('-1 second');
             }
         }
+    }
+}
+
+/**
+ * @implements PlayerStatsRepositoryInterface
+ */
+class InMemoryPlayerStatsRepository implements PlayerStatsRepositoryInterface
+{
+    private int $total = 0;
+
+    public function addScienceSpending(int $playerId, int $amount): void
+    {
+        if ($amount > 0) {
+            $this->total += $amount;
+        }
+    }
+
+    public function getScienceSpending(int $playerId): int
+    {
+        return $this->total;
     }
 }
 

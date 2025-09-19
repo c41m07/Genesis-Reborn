@@ -9,6 +9,7 @@ use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
@@ -26,6 +27,7 @@ class GetDashboard
         private readonly BuildQueueRepositoryInterface $buildQueue,
         private readonly ResearchQueueRepositoryInterface $researchQueue,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
+        private readonly PlayerStatsRepositoryInterface $playerStats,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly FleetRepositoryInterface $fleets,
         private readonly BuildingCatalog $catalog,
@@ -177,6 +179,9 @@ class GetDashboard
             ];
         }
 
+        $scienceSpent = $this->playerStats->getScienceSpending($userId);
+        $sciencePower = (int) floor($scienceSpent / 1000);
+
         return [
             'planets' => $planetSummaries,
             'totals' => $totals,
@@ -189,6 +194,8 @@ class GetDashboard
                 'points' => $empirePoints,
                 'militaryPower' => $militaryPower,
                 'planetCount' => count($planets),
+                'scienceSpent' => $scienceSpent,
+                'sciencePower' => $sciencePower,
             ],
         ];
     }
