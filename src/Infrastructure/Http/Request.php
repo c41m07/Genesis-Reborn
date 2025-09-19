@@ -28,7 +28,7 @@ class Request
                 session_start();
             }
 
-            $storage =& $_SESSION;
+            $storage = & $_SESSION;
             $session = new Session($storage);
         }
 

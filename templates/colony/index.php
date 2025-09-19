@@ -56,6 +56,8 @@ if (is_array($activePlanetSummary)) {
     }
 }
 
+$assetBase = rtrim($baseUrl, '/');
+
 ob_start();
 ?>
 <section class="page-header">
@@ -139,10 +141,11 @@ ob_start();
             $canUpgrade = (bool) ($building['canUpgrade'] ?? false);
             $status = $canUpgrade ? '' : 'is-locked';
             ?>
+            <?php $imagePath = $definition->getImage(); ?>
             <?= $card([
                 'title' => $definition->getLabel(),
                 'subtitle' => 'Niveau actuel ' . number_format((int) $building['level']),
-                'illustration' => $definition->getImage() ? htmlspecialchars($baseUrl . '/' . $definition->getImage(), ENT_QUOTES) : null,
+                'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                 'status' => $status,
                 'body' => static function () use ($building, $production, $energy, $requirements, $baseUrl, $resourceLabels, $icon): void {
                     echo '<div class="building-card__sections">';

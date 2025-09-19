@@ -168,6 +168,6 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
         </footer>
     </div>
 </div>
-<script src="<?= htmlspecialchars($baseUrl) ?>/assets/js/app.js" defer></script>
+<script type="module" src="<?= htmlspecialchars($baseUrl) ?>/assets/js/app.js"></script>
 </body>
 </html>

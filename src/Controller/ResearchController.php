@@ -68,9 +68,7 @@ class ResearchController extends AbstractController
             $selectedId = $selectedPlanet->getId();
         }
 
-        if ($selectedPlanet) {
-            $this->researchQueueProcessor->process($selectedId);
-        }
+        $this->researchQueueProcessor->process($selectedId);
 
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();

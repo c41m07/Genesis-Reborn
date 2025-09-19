@@ -31,7 +31,7 @@ class GetShipyardOverview
      *     fleet: array<string, int>,
      *     fleetSummary: array<int, array{key: string, label: string, quantity: int}>,
      *     queue: array{count: int, jobs: array<int, array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ShipDefinition, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canBuild: bool}>>>
+     *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>
      * }
      */
     public function execute(int $planetId): array

@@ -61,6 +61,8 @@ if (!empty($fleetSummary)) {
     $fleetCount = array_sum($fleet);
 }
 
+$assetBase = rtrim($baseUrl, '/');
+
 ob_start();
 ?>
 <section class="page-header">
@@ -159,10 +161,11 @@ ob_start();
 
     <div class="grid grid--stacked">
         <?php foreach ($categories as $category): ?>
+            <?php $categoryImage = $category['image'] ?? null; ?>
             <?= $card([
                 'title' => $category['label'],
                 'subtitle' => 'Modèles disponibles pour cette classe de vaisseaux',
-                'illustration' => !empty($category['image']) ? htmlspecialchars($baseUrl . '/' . $category['image'], ENT_QUOTES) : null,
+                'illustration' => !empty($categoryImage) ? $assetBase . '/' . ltrim($categoryImage, '/') : null,
                 'body' => static function () use ($category, $baseUrl, $icon, $csrf_shipyard, $selectedPlanetId): void {
                     echo '<div class="shipyard-list">';
                     foreach ($category['items'] as $item) {
@@ -175,7 +178,8 @@ ob_start();
                         echo '<p class="ship-card__role">' . htmlspecialchars($definition->getRole()) . '</p>';
                         echo '</div>';
                         if ($definition->getImage()) {
-                            echo '<img class="ship-card__illustration" src="' . htmlspecialchars($baseUrl . '/' . $definition->getImage()) . '" alt="">';
+                            $imageSrc = $assetBase . '/' . ltrim($definition->getImage(), '/');
+                            echo '<img class="ship-card__illustration" src="' . htmlspecialchars($imageSrc, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
                         }
                         echo '</header>';
                         echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';

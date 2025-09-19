@@ -39,7 +39,7 @@ class ProfileController extends AbstractController
         }
 
         $dashboard = $this->getDashboard->execute($userId);
-        $planetSummaries = $dashboard['planets'] ?? [];
+        $planetSummaries = $dashboard['planets'];
         $planetList = array_map(static fn (array $summary) => $summary['planet'], $planetSummaries);
 
         $selectedPlanetId = null;

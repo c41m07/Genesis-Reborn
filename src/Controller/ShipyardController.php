@@ -68,9 +68,7 @@ class ShipyardController extends AbstractController
             $selectedId = $selectedPlanet->getId();
         }
 
-        if ($selectedPlanet) {
-            $this->shipQueueProcessor->process($selectedId);
-        }
+        $this->shipQueueProcessor->process($selectedId);
 
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();

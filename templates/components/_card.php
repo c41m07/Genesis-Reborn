@@ -100,7 +100,7 @@ return static function (array $props): string {
         }
 
         if ($illustration) {
-            $header .= '<img class="panel__illustration" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="">';
+            $header .= '<img class="panel__illustration" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
         }
 
         $header .= '</header>';
