@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 /**
  * @param array<string, array{label: string, value: int|float, perHour?: int|float, hint?: string, trend?: string}> $resources
  * @param array{baseUrl?: string, class?: string, showRates?: bool} $options
@@ -11,6 +13,8 @@ return static function (array $resources, array $options = []): string {
 
     $showRates = (bool) ($options['showRates'] ?? true);
     $class = trim('resource-bar ' . ($options['class'] ?? ''));
+    $baseUrlOption = $options['baseUrl'] ?? null;
+    $assetBase = is_string($baseUrlOption) ? $baseUrlOption : null;
 
     $items = '';
     foreach ($resources as $key => $data) {
@@ -38,7 +42,7 @@ return static function (array $resources, array $options = []): string {
             $rateClass = $trend;
         }
 
-        $iconHref = '/assets/svg/sprite.svg#icon-' . (string) $key;
+        $iconHref = asset_url('assets/svg/sprite.svg#icon-' . (string) $key, $assetBase);
         $icon = sprintf(
             '<svg class="icon icon-sm" aria-hidden="true"><use href="%s"></use></svg>',
             htmlspecialchars($iconHref, ENT_QUOTES)

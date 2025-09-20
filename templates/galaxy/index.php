@@ -10,6 +10,9 @@
 
 $title = $title ?? 'Carte galaxie';
 $card = require __DIR__ . '/../components/_card.php';
+require_once __DIR__ . '/../components/helpers.php';
+
+$spriteIcon = static fn (string $name): string => asset_url('assets/svg/sprite.svg#icon-' . $name, $baseUrl ?? '');
 
 if (!function_exists('format_relative_time')) {
     function format_relative_time(\DateTimeImmutable $date, \DateTimeImmutable $now): string
@@ -93,7 +96,7 @@ ob_start();
 <?= $card([
     'title' => sprintf('Système %d:%d', (int) ($summary['galaxy'] ?? 0), (int) ($summary['system'] ?? 0)),
     'subtitle' => 'Visualisation détaillée des orbites et des dernières activités',
-    'body' => static function () use ($slots, $baseUrl, $now): void {
+    'body' => static function () use ($slots, $baseUrl, $now, $spriteIcon): void {
         if ($slots === []) {
             echo '<p class="empty-state">Aucune donnée disponible pour ce système.</p>';
 
@@ -132,7 +135,8 @@ ob_start();
             } else {
                 $planet = $slot['planet'];
                 echo '<div class="galaxy-slot__title">';
-                echo '<svg class="icon icon-sm" aria-hidden="true"><use href="/assets/svg/sprite.svg#icon-planet"></use></svg>';
+                $planetIconHref = htmlspecialchars($spriteIcon('planet'), ENT_QUOTES);
+                echo '<svg class="icon icon-sm" aria-hidden="true"><use href="' . $planetIconHref . '"></use></svg>';
                 echo '<h3>' . htmlspecialchars($planet ? $planet->getName() : 'Planète inconnue') . '</h3>';
                 echo '</div>';
                 echo '<div class="galaxy-slot__meta">';
