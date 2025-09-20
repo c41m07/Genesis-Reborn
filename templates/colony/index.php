@@ -1,4 +1,4 @@
-<?php
+    <?php
 /** @var array<int, \App\Domain\Entity\Planet> $planets */
 /** @var array|null $overview */
 /** @var string $baseUrl */
@@ -159,7 +159,8 @@ ob_start();
                         'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                         'status' => $status,
                         'class' => 'building-card',
-                        'body' => static function () use ($building, $production, $energy, $requirements, $baseUrl, $resourceLabels, $icon): void {
+                        'body' => static function () use ($building, $production, $consumption, $requirements, $baseUrl,
+                                $resourceLabels, $icon): void {
                             echo '<div class="building-card__sections">';
                             echo '<div class="building-card__block">';
                             echo '<h3>Prochaine amélioration</h3>';
