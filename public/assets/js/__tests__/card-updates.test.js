@@ -185,9 +185,11 @@ test('updateResearchCard syncs progress, costs and availability', () => {
 
 test('updateShipCard toggles availability and requirements', () => {
     document.body.innerHTML = `
-        <article class="ship-card is-locked" data-ship-card="fighter">
-            <div class="ship-card__content"></div>
-            <footer class="ship-card__footer">
+        <article class="panel ship-card is-locked" data-ship-card="fighter">
+            <div class="panel__body ship-card__body">
+                <div class="ship-card__content"></div>
+            </div>
+            <footer class="panel__footer ship-card__footer">
                 <form data-async="queue">
                     <label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" value="1" disabled></label>
                     <button type="submit" class="button button--primary" disabled>Pré-requis manquants</button>

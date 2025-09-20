@@ -51,11 +51,23 @@ const getResourceLabel = (key) => {
     return RESOURCE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
 };
 
-const createIcon = (name) => `
-    <svg class="icon icon-sm" aria-hidden="true">
-        <use href="${SPRITE_URL}#icon-${escapeHtml(name)}"></use>
-    </svg>
-`.trim();
+const createIcon = (name, extraClass = '') => {
+    const classes = ['icon', 'icon-sm'];
+    if (typeof extraClass === 'string' && extraClass.trim() !== '') {
+        classes.push(extraClass.trim());
+    }
+
+    return `
+        <svg class="${classes.join(' ')}" aria-hidden="true">
+            <use href="${SPRITE_URL}#icon-${escapeHtml(name)}"></use>
+        </svg>
+    `.trim();
+};
+
+const normalizeClassNames = (...values) => values
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter((value) => value !== '')
+    .join(' ');
 
 const metricValueClass = (value) => {
     if (value > 0) {
@@ -84,6 +96,69 @@ const renderCostList = (cost = {}, time = 0) => {
     `);
 
     return `<ul class="resource-list">${items.join('')}</ul>`;
+};
+
+let requirementsPanelSequence = 0;
+
+const renderRequirementsPanel = ({
+    title = 'Pré-requis',
+    icon = '',
+    iconClass = 'requirements-panel__glyph',
+    items = [],
+    panelClass = '',
+    summaryClass = '',
+    contentClass = '',
+    listClass = '',
+} = {}) => {
+    if (!Array.isArray(items) || items.length === 0) {
+        return '';
+    }
+
+    const entries = items.map((missing) => {
+        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
+        const current = formatNumber(Number(missing.current ?? 0));
+        const required = formatNumber(Number(missing.level ?? missing.required ?? 0));
+
+        return `
+            <li class="requirements-panel__item">
+                <span class="requirements-panel__name building-card__requirement-name">${label}</span>
+                <span class="requirements-panel__progress building-card__requirement-progress">(${current}/${required})</span>
+            </li>
+        `;
+    }).join('');
+
+    if (!entries) {
+        return '';
+    }
+
+    requirementsPanelSequence += 1;
+    const panelId = `requirements-panel-dynamic-${requirementsPanelSequence}`;
+    const contentId = `${panelId}-content`;
+
+    const panelClasses = normalizeClassNames('requirements-panel', panelClass);
+    const summaryClasses = normalizeClassNames('requirements-panel__summary', summaryClass);
+    const contentClasses = normalizeClassNames('requirements-panel__content', contentClass);
+    const listClasses = normalizeClassNames('requirements-panel__list', 'building-card__requirements', listClass);
+    const iconHtml = icon
+        ? `<span class="requirements-panel__icon">${createIcon(icon, iconClass)}</span>`
+        : '';
+
+    return `
+        <details class="${panelClasses}" data-requirements-panel>
+            <summary class="${summaryClasses}" id="${panelId}"
+                data-requirements-summary aria-controls="${contentId}" aria-expanded="false">
+                ${iconHtml}
+                <span class="requirements-panel__title">${escapeHtml(title)}</span>
+                <span class="requirements-panel__chevron" aria-hidden="true"></span>
+            </summary>
+            <div class="${contentClasses}" id="${contentId}"
+                data-requirements-content role="region" aria-labelledby="${panelId}" aria-hidden="true">
+                <ul class="${listClasses}">
+                    ${entries}
+                </ul>
+            </div>
+        </details>
+    `.trim();
 };
 
 const renderStorageSection = (storage = {}) => {
@@ -225,21 +300,11 @@ const renderBuildingSections = (building = {}) => {
     const requirementsHtml = shouldRenderRequirements
         ? `
             <div class="building-card__block building-card__block--requirements">
-                <h3>Pré-requis</h3>
-                <ul class="building-card__requirements">
-                    ${requirements.missing.map((missing) => {
-                        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
-                        const current = formatNumber(Number(missing.current ?? 0));
-                        const required = formatNumber(Number(missing.level ?? 0));
-
-                        return `
-                            <li>
-                                <span class="building-card__requirement-name">${label}</span>
-                                <span class="building-card__requirement-progress">(${current}/${required})</span>
-                            </li>
-                        `;
-                    }).join('')}
-                </ul>
+                ${renderRequirementsPanel({
+                    title: 'Pré-requis',
+                    icon: 'buildings',
+                    items: requirements.missing,
+                })}
             </div>
         `
         : '';
@@ -252,18 +317,13 @@ const renderResearchRequirements = (requirements = null) => {
         return '';
     }
 
-    const items = requirements.missing.map((missing) => {
-        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
-        const current = formatNumber(Number(missing.current ?? 0));
-        const required = formatNumber(Number(missing.level ?? 0));
-
-        return `<li>${label} (${current}/${required})</li>`;
-    }).join('');
-
     return `
         <div class="tech-card__section tech-card__requirements">
-            <h3>Pré-requis</h3>
-            <ul>${items}</ul>
+            ${renderRequirementsPanel({
+                title: 'Pré-requis',
+                icon: 'research',
+                items: requirements.missing,
+            })}
         </div>
     `;
 };
@@ -273,18 +333,13 @@ const renderShipRequirements = (requirements = null) => {
         return '';
     }
 
-    const items = requirements.missing.map((missing) => {
-        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
-        const current = formatNumber(Number(missing.current ?? 0));
-        const required = formatNumber(Number(missing.level ?? 0));
-
-        return `<li>${label} (${current}/${required})</li>`;
-    }).join('');
-
     return `
-        <div class="ship-card__requirements">
-            <h4>Pré-requis</h4>
-            <ul>${items}</ul>
+        <div class="ship-card__section ship-card__requirements">
+            ${renderRequirementsPanel({
+                title: 'Pré-requis',
+                icon: 'shipyard',
+                items: requirements.missing,
+            })}
         </div>
     `;
 };
@@ -512,6 +567,7 @@ const updateBuildingCard = (building) => {
     const sections = card.querySelector('.building-card__sections');
     if (sections) {
         sections.innerHTML = renderBuildingSections(building);
+        initRequirementsPanels();
     }
 
     const button = card.querySelector('form[data-async] button[type="submit"]');
@@ -575,6 +631,7 @@ const updateResearchCard = (research) => {
         } else if (costSection) {
             costSection.insertAdjacentHTML('afterend', requirementsHtml);
         }
+        initRequirementsPanels();
     } else if (existingRequirements) {
         existingRequirements.remove();
     }
@@ -613,6 +670,7 @@ const updateShipCard = (ship) => {
         } else if (content) {
             content.insertAdjacentHTML('beforeend', requirementsHtml);
         }
+        initRequirementsPanels();
     } else if (existingRequirements) {
         existingRequirements.remove();
     }
@@ -881,6 +939,14 @@ const initRequirementsPanels = () => {
     };
 
     panels.forEach((panel) => {
+        if (!(panel instanceof HTMLElement)) {
+            return;
+        }
+
+        if (panel.dataset.requirementsReady === '1') {
+            return;
+        }
+
         const summary = panel.querySelector('[data-requirements-summary]');
         const content = panel.querySelector('[data-requirements-content]');
         if (!summary || !content) {
@@ -904,6 +970,7 @@ const initRequirementsPanels = () => {
 
         syncState();
         panel.addEventListener('toggle', syncState);
+        panel.dataset.requirementsReady = '1';
     });
 };
 
