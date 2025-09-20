@@ -70,6 +70,7 @@ class BuildingCalculatorTest extends TestCase
             [],
             null,
             [],
+            [],
             ['hydrogen' => ['base' => 30, 'growth' => 1.16]]
         );
 

@@ -227,7 +227,9 @@ return function (Container $container): void {
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(ShipCatalog::class),
-        $c->get(ProcessShipBuildQueue::class)
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class)
     ));
 
     $container->set(BuildShips::class, fn (Container $c) => new BuildShips(
@@ -236,6 +238,8 @@ return function (Container $container): void {
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(PlayerStatsRepositoryInterface::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class),
         $c->get(ShipCatalog::class)
     ));
 
