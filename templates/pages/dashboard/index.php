@@ -82,6 +82,10 @@ ob_start();
                 <span class="dashboard-banner__label">Planète active</span>
                 <strong class="dashboard-banner__value"><?= $activePlanet ? htmlspecialchars($activePlanet->getName()) : 'Aucune planète' ?></strong>
             </li>
+            <li>
+                <span class="dashboard-banner__label">Score impérial</span>
+                <strong class="dashboard-banner__value"><?= number_format($empire['points'] ?? 0) ?></strong>
+            </li>
         </ul>
     </div>
     <div class="dashboard-layout">
