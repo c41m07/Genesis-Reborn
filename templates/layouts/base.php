@@ -4,7 +4,7 @@
 /** @var array<int, array{type: string, message: string}> $flashes */
 /** @var int|null $currentUserId */
 /** @var string|null $csrf_logout */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int, capacity: int}>}|null $activePlanetSummary */
 /** @var array<int, \App\Domain\Entity\Planet> $planets */
 /** @var string|null $activeSection */
 /** @var int|null $selectedPlanetId */
@@ -162,14 +162,18 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                 <div class="topbar__resources">
                     <?php foreach (['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'] as $key => $label): ?>
                         <?php
-                        $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0];
+                        $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0, 'capacity' => 0];
+                        $value = max(0, (int) ($data['value'] ?? 0));
+                        $capacityValue = max(0, (int) ($data['capacity'] ?? 0));
                         $perHourValue = (int) ($data['perHour'] ?? 0);
                         $rateNumber = number_format($perHourValue);
                         $ratePrefix = ($key !== 'energy' && $perHourValue > 0) ? '+' : '';
                         $rateDisplay = $ratePrefix . $rateNumber . '/h';
                         $rateClass = $perHourValue >= 0 ? 'is-positive' : 'is-negative';
+                        $capacityDisplay = $capacityValue > 0 ? number_format($capacityValue) : '—';
+                        $meterClasses = 'resource-meter' . (($value <= 0 && $perHourValue < 0) ? ' resource-meter--warning' : '');
                         ?>
-                        <div class="resource-meter" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>">
+                        <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>" data-resource-capacity="<?= $capacityValue ?>">
                             <div class="resource-meter__icon">
                                 <svg class="icon icon-sm" aria-hidden="true">
                                     <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key) ?>"></use>
@@ -178,7 +182,8 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                             <div class="resource-meter__details">
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
-                                    <span class="resource-meter__value" data-resource-value><?= number_format((int) ($data['value'] ?? 0)) ?></span>
+                                    <span class="resource-meter__value" data-resource-value><?= number_format($value) ?></span>
+                                    <span class="resource-meter__capacity" data-resource-capacity-display>/ <?= htmlspecialchars($capacityDisplay) ?></span>
                                     <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                 </div>
                             </div>

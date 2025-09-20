@@ -478,6 +478,11 @@ main.workspace__content {
     font-size: 1.25rem;
 }
 
+.resource-meter__capacity {
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+}
+
 .resource-meter__rate {
     font-size: var(--font-size-sm);
     color: var(--color-muted);
@@ -489,6 +494,21 @@ main.workspace__content {
 
 .resource-meter__rate.is-negative {
     color: var(--color-danger);
+}
+
+.resource-meter--warning {
+    background: var(--danger-soft);
+    border-color: var(--danger-border);
+}
+
+.resource-meter--warning .resource-meter__label,
+.resource-meter--warning .resource-meter__value,
+.resource-meter--warning .resource-meter__capacity {
+    color: var(--danger);
+}
+
+.resource-meter--warning .resource-meter__icon {
+    background: rgba(255, 122, 122, 0.16);
 }
 
 /* Buttons */

@@ -77,10 +77,26 @@ abstract class AbstractController
     protected function formatResourceSnapshot(Planet $planet): array
     {
         return [
-            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
+            'metal' => [
+                'value' => $planet->getMetal(),
+                'perHour' => $planet->getMetalPerHour(),
+                'capacity' => $planet->getMetalCapacity(),
+            ],
+            'crystal' => [
+                'value' => $planet->getCrystal(),
+                'perHour' => $planet->getCrystalPerHour(),
+                'capacity' => $planet->getCrystalCapacity(),
+            ],
+            'hydrogen' => [
+                'value' => $planet->getHydrogen(),
+                'perHour' => $planet->getHydrogenPerHour(),
+                'capacity' => $planet->getHydrogenCapacity(),
+            ],
+            'energy' => [
+                'value' => $planet->getEnergy(),
+                'perHour' => $planet->getEnergyPerHour(),
+                'capacity' => $planet->getEnergyCapacity(),
+            ],
         ];
     }
 }
