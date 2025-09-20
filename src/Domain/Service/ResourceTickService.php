@@ -27,6 +27,7 @@ class ResourceTickService
      *     player_id?: int,
      *     resources: array<string, int|float>,
      *     capacities: array<string, int|float>,
+     *     base_capacities?: array<string, int|float>,
      *     last_tick?: DateTimeInterface,
      *     building_levels: array<string, int>,
      * }> $planetStates
@@ -59,8 +60,25 @@ class ResourceTickService
                 $resourceTotals[$resourceKey] = (float) $value;
             }
 
-            $capacityTotals = [];
+            $baseCapacities = [];
+            if (isset($state['base_capacities']) && is_array($state['base_capacities'])) {
+                foreach ($state['base_capacities'] as $resourceKey => $value) {
+                    $baseCapacities[$resourceKey] = (float) $value;
+                }
+            }
+
+            $capacityTotals = $baseCapacities;
             foreach ($state['capacities'] as $resourceKey => $value) {
+                if (!array_key_exists($resourceKey, $capacityTotals)) {
+                    $capacityTotals[$resourceKey] = (float) $value;
+                    continue;
+                }
+
+                // When base capacities are provided explicitly, rebuild totals from that base.
+                if ($baseCapacities !== []) {
+                    continue;
+                }
+
                 $capacityTotals[$resourceKey] = (float) $value;
             }
 

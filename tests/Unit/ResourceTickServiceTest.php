@@ -82,6 +82,12 @@ class ResourceTickServiceTest extends TestCase
                     'hydrogen' => 5000,
                     'energy' => 100,
                 ],
+                'base_capacities' => [
+                    'metal' => 10000,
+                    'crystal' => 8000,
+                    'hydrogen' => 5000,
+                    'energy' => 100,
+                ],
                 'last_tick' => $lastTick,
                 'building_levels' => [
                     'metal_mine' => 5,
@@ -102,6 +108,12 @@ class ResourceTickServiceTest extends TestCase
                     'energy' => 0,
                 ],
                 'capacities' => [
+                    'metal' => 8000,
+                    'crystal' => 6000,
+                    'hydrogen' => 4000,
+                    'energy' => 50,
+                ],
+                'base_capacities' => [
                     'metal' => 8000,
                     'crystal' => 6000,
                     'hydrogen' => 4000,
@@ -151,5 +163,70 @@ class ResourceTickServiceTest extends TestCase
         self::assertGreaterThan($planetStates[2]['capacities']['metal'], $planetTwo['capacities']['metal']);
         self::assertSame(0, $planetTwo['energy']['production']);
         self::assertSame(0, $planetTwo['energy']['available']);
+    }
+
+    public function testStorageCapacityRemainsStableAcrossSequentialTicks(): void
+    {
+        $effects = [
+            'storage_depot' => [
+                'storage' => [
+                    'metal' => ['base' => 5000, 'growth' => 1.5],
+                    'crystal' => ['base' => 2500, 'growth' => 1.4],
+                    'hydrogen' => ['base' => 2000, 'growth' => 1.3],
+                    'energy' => ['base' => 50, 'growth' => 1.1],
+                ],
+            ],
+        ];
+
+        $service = new ResourceTickService($effects);
+
+        $startTick = new DateTimeImmutable('2025-09-20 08:00:00');
+        $firstTickTime = $startTick->add(new DateInterval('PT1H'));
+
+        $initialState = [
+            'planet_id' => 1,
+            'player_id' => 10,
+            'resources' => [
+                'metal' => 2000,
+                'crystal' => 1000,
+                'hydrogen' => 500,
+                'energy' => 0,
+            ],
+            'capacities' => [
+                'metal' => 10000,
+                'crystal' => 8000,
+                'hydrogen' => 6000,
+                'energy' => 100,
+            ],
+            'base_capacities' => [
+                'metal' => 10000,
+                'crystal' => 8000,
+                'hydrogen' => 6000,
+                'energy' => 100,
+            ],
+            'last_tick' => $startTick,
+            'building_levels' => [
+                'storage_depot' => 2,
+            ],
+        ];
+
+        $firstTickResult = $service->tick([1 => $initialState], $firstTickTime);
+        $firstPlanetTick = $firstTickResult[1];
+
+        self::assertSame(17500, $firstPlanetTick['capacities']['metal']);
+
+        $secondState = $initialState;
+        $secondState['last_tick'] = $firstTickTime;
+        $secondState['resources'] = $firstPlanetTick['resources'];
+        $secondState['capacities'] = $firstPlanetTick['capacities'];
+
+        $secondTickTime = $firstTickTime->add(new DateInterval('PT1H'));
+        $secondTickResult = $service->tick([1 => $secondState], $secondTickTime);
+        $secondPlanetTick = $secondTickResult[1];
+
+        self::assertSame($firstPlanetTick['capacities']['metal'], $secondPlanetTick['capacities']['metal']);
+        self::assertSame($firstPlanetTick['capacities']['crystal'], $secondPlanetTick['capacities']['crystal']);
+        self::assertSame($firstPlanetTick['capacities']['hydrogen'], $secondPlanetTick['capacities']['hydrogen']);
+        self::assertSame($firstPlanetTick['capacities']['energy'], $secondPlanetTick['capacities']['energy']);
     }
 }
