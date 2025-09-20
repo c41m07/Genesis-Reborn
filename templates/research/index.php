@@ -95,7 +95,16 @@ ob_start();
                         'attributes' => [
                             'data-research-card' => $definition->getKey(),
                         ],
-                        'body' => static function () use ($definition, $item, $progress, $level, $maxLevel, $baseUrl, $icon): void {
+                        'body' => static function () use (
+                            $definition,
+                            $item,
+                            $progress,
+                            $level,
+                            $maxLevel,
+                            $baseUrl,
+                            $icon,
+                            $requirementsPanel,
+                        ): void {
 
                             echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
                             echo '<div class="tech-card__progress">';
