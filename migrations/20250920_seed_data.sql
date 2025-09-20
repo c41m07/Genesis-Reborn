@@ -14,7 +14,7 @@ INSERT INTO buildings (`key`, name, description, category, base_cost_metal, base
 VALUES
     ('metal_mine', 'Mine de métal', 'Mine automatisée dédiée à l''extraction du métal brut.', 'production', 60, 15, 0, 0, 1.500, 30, 0, 0, 0, 0, 10, NULL, NOW(), NOW()),
     ('crystal_mine', 'Mine de cristal', 'Extrayez du cristal pur pour vos technologies avancées.', 'production', 48, 24, 0, 0, 1.500, 20, 0, 0, 0, 0, 10, NULL, NOW(), NOW()),
-    ('hydrogen_extractor', 'Extracteur d''hydrogène', 'Pompe atmosphérique spécialisée pour l''hydrogène lourd.', 'production', 225, 75, 0, 0, 1.500, 0, 0, 12, 0, 0, 20, NULL, NOW(), NOW()),
+    ('hydrogen_plant', 'Extracteur d''hydrogène', 'Pompe atmosphérique spécialisée pour l''hydrogène lourd.', 'production', 225, 75, 0, 0, 1.500, 0, 0, 12, 0, 0, 20, NULL, NOW(), NOW()),
     ('solar_plant', 'Centrale solaire', 'Capte la lumière stellaire pour alimenter la colonie.', 'energy', 75, 30, 0, 0, 1.400, 0, 0, 0, 0, 25, 0, NULL, NOW(), NOW()),
     ('fusion_reactor', 'Réacteur à fusion', 'Production énergétique stable via la fusion d''hydrogène.', 'energy', 900, 360, 180, 0, 1.550, 0, 0, 0, 0, 60, 0, JSON_OBJECT('technologies', JSON_OBJECT('energy_technology', 5)), NOW(), NOW()),
     ('storage_depot', 'Entrepôt planétaire', 'Augmente la capacité de stockage globale des ressources.', 'storage', 1000, 400, 0, 0, 1.600, 0, 0, 0, 50000, 0, 5, NULL, NOW(), NOW()),
@@ -73,7 +73,7 @@ FROM (
 JOIN (
     SELECT 'metal_mine' AS bkey, 6 AS level UNION ALL
     SELECT 'crystal_mine', 5 UNION ALL
-    SELECT 'hydrogen_extractor', 3 UNION ALL
+    SELECT 'hydrogen_plant', 3 UNION ALL
     SELECT 'solar_plant', 7 UNION ALL
     SELECT 'fusion_reactor', 3 UNION ALL
     SELECT 'storage_depot', 3 UNION ALL
