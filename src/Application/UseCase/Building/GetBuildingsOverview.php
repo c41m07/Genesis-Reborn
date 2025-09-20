@@ -59,7 +59,6 @@ class GetBuildingsOverview
         $buildings = [];
         $queueJobs = $this->buildQueue->getActiveQueue($planetId);
         $queueView = [];
-        $queuedByBuilding = [];
 
         $researchCatalogMap = [];
         foreach ($this->researchCatalog->all() as $researchDefinition) {
@@ -77,18 +76,22 @@ class GetBuildingsOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
-            $queuedByBuilding[$job->getBuildingKey()] = ($queuedByBuilding[$job->getBuildingKey()] ?? 0) + 1;
         }
 
         $queueLimitReached = count($queueJobs) >= 5;
 
+        $projectedLevels = $levels;
+        foreach ($queueJobs as $job) {
+            $key = $job->getBuildingKey();
+            $projectedLevels[$key] = ($projectedLevels[$key] ?? 0) + 1;
+        }
+
         foreach ($this->catalog->all() as $definition) {
             $currentLevel = $levels[$definition->getKey()] ?? 0;
-            $queuedCount = $queuedByBuilding[$definition->getKey()] ?? 0;
-            $effectiveLevel = $currentLevel + $queuedCount;
+            $effectiveLevel = $projectedLevels[$definition->getKey()] ?? $currentLevel;
             $nextTargetLevel = $effectiveLevel + 1;
             $cost = $this->calculator->nextCost($definition, $effectiveLevel);
-            $time = $this->calculator->nextTime($definition, $effectiveLevel);
+            $time = $this->calculator->nextTime($definition, $effectiveLevel, $projectedLevels);
             $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels, $researchCatalogMap);
             if (!empty($requirements['missing'])) {
                 $requirements['missing'] = array_map(function (array $missing): array {
@@ -139,6 +142,17 @@ class GetBuildingsOverview
                 ];
             }
 
+            $bonuses = [];
+            $constructionCurrent = $this->calculator->constructionSpeedBonusAt($definition, $currentLevel);
+            $constructionNext = $this->calculator->constructionSpeedBonusAt($definition, $nextTargetLevel);
+            if ($constructionCurrent > 0.0 || $constructionNext > 0.0) {
+                $bonuses['construction_speed'] = [
+                    'current' => $constructionCurrent,
+                    'next' => $constructionNext,
+                    'delta' => max(0.0, $constructionNext - $constructionCurrent),
+                ];
+            }
+
             $buildings[] = [
                 'definition' => $definition,
                 'level' => $currentLevel,
@@ -158,6 +172,7 @@ class GetBuildingsOverview
                     'next' => $nextStorage,
                     'delta' => $storageDelta,
                 ],
+                'bonuses' => $bonuses,
             ];
         }
 

@@ -154,6 +154,61 @@ return [
             'energy' => ['base' => 2500, 'growth' => 1.5],
         ],
     ],
+    'worker_factory' => [
+        'label' => 'Complexe d’ouvriers',
+        'base_cost' => ['metal' => 420, 'crystal' => 160],
+        'base_time' => 45,
+        'growth_cost' => 1.6,
+        'growth_time' => 1.55,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 18,
+        'energy_use_growth' => 1.12,
+        'energy_use_linear' => true,
+        'affects' => 'infrastructure',
+        'image' => 'assets/svg/illustrations/buildings/worker-factory.svg',
+        'requires' => [
+            'buildings' => [
+                'metal_mine' => 4,
+                'crystal_mine' => 3,
+            ],
+            'research' => [],
+        ],
+        'construction_speed_bonus' => [
+            'per_level' => 0.05,
+            'max' => 0.5,
+        ],
+    ],
+    'robot_factory' => [
+        'label' => 'Chantier robotique',
+        'base_cost' => ['metal' => 2400, 'crystal' => 1200, 'hydrogen' => 300],
+        'base_time' => 85,
+        'growth_cost' => 1.75,
+        'growth_time' => 1.65,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 36,
+        'energy_use_growth' => 1.2,
+        'energy_use_linear' => true,
+        'affects' => 'infrastructure',
+        'image' => 'assets/svg/illustrations/buildings/robot-factory.svg',
+        'requires' => [
+            'buildings' => [
+                'worker_factory' => 6,
+                'research_lab' => 2,
+            ],
+            'research' => [
+                'engineering_heavy' => 3,
+            ],
+        ],
+        'construction_speed_bonus' => [
+            'per_level' => 0.1,
+            'max' => 0.75,
+        ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 12, 'growth' => 1.15],
+        ],
+    ],
     'research_lab' => [
         'label' => 'Laboratoire Helios',
         'base_cost' => ['metal' => 200, 'crystal' => 320, 'hydrogen' => 80],

@@ -19,6 +19,8 @@ VALUES
     ('antimatter_reactor', 'Réacteur à antimatière', 'Confinement annulaire alimenté en antimatière pour une puissance colossale.', 'energy', 3200, 2200, 1200, 0, 1.550, 0, 0, 0, 0, 800, 0, '{"buildings":{"fusion_reactor":5,"research_lab":6},"technologies":{"reactor_antimatter":1}}', NOW(), NOW()),
     ('hydrogen_plant', 'Générateur d’hydrogène', 'Générateur atmosphérique spécialisé dans l''hydrogène lourd.', 'production', 150, 100, 0, 0, 1.600, 0, 0, 30, 0, 0, 20, '{"buildings":{"solar_plant":1}}', NOW(), NOW()),
     ('storage_depot', 'Entrepôt planétaire', 'Augmente la capacité de stockage globale des ressources.', 'storage', 1000, 400, 0, 0, 1.600, 0, 0, 0, 50000, 0, 0, '{"buildings":{"metal_mine":4,"crystal_mine":3},"technologies":{"logistics":2}}', NOW(), NOW()),
+    ('worker_factory', 'Complexe d’ouvriers', 'Automatise la logistique locale grâce à des essaims de drones.', 'infrastructure', 420, 160, 0, 0, 1.600, 0, 0, 0, 0, 0, 18, '{"buildings":{"metal_mine":4,"crystal_mine":3}}', NOW(), NOW()),
+    ('robot_factory', 'Chantier robotique', 'Assemblage lourd de robots spécialisés optimisant chaque construction.', 'infrastructure', 2400, 1200, 300, 0, 1.750, 0, 0, 0, 0, 0, 36, '{"buildings":{"worker_factory":6,"research_lab":2},"technologies":{"engineering_heavy":3}}', NOW(), NOW()),
     ('research_lab', 'Laboratoire Helios', 'Centre scientifique pour développer de nouvelles technologies.', 'research', 200, 320, 80, 0, 1.650, 0, 0, 0, 0, 0, 22, '{"buildings":{"solar_plant":1,"crystal_mine":1}}', NOW(), NOW()),
     ('shipyard', 'Chantier spatial Asterion', 'Infrastructures lourdes pour construire les vaisseaux.', 'shipyard', 420, 260, 120, 0, 1.700, 0, 0, 0, 0, 0, 35, '{"buildings":{"research_lab":1},"technologies":{"engineering_heavy":1}}', NOW(), NOW());
 
@@ -105,6 +107,8 @@ JOIN (
     SELECT 'solar_plant', 7 UNION ALL
     SELECT 'fusion_reactor', 3 UNION ALL
     SELECT 'storage_depot', 3 UNION ALL
+    SELECT 'worker_factory', 2 UNION ALL
+    SELECT 'robot_factory', 1 UNION ALL
     SELECT 'research_lab', 2 UNION ALL
     SELECT 'shipyard', 2
 ) AS lvl ON 1=1

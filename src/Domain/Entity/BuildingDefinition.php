@@ -9,6 +9,7 @@ class BuildingDefinition
     /** @param array{base?: float, growth?: float, linear?: bool, max?: float} $shipBuildSpeedBonus */
     /** @param array<string, array{base: float, growth: float}> $storage */
     /** @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep */
+    /** @param array<string, mixed> $constructionSpeedBonus */
     public function __construct(
         private readonly string $key,
         private readonly string $label,
@@ -27,7 +28,8 @@ class BuildingDefinition
         private readonly array $shipBuildSpeedBonus = [],
         private readonly array $storage = [],
         private readonly array $upkeep = [],
-        private readonly float $researchSpeedBonus = 0.0
+        private readonly array $constructionSpeedBonus = []
+
     ) {
     }
 
@@ -127,8 +129,12 @@ class BuildingDefinition
         return $this->upkeep;
     }
 
-    public function getResearchSpeedBonus(): float
+    /**
+     * @return array<string, mixed>
+     */
+    public function getConstructionSpeedBonusConfig(): array
     {
-        return $this->researchSpeedBonus;
+        return $this->constructionSpeedBonus;
+
     }
 }

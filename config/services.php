@@ -87,7 +87,7 @@ return function (Container $container): void {
         return new BuildingCatalog($config);
     });
 
-    $container->set(BuildingCalculator::class, fn () => new BuildingCalculator());
+    $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
     $container->set(ResourceTickService::class, function () {
         $config = require __DIR__ . '/game/buildings.php';
