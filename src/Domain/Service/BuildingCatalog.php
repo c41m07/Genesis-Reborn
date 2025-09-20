@@ -25,7 +25,7 @@ class BuildingCatalog
                 (float) $data['growth_time'],
                 (int) ($data['prod_base'] ?? 0),
                 (float) ($data['prod_growth'] ?? 1.0),
-                (int) ($data['energy_use_base'] ?? 0),
+                (float) ($data['energy_use_base'] ?? 0),
                 (float) ($data['energy_use_growth'] ?? 1.0),
                 (bool) ($data['energy_use_linear'] ?? false),
                 $data['affects'],

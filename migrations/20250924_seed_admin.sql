@@ -4,11 +4,14 @@ INSERT INTO buildings (`key`, name, description, category, base_cost_metal, base
     base_energy_consumption, unlock_requirements, created_at, updated_at)
 VALUES
     ('workers_hub', 'Centre d’ouvriers', 'Optimise la main-d’œuvre et réduit les délais de construction.', 'support',
-        450, 220, 0, 0, 1.550, 0, 0, 0, 0, 0, 14,
+        450, 220, 0, 0, 1.550, 0, 0, 0, 0, 0, 7,
         '{"buildings":{"metal_mine":6,"crystal_mine":5},"technologies":{"logistics":3}}', NOW(), NOW()),
     ('robotics_center', 'Centre robotique', 'Automatise les chantiers grâce à des drones spécialisés.', 'support',
-        1200, 650, 200, 0, 1.600, 0, 0, 0, 0, 0, 30,
-        '{"buildings":{"workers_hub":5,"research_lab":4},"technologies":{"engineering_heavy":4}}', NOW(), NOW())
+        1200, 650, 200, 0, 1.600, 0, 0, 0, 0, 0, 15,
+        '{"buildings":{"workers_hub":5,"research_lab":4},"technologies":{"engineering_heavy":4}}', NOW(), NOW()),
+    ('antimatter_reactor', 'Centrale à antimatière', 'Exploite des chambres de confinement pour fournir une énergie colossale.', 'energy',
+        2400, 1600, 900, 0, 1.580, 0, 0, 0, 0, 750, 0,
+        '{"buildings":{"fusion_reactor":8,"research_lab":10},"technologies":{"reactor_antimatter":4,"superstructures":2}}', NOW(), NOW())
 ON DUPLICATE KEY UPDATE
     name = VALUES(name),
     description = VALUES(description),
@@ -16,7 +19,13 @@ ON DUPLICATE KEY UPDATE
     base_cost_metal = VALUES(base_cost_metal),
     base_cost_crystal = VALUES(base_cost_crystal),
     base_cost_hydrogen = VALUES(base_cost_hydrogen),
+    base_energy_cost = VALUES(base_energy_cost),
     cost_multiplier = VALUES(cost_multiplier),
+    base_production_metal = VALUES(base_production_metal),
+    base_production_crystal = VALUES(base_production_crystal),
+    base_production_hydrogen = VALUES(base_production_hydrogen),
+    base_storage = VALUES(base_storage),
+    base_energy_production = VALUES(base_energy_production),
     base_energy_consumption = VALUES(base_energy_consumption),
     unlock_requirements = VALUES(unlock_requirements),
     updated_at = VALUES(updated_at);

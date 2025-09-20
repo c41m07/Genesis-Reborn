@@ -34,6 +34,7 @@
 - **Comptes & authentification** : inscription, connexion, déconnexion, CSRF sur POST.
 - **Colonies & bâtiments** : construction, file d’attente, coûts, production, calcul d’énergie.
 - **Bâtiments de support** : centre d’ouvriers et centre robotique accélèrent les constructions planétaires.
+- **Énergie optimisée** : consommation électrique des structures divisée par deux et centrale à antimatière pour prolonger la progression.
 - **Recherches** : catalogue, prérequis, files par planète.
 - **Chantier spatial & flottes** : construction navale, planification de missions, gestion carburant/ETA, résolutions PvE.
 - **Journal & tableau de bord** : suivi des événements et synthèse de progression.

@@ -17,7 +17,7 @@ class BuildingDefinition
         private readonly float $growthTime,
         private readonly int $productionBase,
         private readonly float $productionGrowth,
-        private readonly int $energyUseBase,
+        private readonly float $energyUseBase,
         private readonly float $energyUseGrowth,
         private readonly bool $energyUseLinear,
         private readonly string $affects,
@@ -69,7 +69,7 @@ class BuildingDefinition
         return $this->productionGrowth;
     }
 
-    public function getEnergyUseBase(): int
+    public function getEnergyUseBase(): float
     {
         return $this->energyUseBase;
     }

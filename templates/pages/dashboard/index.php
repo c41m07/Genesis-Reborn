@@ -12,19 +12,76 @@ if (!function_exists('format_duration')) {
     function format_duration(int $seconds): string
     {
         $seconds = max(0, $seconds);
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-        $remainingSeconds = $seconds % 60;
+
+        $week = 7 * 24 * 3600;
+        $day = 24 * 3600;
+        $hour = 3600;
+        $minute = 60;
 
         $parts = [];
-        if ($hours > 0) {
-            $parts[] = sprintf('%d h', $hours);
-        }
-        if ($minutes > 0) {
-            $parts[] = sprintf('%d min', $minutes);
-        }
-        if (($hours === 0 && $minutes === 0) || $remainingSeconds > 0) {
-            $parts[] = sprintf('%d s', $remainingSeconds);
+
+        if ($seconds >= $week) {
+            $weeks = intdiv($seconds, $week);
+            $parts[] = sprintf('%d sem', $weeks);
+            $seconds %= $week;
+
+            $days = intdiv($seconds, $day);
+            if ($days > 0) {
+                $parts[] = sprintf('%d j', $days);
+            }
+            $seconds %= $day;
+
+            $hours = intdiv($seconds, $hour);
+            if ($hours > 0) {
+                $parts[] = sprintf('%d h', $hours);
+            }
+            $seconds %= $hour;
+
+            $minutes = intdiv($seconds, $minute);
+            if ($minutes > 0) {
+                $parts[] = sprintf('%d min', $minutes);
+            }
+            $seconds %= $minute;
+
+            if ($minutes === 0 && $hours === 0 && $seconds > 0) {
+                $parts[] = sprintf('%d s', $seconds);
+            }
+        } elseif ($seconds >= $day) {
+            $days = intdiv($seconds, $day);
+            $parts[] = sprintf('%d j', $days);
+            $seconds %= $day;
+
+            $hours = intdiv($seconds, $hour);
+            if ($hours > 0) {
+                $parts[] = sprintf('%d h', $hours);
+            }
+            $seconds %= $hour;
+
+            $minutes = intdiv($seconds, $minute);
+            if ($minutes > 0) {
+                $parts[] = sprintf('%d min', $minutes);
+            }
+            $seconds %= $minute;
+
+            if ($minutes === 0 && $hours === 0 && $seconds > 0) {
+                $parts[] = sprintf('%d s', $seconds);
+            }
+        } else {
+            $hours = intdiv($seconds, $hour);
+            if ($hours > 0) {
+                $parts[] = sprintf('%d h', $hours);
+            }
+            $seconds %= $hour;
+
+            $minutes = intdiv($seconds, $minute);
+            if ($minutes > 0) {
+                $parts[] = sprintf('%d min', $minutes);
+            }
+            $seconds %= $minute;
+
+            if (($hours === 0 && $minutes === 0) || $seconds > 0) {
+                $parts[] = sprintf('%d s', $seconds);
+            }
         }
 
         return implode(' ', $parts);
