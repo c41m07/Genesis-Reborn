@@ -6,6 +6,7 @@ class BuildingDefinition
 {
     /** @param array<string, int> $baseCost */
     /** @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements */
+    /** @param array{base?: float, growth?: float, linear?: bool, max?: float} $shipBuildSpeedBonus */
     /** @param array<string, array{base: float, growth: float}> $storage */
     /** @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep */
     public function __construct(
@@ -23,6 +24,7 @@ class BuildingDefinition
         private readonly string $affects,
         private readonly array $requirements = [],
         private readonly ?string $image = null,
+        private readonly array $shipBuildSpeedBonus = [],
         private readonly array $storage = [],
         private readonly array $upkeep = []
     ) {
@@ -98,6 +100,14 @@ class BuildingDefinition
     public function getImage(): ?string
     {
         return $this->image;
+    }
+
+    /**
+     * @return array{base?: float, growth?: float, linear?: bool, max?: float}
+     */
+    public function getShipBuildSpeedBonusConfig(): array
+    {
+        return $this->shipBuildSpeedBonus;
     }
 
     /**

@@ -2,23 +2,31 @@
 
 namespace App\Application\UseCase\Shipyard;
 
+use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
+use App\Domain\Service\BuildingCalculator;
+use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\ShipCatalog;
 
 class BuildShips
 {
+    private readonly BuildingDefinition $shipyardDefinition;
+
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
         private readonly PlayerStatsRepositoryInterface $playerStats,
+        BuildingCatalog $buildingCatalog,
+        private readonly BuildingCalculator $buildingCalculator,
         private readonly ShipCatalog $catalog
     ) {
+        $this->shipyardDefinition = $buildingCatalog->get('shipyard');
     }
 
     /** @return array{success: bool, message?: string} */
@@ -59,7 +67,12 @@ class BuildShips
         }
 
         $this->deductCost($planet, $cost);
-        $duration = max(0, $definition->getBuildTime() * $quantity);
+        $perUnitTime = $this->buildingCalculator->applyShipBuildSpeedBonus(
+            $this->shipyardDefinition,
+            $shipyardLevel,
+            $definition->getBuildTime()
+        );
+        $duration = max($quantity, $perUnitTime * $quantity);
         $this->shipQueue->enqueue($planetId, $shipKey, $quantity, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);

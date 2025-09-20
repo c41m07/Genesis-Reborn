@@ -3,16 +3,21 @@
 namespace App\Application\UseCase\Shipyard;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
+use App\Domain\Service\BuildingCalculator;
+use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\ShipCatalog;
 use RuntimeException;
 
 class GetShipyardOverview
 {
+    private readonly BuildingDefinition $shipyardDefinition;
+
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
@@ -20,8 +25,11 @@ class GetShipyardOverview
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
         private readonly FleetRepositoryInterface $fleets,
         private readonly ShipCatalog $catalog,
-        private readonly ProcessShipBuildQueue $queueProcessor
+        private readonly ProcessShipBuildQueue $queueProcessor,
+        BuildingCatalog $buildingCatalog,
+        private readonly BuildingCalculator $buildingCalculator
     ) {
+        $this->shipyardDefinition = $buildingCatalog->get('shipyard');
     }
 
     /**
@@ -31,7 +39,8 @@ class GetShipyardOverview
      *     fleet: array<string, int>,
      *     fleetSummary: array<int, array{key: string, label: string, quantity: int}>,
      *     queue: array{count: int, jobs: array<int, array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>
+     *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ShipDefinition, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canBuild: bool, buildTime: int, baseBuildTime: int}>>,
+     *     shipyardBonus: float
      * }
      */
     public function execute(int $planetId): array
@@ -45,6 +54,7 @@ class GetShipyardOverview
 
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $shipyardLevel = $buildingLevels['shipyard'] ?? 0;
+        $shipyardBonus = $this->buildingCalculator->shipBuildSpeedBonus($this->shipyardDefinition, $shipyardLevel);
         $researchLevels = $this->researchStates->getLevels($planetId);
         $catalogMap = [];
         foreach ($this->catalog->all() as $definition) {
@@ -86,10 +96,18 @@ class GetShipyardOverview
                 $requirements = $this->checkRequirements($definition->getRequiresResearch(), $researchLevels, $catalogMap);
                 $canBuild = $shipyardLevel > 0 && $requirements['ok'] && !$queueLimitReached;
 
+                $buildTime = $this->buildingCalculator->applyShipBuildSpeedBonus(
+                    $this->shipyardDefinition,
+                    $shipyardLevel,
+                    $definition->getBuildTime()
+                );
+
                 $items[] = [
                     'definition' => $definition,
                     'requirements' => $requirements,
                     'canBuild' => $canBuild,
+                    'buildTime' => $buildTime,
+                    'baseBuildTime' => $definition->getBuildTime(),
                 ];
             }
 
@@ -111,6 +129,7 @@ class GetShipyardOverview
                 'jobs' => $queueView,
             ],
             'categories' => $categories,
+            'shipyardBonus' => $shipyardBonus,
         ];
     }
 
