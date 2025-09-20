@@ -1868,13 +1868,6 @@ main.workspace__content {
 }
 
 .ship-card {
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: var(--radius);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    padding: var(--space-5);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
     height: 100%;
 }
 
@@ -1882,16 +1875,22 @@ main.workspace__content {
     opacity: 0.65;
 }
 
-.ship-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.ship-card .panel__header {
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
+.ship-card .panel__body {
+    flex: 1;
     gap: var(--space-4);
 }
 
-.ship-card__role {
+.ship-card .panel__footer {
+    margin-top: auto;
+}
+
+.ship-card__description {
     margin: 0;
-    font-size: var(--font-size-sm);
     color: var(--color-muted);
 }
 
@@ -1926,12 +1925,10 @@ main.workspace__content {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.ship-card__requirements ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    color: var(--color-muted);
-    display: grid;
-    gap: var(--space-1);
+.ship-card__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 }
 
 .ship-card__footer form {

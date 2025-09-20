@@ -143,7 +143,6 @@ ob_start();
                                             'baseUrl' => $baseUrl,
                                             'class' => 'icon-sm requirements-panel__glyph',
                                         ]),
-                                        'open' => true,
                                     ]);
                                     echo '</div>';
                                 }

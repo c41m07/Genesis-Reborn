@@ -58,7 +58,7 @@ ob_start();
     <?= $card([
         'title' => 'Commandes de vaisseaux',
         'subtitle' => 'Suivi des constructions orbitales',
-        'body' => static function () use ($queue, $shipyardLevel, $shipyardBonus): void {
+        'body' => static function () use ($queue, $shipyardLevel, $shipyardBonus, $fleetCount): void {
             $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
             echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . number_format((int) $shipyardLevel) . '</span></p>';
             if ($shipyardBonus > 0) {
@@ -66,6 +66,7 @@ ob_start();
                 $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
                 echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">+' . htmlspecialchars($bonusDisplay) . ' %</span></p>';
             }
+            echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . number_format((int) $fleetCount) . ' unité(s)</span></p>';
             echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
@@ -102,55 +103,101 @@ ob_start();
                     $canBuild = (bool) ($item['canBuild'] ?? false);
                     $buildTime = (int) ($item['buildTime'] ?? $definition->getBuildTime());
                     $baseBuildTime = (int) ($item['baseBuildTime'] ?? $definition->getBuildTime());
+                    $status = $canBuild ? '' : 'is-locked';
+                    $imagePath = $definition->getImage();
                     ?>
-                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>" data-ship-card="<?= htmlspecialchars($definition->getKey()) ?>">
-                        <header class="ship-card__header">
-                            <div>
-                                <h3><?= htmlspecialchars($definition->getLabel()) ?></h3>
-                                <p class="ship-card__role"><?= htmlspecialchars($definition->getRole()) ?></p>
-                            </div>
-                            <?php if ($definition->getImage()): ?>
-                                <?php $imageSrc = $assetBase . '/' . ltrim($definition->getImage(), '/'); ?>
-                                <img class="ship-card__illustration" src="<?= htmlspecialchars($imageSrc, ENT_QUOTES) ?>" alt="" loading="lazy" decoding="async">
-                            <?php endif; ?>
-                        </header>
-                        <p class="ship-card__description"><?= htmlspecialchars($definition->getDescription()) ?></p>
-                        <div class="ship-card__stats">
-                            <?php foreach ($definition->getStats() as $label => $value): ?>
-                                <div class="mini-stat"><span class="mini-stat__label"><?= htmlspecialchars(ucfirst((string) $label)) ?></span><strong class="mini-stat__value"><?= number_format((int) $value) ?></strong></div>
-                            <?php endforeach; ?>
-                        </div>
-                        <div class="ship-card__content">
-                            <div class="ship-card__costs">
-                                <h4>Coût unitaire</h4>
-                                <ul class="resource-list">
-                                    <?php foreach ($definition->getBaseCost() as $resource => $amount): ?>
-                                        <li><?= $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= number_format((int) $amount) ?></span></li>
-                                    <?php endforeach; ?>
-                                    <li><?= $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= htmlspecialchars(format_duration($buildTime)) ?><?php if ($baseBuildTime !== $buildTime): ?> <small>(base <?= htmlspecialchars(format_duration($baseBuildTime)) ?>)</small><?php endif; ?></span></li>
-                                </ul>
-                            </div>
-                            <?php if (!($item['requirements']['ok'] ?? true)): ?>
-                                <div class="ship-card__requirements">
-                                    <h4>Pré-requis</h4>
-                                    <ul>
-                                        <?php foreach ($item['requirements']['missing'] as $missing): ?>
-                                            <li><?= htmlspecialchars($missing['label']) ?> (<?= number_format((int) ($missing['current'] ?? 0)) ?>/<?= number_format((int) $missing['level']) ?>)</li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <footer class="ship-card__footer">
-                            <form method="post" action="<?= htmlspecialchars($baseUrl) ?>/shipyard?planet=<?= (int) $selectedPlanetId ?>" data-async="queue" data-queue-target="shipyard">
-                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) $csrf_shipyard) ?>">
-                                <input type="hidden" name="ship" value="<?= htmlspecialchars($definition->getKey()) ?>">
-                                <label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"<?= $canBuild ? '' : ' disabled' ?>></label>
-                                <?php $label = $canBuild ? 'Construire' : 'Pré-requis manquants'; ?>
-                                <button class="button button--primary" type="submit"<?= $canBuild ? '' : ' disabled' ?>><?= $label ?></button>
-                            </form>
-                        </footer>
-                    </article>
+                    <?= $card([
+                        'title' => $definition->getLabel(),
+                        'badge' => $definition->getRole(),
+                        'status' => $status,
+                        'class' => 'ship-card',
+                        'attributes' => [
+                            'data-ship-card' => $definition->getKey(),
+                        ],
+                        'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
+                        'bodyClass' => 'panel__body ship-card__body',
+                        'footerClass' => 'panel__footer ship-card__footer',
+                        'body' => static function () use (
+                            $definition,
+                            $item,
+                            $buildTime,
+                            $baseBuildTime,
+                            $baseUrl,
+                            $icon,
+                            $requirementsPanel,
+                        ): void {
+                            echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
+
+                            $stats = $definition->getStats();
+                            if (!empty($stats)) {
+                                echo '<div class="ship-card__stats">';
+                                foreach ($stats as $label => $value) {
+                                    echo '<div class="mini-stat">';
+                                    echo '<span class="mini-stat__label">' . htmlspecialchars(ucfirst((string) $label)) . '</span>';
+                                    echo '<strong class="mini-stat__value">' . number_format((int) $value) . '</strong>';
+                                    echo '</div>';
+                                }
+                                echo '</div>';
+                            }
+
+                            echo '<div class="ship-card__content">';
+                            echo '<div class="ship-card__section ship-card__section--costs">';
+                            echo '<h3>Coût de production</h3>';
+                            echo '<ul class="resource-list">';
+                            foreach ($definition->getBaseCost() as $resource => $amount) {
+                                echo '<li>';
+                                echo $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
+                                echo '<span>' . number_format((int) $amount) . '</span>';
+                                echo '</li>';
+                            }
+                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
+                            if ($baseBuildTime !== $buildTime) {
+                                echo ' <small>(base ' . htmlspecialchars(format_duration($baseBuildTime)) . ')</small>';
+                            }
+                            echo '</span></li>';
+                            echo '</ul>';
+                            echo '</div>';
+
+                            $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
+                            if (!($requirements['ok'] ?? true)) {
+                                $requirementItems = [];
+                                foreach ($requirements['missing'] as $missing) {
+                                    if (!is_array($missing)) {
+                                        continue;
+                                    }
+
+                                    $requirementItems[] = [
+                                        'label' => $missing['label'] ?? $missing['key'] ?? '',
+                                        'current' => (int) ($missing['current'] ?? 0),
+                                        'required' => (int) ($missing['level'] ?? 0),
+                                    ];
+                                }
+
+                                if ($requirementItems !== []) {
+                                    echo '<div class="ship-card__section ship-card__requirements">';
+                                    echo $requirementsPanel([
+                                        'title' => 'Pré-requis',
+                                        'items' => $requirementItems,
+                                        'icon' => $icon('shipyard', [
+                                            'baseUrl' => $baseUrl,
+                                            'class' => 'icon-sm requirements-panel__glyph',
+                                        ]),
+                                    ]);
+                                    echo '</div>';
+                                }
+                            }
+                            echo '</div>';
+                        },
+                        'footer' => static function () use ($baseUrl, $definition, $csrf_shipyard, $selectedPlanetId, $canBuild): void {
+                            echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
+                            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_shipyard) . '">';
+                            echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
+                            echo '<label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '></label>';
+                            $label = $canBuild ? 'Construire' : 'Pré-requis manquants';
+                            echo '<button class="button button--primary" type="submit"' . ($canBuild ? '' : ' disabled') . '>' . $label . '</button>';
+                            echo '</form>';
+                        },
+                    ]) ?>
                 <?php endforeach; ?>
             </div>
         </section>
