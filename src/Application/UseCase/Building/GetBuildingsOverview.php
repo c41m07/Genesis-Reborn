@@ -59,7 +59,7 @@ class GetBuildingsOverview
         $buildings = [];
         $queueJobs = $this->buildQueue->getActiveQueue($planetId);
         $queueView = [];
-        $queuedByBuilding = [];
+        $levelsAfterQueue = $levels;
 
         $researchCatalogMap = [];
         foreach ($this->researchCatalog->all() as $researchDefinition) {
@@ -77,19 +77,18 @@ class GetBuildingsOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
-            $queuedByBuilding[$job->getBuildingKey()] = ($queuedByBuilding[$job->getBuildingKey()] ?? 0) + 1;
+            $levelsAfterQueue[$job->getBuildingKey()] = $job->getTargetLevel();
         }
 
         $queueLimitReached = count($queueJobs) >= 5;
 
         foreach ($this->catalog->all() as $definition) {
             $currentLevel = $levels[$definition->getKey()] ?? 0;
-            $queuedCount = $queuedByBuilding[$definition->getKey()] ?? 0;
-            $effectiveLevel = $currentLevel + $queuedCount;
-            $nextTargetLevel = $effectiveLevel + 1;
-            $cost = $this->calculator->nextCost($definition, $effectiveLevel);
-            $time = $this->calculator->nextTime($definition, $effectiveLevel);
-            $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels, $researchCatalogMap);
+            $startLevel = $levelsAfterQueue[$definition->getKey()] ?? $currentLevel;
+            $nextTargetLevel = $startLevel + 1;
+            $cost = $this->calculator->nextCost($definition, $startLevel);
+            $time = $this->calculator->nextTime($definition, $startLevel, $levelsAfterQueue);
+            $requirements = $this->calculator->checkRequirements($definition, $levelsAfterQueue, $researchLevels, $researchCatalogMap);
             if (!empty($requirements['missing'])) {
                 $requirements['missing'] = array_map(function (array $missing): array {
                     if (($missing['type'] ?? '') === 'building') {

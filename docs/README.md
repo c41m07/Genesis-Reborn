@@ -33,9 +33,12 @@
 ## Fonctionnalités principales
 - **Comptes & authentification** : inscription, connexion, déconnexion, CSRF sur POST.
 - **Colonies & bâtiments** : construction, file d’attente, coûts, production, calcul d’énergie.
+- **Bâtiments de support** : centre d’ouvriers et centre robotique accélèrent les constructions planétaires.
 - **Recherches** : catalogue, prérequis, files par planète.
 - **Chantier spatial & flottes** : construction navale, planification de missions, gestion carburant/ETA, résolutions PvE.
 - **Journal & tableau de bord** : suivi des événements et synthèse de progression.
+- **Économie modulable** : ajuster les multiplicateurs de coûts/temps/production via `config/game/economy.php`.
+- **Compte administrateur** : utilisateur `admin@genesis.test` / mot de passe `Admin1234`, avec colonie et technologies au maximum.
 
 ---
 
@@ -63,6 +66,7 @@ tests (PHPUnit)
 - **Planètes** : niveaux de bâtiments, file `build_queue`, rendement/énergie recalculés.
 - **Technologies** : niveaux par joueur, file `research_queue`.
 - **Vaisseaux & flottes** : production par `ship_build_queue`, missions (exploration, attaque, transport).
+- **Économie** : multiplicateurs centralisés dans `config/game/economy.php` (coûts/temps/production).
 - **Journal** : événements PvE et synthèses multi-joueurs.
 
 ---

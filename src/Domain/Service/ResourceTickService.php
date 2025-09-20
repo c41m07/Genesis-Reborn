@@ -13,10 +13,7 @@ class ResourceTickService
      */
     private array $defaultEffects;
 
-    /**
-     * @param array<string, array<string, mixed>> $defaultEffects
-     */
-    public function __construct(array $defaultEffects = [])
+    public function __construct(private readonly EconomySettings $settings, array $defaultEffects = [])
     {
         $this->defaultEffects = $defaultEffects;
     }
@@ -87,7 +84,8 @@ class ResourceTickService
 
                 if (isset($effect['produces']) && is_array($effect['produces'])) {
                     foreach ($effect['produces'] as $resourceKey => $config) {
-                        $amount = $this->valueForLevel($config, $level);
+                        $amount = $this->valueForLevel($config, $level)
+                            * $this->settings->getBuildingProductionMultiplier();
                         $productionRaw[$resourceKey] = ($productionRaw[$resourceKey] ?? 0.0) + $amount;
 
                         if ($resourceKey === 'energy') {
@@ -112,7 +110,8 @@ class ResourceTickService
                     $energyConfig = $effect['energy'];
 
                     if (isset($energyConfig['production'])) {
-                        $energyProduction += $this->valueForLevel($energyConfig['production'], $level);
+                        $energyProduction += $this->valueForLevel($energyConfig['production'], $level)
+                            * $this->settings->getBuildingProductionMultiplier();
                     }
 
                     if (isset($energyConfig['consumption'])) {

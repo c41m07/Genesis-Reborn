@@ -6,6 +6,10 @@ use App\Domain\Entity\BuildingDefinition;
 
 class BuildingCalculator
 {
+    public function __construct(private readonly EconomySettings $settings)
+    {
+    }
+
     /**
      * @return array<string, int>
      */
@@ -13,15 +17,24 @@ class BuildingCalculator
     {
         $costs = [];
         foreach ($definition->getBaseCost() as $resource => $baseCost) {
-            $costs[$resource] = (int) round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
+            $value = $baseCost * pow($definition->getGrowthCost(), $currentLevel);
+            $value *= $this->settings->getBuildingCostMultiplier();
+            $costs[$resource] = (int) round($value);
         }
 
         return $costs;
     }
 
-    public function nextTime(BuildingDefinition $definition, int $currentLevel): int
+    /**
+     * @param array<string, int> $buildingLevels
+     */
+    public function nextTime(BuildingDefinition $definition, int $currentLevel, array $buildingLevels = []): int
     {
-        return (int) round($definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel));
+        $time = $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
+        $time *= $this->settings->getBuildingTimeMultiplier();
+        $time *= $this->settings->getBuildingConstructionFactor($buildingLevels);
+
+        return (int) max(1, round($time));
     }
 
     public function productionAt(BuildingDefinition $definition, int $level): int
@@ -30,7 +43,10 @@ class BuildingCalculator
             return 0;
         }
 
-        return (int) round($definition->getProductionBase() * pow($definition->getProductionGrowth(), $level - 1));
+        $production = $definition->getProductionBase() * pow($definition->getProductionGrowth(), $level - 1);
+        $production *= $this->settings->getBuildingProductionMultiplier();
+
+        return (int) round($production);
     }
 
     public function energyUseAt(BuildingDefinition $definition, int $level): int

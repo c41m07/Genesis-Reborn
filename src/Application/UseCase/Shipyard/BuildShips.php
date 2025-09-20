@@ -7,6 +7,7 @@ use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\ShipCatalog;
 
 class BuildShips
@@ -17,7 +18,8 @@ class BuildShips
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
         private readonly PlayerStatsRepositoryInterface $playerStats,
-        private readonly ShipCatalog $catalog
+        private readonly ShipCatalog $catalog,
+        private readonly EconomySettings $economy
     ) {
     }
 
@@ -53,13 +55,13 @@ class BuildShips
             }
         }
 
-        $cost = $this->multiplyCost($definition->getBaseCost(), $quantity);
+        $cost = $this->calculateCost($definition->getBaseCost(), $quantity);
         if (!$this->canAfford($planet, $cost)) {
             return ['success' => false, 'message' => 'Ressources insuffisantes pour construire ces vaisseaux.'];
         }
 
         $this->deductCost($planet, $cost);
-        $duration = max(0, $definition->getBuildTime() * $quantity);
+        $duration = $this->calculateDuration($definition->getBuildTime(), $quantity, $shipyardLevel);
         $this->shipQueue->enqueue($planetId, $shipKey, $quantity, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
@@ -72,14 +74,24 @@ class BuildShips
      *
      * @return array<string, int>
      */
-    private function multiplyCost(array $baseCost, int $quantity): array
+    private function calculateCost(array $baseCost, int $quantity): array
     {
+        $multiplier = $this->economy->getShipCostMultiplier();
         $costs = [];
         foreach ($baseCost as $resource => $amount) {
-            $costs[$resource] = (int) ($amount * $quantity);
+            $costs[$resource] = (int) round($amount * $quantity * $multiplier);
         }
 
         return $costs;
+    }
+
+    private function calculateDuration(int $baseTime, int $quantity, int $shipyardLevel): int
+    {
+        $time = $baseTime * $quantity;
+        $time *= $this->economy->getShipTimeMultiplier();
+        $time *= $this->economy->getShipConstructionFactor($shipyardLevel);
+
+        return (int) max(1, round($time));
     }
 
     /**

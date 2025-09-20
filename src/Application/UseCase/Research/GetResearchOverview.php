@@ -54,7 +54,7 @@ class GetResearchOverview
 
         $queueJobs = $this->researchQueue->getActiveQueue($planetId);
         $queueView = [];
-        $queuedByResearch = [];
+        $researchLevelsAfterQueue = $researchLevels;
 
         foreach ($queueJobs as $job) {
             $definition = $this->catalog->get($job->getResearchKey());
@@ -65,7 +65,7 @@ class GetResearchOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
-            $queuedByResearch[$job->getResearchKey()] = ($queuedByResearch[$job->getResearchKey()] ?? 0) + 1;
+            $researchLevelsAfterQueue[$job->getResearchKey()] = $job->getTargetLevel();
         }
 
         $queueLimitReached = count($queueJobs) >= 5;
@@ -75,19 +75,13 @@ class GetResearchOverview
             $items = [];
             foreach ($data['items'] as $definition) {
                 $currentLevel = $researchLevels[$definition->getKey()] ?? 0;
-                $queuedCount = $queuedByResearch[$definition->getKey()] ?? 0;
-                $effectiveLevel = $currentLevel + $queuedCount;
-                $targetLevel = $effectiveLevel + 1;
-                $effectiveResearchLevels = $researchLevels;
-                $effectiveResearchLevels[$definition->getKey()] = $effectiveLevel;
-                $nextCost = $this->calculator->nextCost($definition, $effectiveLevel);
-                $nextTime = $this->calculator->nextTime($definition, $effectiveLevel);
-                $requirements = $this->calculator->checkRequirements(
-                    $definition,
-                    $effectiveResearchLevels,
-                    $labLevel,
-                    $catalogMap
-                );
+                $startLevel = $researchLevelsAfterQueue[$definition->getKey()] ?? $currentLevel;
+                $targetLevel = $startLevel + 1;
+                $effectiveResearchLevels = $researchLevelsAfterQueue;
+                $effectiveResearchLevels[$definition->getKey()] = $startLevel;
+                $nextCost = $this->calculator->nextCost($definition, $startLevel);
+                $nextTime = $this->calculator->nextTime($definition, $startLevel, $labLevel);
+                $requirements = $this->calculator->checkRequirements($definition, $effectiveResearchLevels, $labLevel, $catalogMap);
 
                 $maxLevel = $definition->getMaxLevel();
                 $hasLevelRoom = $maxLevel === 0 || $targetLevel <= $maxLevel;

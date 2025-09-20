@@ -6,6 +6,7 @@ namespace App\Tests\Unit;
 
 use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Service\BuildingCalculator;
+use App\Domain\Service\EconomySettings;
 use PHPUnit\Framework\TestCase;
 
 class BuildingCalculatorTest extends TestCase
@@ -15,7 +16,7 @@ class BuildingCalculatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->calculator = new BuildingCalculator();
+        $this->calculator = new BuildingCalculator(new EconomySettings());
         $this->definition = new BuildingDefinition(
             'metal_mine',
             'Mine de métal',

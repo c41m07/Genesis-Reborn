@@ -44,14 +44,14 @@ class StartResearch
             return ['success' => false, 'message' => 'La file de recherche est pleine (5 programmes maximum).'];
         }
 
-        $queuedOccurrences = 0;
-        foreach ($this->researchQueue->getActiveQueue($planetId) as $job) {
-            if ($job->getResearchKey() === $researchKey) {
-                ++$queuedOccurrences;
-            }
+        $queueJobs = $this->researchQueue->getActiveQueue($planetId);
+        $researchLevelsAfterQueue = $researchLevels;
+        foreach ($queueJobs as $job) {
+            $researchLevelsAfterQueue[$job->getResearchKey()] = $job->getTargetLevel();
         }
 
-        $targetLevel = $currentLevel + $queuedOccurrences + 1;
+        $startLevel = $researchLevelsAfterQueue[$researchKey] ?? $currentLevel;
+        $targetLevel = $startLevel + 1;
         $maxLevel = $definition->getMaxLevel();
         if ($maxLevel > 0 && $targetLevel > $maxLevel) {
             return ['success' => false, 'message' => 'Ce domaine scientifique a atteint son niveau maximal.'];
@@ -63,18 +63,18 @@ class StartResearch
             $catalogMap[$def->getKey()] = ['label' => $def->getLabel()];
         }
 
-        $requirements = $this->calculator->checkRequirements($definition, $researchLevels, $labLevel, $catalogMap);
+        $requirements = $this->calculator->checkRequirements($definition, $researchLevelsAfterQueue, $labLevel, $catalogMap);
         if (!$requirements['ok']) {
             return ['success' => false, 'message' => 'Pré-requis de recherche manquants.'];
         }
 
-        $cost = $this->calculator->nextCost($definition, $targetLevel - 1);
+        $cost = $this->calculator->nextCost($definition, $startLevel);
         if (!$this->canAfford($planet, $cost)) {
             return ['success' => false, 'message' => 'Ressources insuffisantes pour lancer cette recherche.'];
         }
 
         $this->deductCost($planet, $cost);
-        $duration = $this->calculator->nextTime($definition, $targetLevel - 1);
+        $duration = $this->calculator->nextTime($definition, $startLevel, $labLevel);
         $this->researchQueue->enqueue($planetId, $researchKey, $targetLevel, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
