@@ -145,8 +145,16 @@ ob_start();
                         'attributes' => [
                             'data-building-card' => $definition->getKey(),
                         ],
-                        'body' => static function () use ($building, $production, $consumption, $requirements, $baseUrl,
-                                $resourceLabels, $icon): void {
+                        'body' => static function () use (
+                            $building,
+                            $production,
+                            $consumption,
+                            $requirements,
+                            $baseUrl,
+                            $resourceLabels,
+                            $icon,
+                            $requirementsPanel,
+                        ): void {
                             $bonuses = $building['bonuses'] ?? [];
                             echo '<div class="building-card__sections">';
                             echo '<div class="building-card__block">';
