@@ -229,7 +229,7 @@ return [
             ],
             'research' => [],
         ],
-        'research_speed_bonus' => 0.1,
+        'research_speed_bonus' => 0.01,
     ],
     'shipyard' => [
         'label' => 'Chantier spatial Asterion',
@@ -243,7 +243,7 @@ return [
         'energy_use_growth' => 1.25,
         'energy_use_linear' => true,
         'affects' => 'energy',
-        'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
+        'ship_build_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.99],
         'image' => 'assets/svg/illustrations/buildings/shipyard.svg',
         'requires' => [
             'buildings' => ['research_lab' => 1],
