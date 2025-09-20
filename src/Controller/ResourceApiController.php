@@ -60,6 +60,8 @@ class ResourceApiController extends AbstractController
             ], 404);
         }
 
+        $previousBuildingLevels = $this->buildingStates->getLevels($planetId);
+
         $this->buildQueue->process($planetId);
         $this->researchQueue->process($planetId);
         $this->shipQueue->process($planetId);
@@ -96,6 +98,7 @@ class ResourceApiController extends AbstractController
                 ],
                 'last_tick' => $lastTick,
                 'building_levels' => $buildingLevels,
+                'previous_building_levels' => $previousBuildingLevels,
             ],
         ];
 
