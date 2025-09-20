@@ -42,6 +42,7 @@ $resourceLabels = [
     'crystal' => 'Cristal',
     'hydrogen' => 'Hydrogène',
     'energy' => 'Énergie',
+    'storage' => 'Capacité',
 ];
 
 $assetBase = rtrim($baseUrl, '/');
@@ -50,8 +51,10 @@ $buildingTypeMap = [
     'crystal_mine' => ['group' => 'production', 'label' => 'Production'],
     'hydrogen_plant' => ['group' => 'production', 'label' => 'Production'],
     'solar_plant' => ['group' => 'energy', 'label' => 'Énergie'],
+    'fusion_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
     'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
     'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
+    'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
 ];
 $groupOrder = [
     'production' => 0,
@@ -144,7 +147,7 @@ ob_start();
                     <?php $definition = $building['definition']; ?>
                     <?php
                     $production = $building['production'];
-                    $energy = $building['energy'];
+                    $consumption = $building['consumption'] ?? [];
                     $requirements = $building['requirements'];
                     $canUpgrade = (bool) ($building['canUpgrade'] ?? false);
                     $status = $canUpgrade ? '' : 'is-locked';
@@ -159,7 +162,7 @@ ob_start();
                         'body' => static function () use ($building, $production, $energy, $requirements, $baseUrl, $resourceLabels, $icon): void {
                             echo '<div class="building-card__sections">';
                             echo '<div class="building-card__block">';
-                            echo '<h3>Coût de la prochaine amélioration</h3>';
+                            echo '<h3>Prochaine amélioration</h3>';
                             echo '<ul class="resource-list">';
                             foreach ($building['cost'] as $resource => $amount) {
                                 echo '<li>';
@@ -175,26 +178,90 @@ ob_start();
                             echo '<h3>Effets</h3>';
                             $resourceKey = $production['resource'] ?? '';
                             $resourceLabel = $resourceLabels[$resourceKey] ?? ucfirst((string) $resourceKey);
-                            $unitSuffix = $resourceKey === 'energy' ? ' énergie/h' : ' ' . strtolower($resourceLabel) . '/h';
-                            $currentValue = (int) ($production['current'] ?? 0);
-                            $deltaValue = (int) ($production['delta'] ?? 0);
-                            $currentPrefix = $currentValue > 0 ? '+' : '';
-                            $deltaPrefix = $deltaValue > 0 ? '+' : '';
-                            echo '<p class="metric-line"><span class="metric-line__label">Production</span><span class="metric-line__value">' . $currentPrefix . number_format($currentValue) . htmlspecialchars($unitSuffix) . '</span></p>';
-                            echo '<p class="metric-line"><span class="metric-line__label">Gain prochain niveau</span><span class="metric-line__value">' . $deltaPrefix . number_format($deltaValue) . htmlspecialchars($unitSuffix) . '</span></p>';
-                            if (($energy['current'] ?? 0) !== 0 || ($energy['delta'] ?? 0) !== 0) {
-                                $energyPrefix = $energy['delta'] > 0 ? '+' : '';
-                                echo '<p class="metric-line"><span class="metric-line__label">Énergie</span><span class="metric-line__value">' . ($energy['current'] > 0 ? '-' : '') . number_format((int) $energy['current']) . ' énergie/h</span></p>';
-                                echo '<p class="metric-line"><span class="metric-line__label">Variation</span><span class="metric-line__value">' . $energyPrefix . number_format((int) $energy['delta']) . ' énergie/h</span></p>';
+                            $hasProduction = $resourceKey !== 'storage';
+                            if ($hasProduction) {
+                                $unitSuffix = $resourceKey === 'energy'
+                                    ? ' énergie/h'
+                                    : ' ' . strtolower($resourceLabel) . '/h';
+                                $currentValue = (int) ($production['current'] ?? 0);
+                                $nextValue = (int) ($production['next'] ?? 0);
+                                $currentDisplay = $currentValue > 0 ? '+' . number_format($currentValue) : number_format($currentValue);
+                                $nextDisplay = $nextValue > 0 ? '+' . number_format($nextValue) : number_format($nextValue);
+                                $currentClass = $currentValue > 0 ? 'metric-line__value metric-line__value--positive' : ($currentValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
+                                $nextClass = $nextValue > 0 ? 'metric-line__value metric-line__value--positive' : ($nextValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
+                                echo '<p class="metric-line"><span class="metric-line__label">Production actuelle</span><span class="' . $currentClass . '">' . $currentDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Production prochain niveau</span><span class="' . $nextClass . '">' . $nextDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
+                            }
+
+                            $storage = $building['storage'] ?? [];
+                            $storageCurrent = $storage['current'] ?? [];
+                            $storageNext = $storage['next'] ?? [];
+                            if (!empty($storageCurrent) || !empty($storageNext)) {
+                                $storageLabel = $resourceLabels['storage'];
+                                echo '<div class="metric-section">';
+                                echo '<p class="metric-section__title">' . htmlspecialchars($storageLabel) . ' actuelle</p>';
+                                echo '<ul class="metric-section__list">';
+                                foreach ($storageCurrent as $resource => $value) {
+                                    $label = $resourceLabels[$resource] ?? ucfirst((string) $resource);
+                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--neutral">' . number_format((int) $value) . '</span></li>';
+                                }
+                                echo '</ul>';
+                                echo '<p class="metric-section__title">' . htmlspecialchars($storageLabel) . ' prochain niveau</p>';
+                                echo '<ul class="metric-section__list">';
+                                foreach ($storageNext as $resource => $value) {
+                                    $label = $resourceLabels[$resource] ?? ucfirst((string) $resource);
+                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--positive">' . number_format((int) $value) . '</span></li>';
+                                }
+                                echo '</ul>';
+                                echo '</div>';
+                            }
+
+                            foreach ($consumption as $resource => $values) {
+                                $currentConsumption = (int) ($values['current'] ?? 0);
+                                $nextConsumption = (int) ($values['next'] ?? 0);
+                                if ($currentConsumption === 0 && $nextConsumption === 0) {
+                                    continue;
+                                }
+
+                                $resourceLabel = $resourceLabels[$resource] ?? ucfirst((string) $resource);
+                                $unitSuffix = $resource === 'energy'
+                                    ? ' énergie/h'
+                                    : ' ' . strtolower($resourceLabel) . '/h';
+
+                                $displayCurrent = $currentConsumption > 0 ? -$currentConsumption : $currentConsumption;
+                                $displayNext = $nextConsumption > 0 ? -$nextConsumption : $nextConsumption;
+
+                                $currentClass = $displayCurrent < 0
+                                    ? 'metric-line__value metric-line__value--negative'
+                                    : ($displayCurrent > 0 ? 'metric-line__value metric-line__value--positive' : 'metric-line__value metric-line__value--neutral');
+                                $nextClass = $displayNext < 0
+                                    ? 'metric-line__value metric-line__value--negative'
+                                    : ($displayNext > 0 ? 'metric-line__value metric-line__value--positive' : 'metric-line__value metric-line__value--neutral');
+
+                                $labelCurrent = 'Consommation actuelle';
+                                $labelNext = 'Consommation prochain niveau';
+                                if ($resource !== 'energy') {
+                                    $labelCurrent .= ' (' . htmlspecialchars($resourceLabel) . ')';
+                                    $labelNext .= ' (' . htmlspecialchars($resourceLabel) . ')';
+                                }
+
+                                $currentDisplay = number_format($displayCurrent);
+                                $nextDisplay = number_format($displayNext);
+
+                                echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelCurrent) . '</span><span class="' . $currentClass . '">' . htmlspecialchars($currentDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelNext) . '</span><span class="' . $nextClass . '">' . htmlspecialchars($nextDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';
                             }
                             echo '</div>';
 
                             if (!($requirements['ok'] ?? true)) {
-                                echo '<div class="building-card__block">';
+                                echo '<div class="building-card__block building-card__block--requirements">';
                                 echo '<h3>Pré-requis</h3>';
-                                echo '<ul class="requirement-list">';
+                                echo '<ul class="building-card__requirements">';
                                 foreach ($requirements['missing'] as $missing) {
-                                    echo '<li>' . htmlspecialchars($missing['label']) . ' (' . number_format((int) ($missing['current'] ?? 0)) . '/' . number_format((int) $missing['level']) . ')</li>';
+                                    $label = htmlspecialchars((string) ($missing['label'] ?? $missing['key'] ?? ''));
+                                    $current = number_format((int) ($missing['current'] ?? 0));
+                                    $required = number_format((int) ($missing['level'] ?? 0));
+                                    echo '<li><span class="building-card__requirement-name">' . $label . '</span><span class="building-card__requirement-progress">(' . $current . '/' . $required . ')</span></li>';
                                 }
                                 echo '</ul>';
                                 echo '</div>';

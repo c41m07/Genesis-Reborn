@@ -6,6 +6,7 @@ use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
@@ -17,6 +18,7 @@ class UpgradeBuilding
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly BuildQueueRepositoryInterface $buildQueue,
         private readonly PlayerStatsRepositoryInterface $playerStats,
+        private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly BuildingCatalog $catalog,
         private readonly BuildingCalculator $calculator
     ) {
@@ -48,7 +50,8 @@ class UpgradeBuilding
 
         $targetLevel = $currentLevel + $queuedOccurrences + 1;
 
-        $requirements = $this->calculator->checkRequirements($definition, $levels, []);
+        $researchLevels = $this->researchStates->getLevels($planetId);
+        $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels);
         if (!$requirements['ok']) {
             return ['success' => false, 'message' => 'Pré-requis manquants.'];
         }

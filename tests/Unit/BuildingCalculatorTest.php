@@ -51,4 +51,32 @@ class BuildingCalculatorTest extends TestCase
         self::assertSame(0, $this->calculator->energyUseAt($this->definition, 0));
         self::assertSame(11, $this->calculator->energyUseAt($this->definition, 1));
     }
+
+    public function testUpkeepScalingWithLevel(): void
+    {
+        $definition = new BuildingDefinition(
+            'fusion_reactor',
+            'Réacteur à fusion',
+            ['metal' => 900, 'crystal' => 360, 'hydrogen' => 180],
+            1.55,
+            60,
+            1.6,
+            320,
+            1.18,
+            0,
+            1.0,
+            false,
+            'energy',
+            [],
+            null,
+            [],
+            ['hydrogen' => ['base' => 30, 'growth' => 1.16]]
+        );
+
+        $levelOne = $this->calculator->upkeepAt($definition, 1);
+        $levelTwo = $this->calculator->upkeepAt($definition, 2);
+
+        self::assertSame(30, $levelOne['hydrogen'] ?? 0);
+        self::assertGreaterThan($levelOne['hydrogen'], $levelTwo['hydrogen']);
+    }
 }

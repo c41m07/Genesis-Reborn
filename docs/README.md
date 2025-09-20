@@ -107,6 +107,7 @@ tests (PHPUnit)
 # Dépendances
 composer install
 composer dump-autoload --optimize
+npm install
 
 # Base de données
 composer db:create

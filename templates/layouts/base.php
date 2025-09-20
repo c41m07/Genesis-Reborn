@@ -62,6 +62,7 @@ $menuCategories = [
     [
         'label' => 'Autre',
         'items' => [
+            'galaxy' => ['label' => 'Carte galaxie', 'path' => '/galaxy', 'icon' => 'planet'],
             'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
             'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
             'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
@@ -103,8 +104,21 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                     $isLocked = !($facilityStatuses['shipyard'] ?? false);
                                 }
                                 ?>
+                                <?php
+                                $tag = $isLocked ? 'span' : 'a';
+                                $linkClass = 'sidebar__link' . ($isLocked ? ' sidebar__link--disabled' : '');
+                                $linkAttributes = ' class="' . htmlspecialchars($linkClass, ENT_QUOTES) . '"';
+                                if ($isLocked) {
+                                    $linkAttributes .= ' role="link" aria-disabled="true" tabindex="-1"';
+                                } else {
+                                    $linkAttributes .= ' href="' . htmlspecialchars($baseUrl . $item['path']) . '"';
+                                    if ($isCurrent) {
+                                        $linkAttributes .= ' aria-current="page"';
+                                    }
+                                }
+                                ?>
                                 <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
-                                    <a class="sidebar__link" href="<?= htmlspecialchars($baseUrl . $item['path']) ?>"<?= $isCurrent ? ' aria-current="page"' : '' ?>>
+                                    <<?= $tag . $linkAttributes ?>>
                                         <svg class="icon icon-sm" aria-hidden="true">
                                             <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
                                         </svg>
@@ -113,7 +127,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                             <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
                                             <span class="visually-hidden"> (installation indisponible)</span>
                                         <?php endif; ?>
-                                    </a>
+                                    </<?= $tag ?>>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
