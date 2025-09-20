@@ -9,7 +9,6 @@ use Dotenv\Dotenv;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-$projectRoot = dirname(__DIR__, 1);
 $envPath = dirname(__DIR__, 2);
 
 if (is_file($envPath . '/.env')) {
