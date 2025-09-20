@@ -14,8 +14,6 @@ require_once __DIR__ . '/../components/helpers.php';
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $categories = $overview['categories'] ?? [];
-$totals = $overview['totals'] ?? ['completedLevels' => 0, 'unlockedResearch' => 0, 'highestLevel' => 0];
-$labLevel = $overview['labLevel'] ?? 0;
 $assetBase = rtrim($baseUrl, '/');
 
 ob_start();
@@ -68,18 +66,6 @@ ob_start();
                 }
                 echo '</ul>';
             }
-            echo '</div>';
-        },
-    ]) ?>
-
-    <?= $card([
-        'title' => 'Laboratoire Helios',
-        'subtitle' => 'Niveau actuel : ' . number_format((int) $labLevel),
-        'body' => static function () use ($totals): void {
-            echo '<div class="metrics metrics--compact">';
-            echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . number_format((int) $totals['completedLevels']) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Domaines actifs</span><strong class="metric__value">' . number_format((int) $totals['unlockedResearch']) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Meilleur niveau</span><strong class="metric__value">' . number_format((int) $totals['highestLevel']) . '</strong></div>';
             echo '</div>';
         },
     ]) ?>
