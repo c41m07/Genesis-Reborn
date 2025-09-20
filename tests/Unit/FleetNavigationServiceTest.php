@@ -18,10 +18,10 @@ class FleetNavigationServiceTest extends TestCase
 
         $origin = ['galaxy' => 1, 'system' => 20, 'position' => 5];
         $destination = ['galaxy' => 1, 'system' => 25, 'position' => 9];
-        $composition = ['small_cargo' => 10, 'light_fighter' => 5];
+        $composition = ['heavy_transport' => 10, 'fighter' => 5];
         $shipStats = [
-            'small_cargo' => ['speed' => 8000, 'fuel_per_distance' => 0.5],
-            'light_fighter' => ['speed' => 12000, 'fuel_per_distance' => 0.4],
+            'heavy_transport' => ['speed' => 8000, 'fuel_per_distance' => 0.5],
+            'fighter' => ['speed' => 12000, 'fuel_per_distance' => 0.4],
         ];
         $departure = new DateTimeImmutable('2025-09-20 12:00:00');
 
