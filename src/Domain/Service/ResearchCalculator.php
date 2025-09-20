@@ -37,6 +37,18 @@ class ResearchCalculator
         return max(1, (int) round($baseDuration));
     }
 
+    public function labSpeedBonus(int $labLevel): float
+    {
+        $effectiveLabLevel = max(0, $labLevel);
+        $bonusPerLevel = max(0.0, $this->labSpeedBonusPerLevel);
+
+        if ($effectiveLabLevel === 0 || $bonusPerLevel <= 0.0) {
+            return 0.0;
+        }
+
+        return $effectiveLabLevel * $bonusPerLevel;
+    }
+
     /**
      * @param array<string, int> $researchLevels
      * @param array<string, array{label: string}> $researchCatalog
