@@ -116,7 +116,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
@@ -126,6 +126,7 @@ class QueueProcessingTest extends TestCase
         self::assertTrue($result['success']);
         self::assertSame(0, $researchStates->getLevels(1)['propulsion_basic']);
         self::assertSame(1, $researchQueue->countActive(1));
+        self::assertSame(38, $researchQueue->getLastDuration());
 
         $researchQueue->forceComplete(1);
         $processor->process(1);
@@ -338,7 +339,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         $useCase->execute(1, 11, 'propulsion_basic');
@@ -380,7 +381,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         for ($i = 0; $i < 5; ++$i) {
@@ -807,6 +808,7 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
     /** @var array<int, array{planet_id: int, research: string, target: int, ends_at: \DateTimeImmutable}> */
     private array $jobs = [];
     private int $nextId = 1;
+    private ?int $lastDuration = null;
 
     public function getActiveQueue(int $planetId): array
     {
@@ -842,6 +844,12 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
             'target' => $targetLevel,
             'ends_at' => (new \DateTimeImmutable())->modify('+' . $durationSeconds . ' seconds'),
         ];
+        $this->lastDuration = $durationSeconds;
+    }
+
+    public function getLastDuration(): ?int
+    {
+        return $this->lastDuration;
     }
 
     public function finalizeDueJobs(int $planetId): array

@@ -74,7 +74,7 @@ class StartResearch
         }
 
         $this->deductCost($planet, $cost);
-        $duration = $this->calculator->nextTime($definition, $targetLevel - 1);
+        $duration = $this->calculator->nextTime($definition, $targetLevel - 1, $labLevel);
         $this->researchQueue->enqueue($planetId, $researchKey, $targetLevel, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
