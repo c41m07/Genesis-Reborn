@@ -9,6 +9,7 @@
 $title = $title ?? 'Chantier spatial';
 $icon = require __DIR__ . '/../../components/_icon.php';
 $card = require __DIR__ . '/../../components/_card.php';
+$requirementsPanel = require __DIR__ . '/../../components/_requirements.php';
 require_once __DIR__ . '/../../components/helpers.php';
 
 $overview = $overview ?? null;

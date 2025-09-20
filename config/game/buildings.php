@@ -175,8 +175,8 @@ return [
             'research' => [],
         ],
         'construction_speed_bonus' => [
-            'per_level' => 0.05,
-            'max' => 0.5,
+            'per_level' => 0.01,
+            'max' => 0.99,
         ],
     ],
     'robot_factory' => [
@@ -202,8 +202,8 @@ return [
             ],
         ],
         'construction_speed_bonus' => [
-            'per_level' => 0.1,
-            'max' => 0.75,
+            'per_level' => 0.05,
+            'max' => 0.99,
         ],
         'upkeep' => [
             'hydrogen' => ['base' => 12, 'growth' => 1.15],
@@ -229,7 +229,7 @@ return [
             ],
             'research' => [],
         ],
-        'research_speed_bonus' => 0.01,
+        'research_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.99],
     ],
     'shipyard' => [
         'label' => 'Chantier spatial Asterion',
