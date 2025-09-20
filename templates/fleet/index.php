@@ -52,16 +52,6 @@ ob_start();
         <p class="page-header__subtitle">Planifiez vos trajets et visualisez la puissance militaire stationnée.</p>
     </div>
     <div class="page-header__actions">
-        <?php if (!empty($planets)): ?>
-            <form class="planet-switcher" method="get" action="<?= htmlspecialchars($baseUrl) ?>/fleet">
-                <label class="planet-switcher__label" for="planet-selector-fleet">Planète</label>
-                <select class="planet-switcher__select" id="planet-selector-fleet" name="planet" data-auto-submit>
-                    <?php foreach ($planets as $planetOption): ?>
-                        <option value="<?= $planetOption->getId() ?>"<?= ($selectedPlanetId && $planetOption->getId() === $selectedPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        <?php endif; ?>
     </div>
 </section>
 

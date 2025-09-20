@@ -123,6 +123,7 @@ class GetResearchOverview
             'planet' => $planet,
             'labLevel' => $labLevel,
             'researchLevels' => $researchLevels,
+            'buildingLevels' => $buildingLevels,
             'queue' => [
                 'count' => count($queueView),
                 'jobs' => $queueView,

@@ -46,16 +46,6 @@ ob_start();
         <p class="page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs prérequis.</p>
     </div>
     <div class="page-header__actions">
-        <?php if (!empty($planets ?? [])): ?>
-            <form class="planet-switcher" method="get" action="<?= htmlspecialchars($baseUrl) ?>/tech-tree">
-                <label class="planet-switcher__label" for="planet-selector-tech">Planète</label>
-                <select class="planet-switcher__select" id="planet-selector-tech" name="planet" data-auto-submit>
-                    <?php foreach ($planets as $planetOption): ?>
-                        <option value="<?= $planetOption->getId() ?>"<?= ($selectedPlanetId && $planetOption->getId() === $selectedPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        <?php endif; ?>
         <?php if ($selectedPlanetId): ?>
             <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Retour au laboratoire</a>
         <?php endif; ?>

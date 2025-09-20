@@ -304,6 +304,7 @@ return function (Container $container): void {
 
     $container->set(FleetController::class, fn (Container $c) => new FleetController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(ShipCatalog::class),
         $c->get(ProcessShipBuildQueue::class),
@@ -317,6 +318,7 @@ return function (Container $container): void {
 
     $container->set(JournalController::class, fn (Container $c) => new JournalController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),

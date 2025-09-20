@@ -51,6 +51,7 @@ class ShipyardController extends AbstractController
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
                 'csrf_logout' => $this->generateCsrfToken('logout'),
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -111,6 +112,11 @@ class ShipyardController extends AbstractController
 
         $overview = $this->getOverview->execute($selectedId);
         $planet = $overview['planet'];
+        $buildingLevels = $overview['buildingLevels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
         $activePlanetSummary = [
             'planet' => $planet,
             'resources' => [
@@ -133,6 +139,7 @@ class ShipyardController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'shipyard',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 

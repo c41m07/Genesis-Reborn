@@ -61,7 +61,7 @@ ob_start();
     </div>
 </section>
 
-<div class="grid grid--cards">
+<div class="card-grid card-grid--quad">
     <?= $card([
         'title' => 'Identité du compte',
         'subtitle' => 'Informations personnelles et de connexion',

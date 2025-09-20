@@ -97,11 +97,6 @@ ob_start();
                 </header>
                 <div class="panel__body metrics metrics--compact">
                     <div class="metric">
-                        <span class="metric__label">Score impérial</span>
-                        <strong class="metric__value"><?= number_format($empire['points'] ?? 0) ?></strong>
-                        <span class="metric__hint">Bâtiments + recherches + puissance militaire.</span>
-                    </div>
-                    <div class="metric">
                         <span class="metric__label">Points d’infrastructure</span>
                         <strong class="metric__value"><?= number_format($empire['buildingPoints'] ?? 0) ?></strong>
                         <span class="metric__hint">Total des niveaux de bâtiments développés.</span>

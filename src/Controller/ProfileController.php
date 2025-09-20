@@ -44,6 +44,7 @@ class ProfileController extends AbstractController
 
         $selectedPlanetId = null;
         $activePlanetSummary = null;
+        $facilityStatuses = [];
         if ($planetSummaries !== []) {
             $selectedPlanetId = $planetSummaries[0]['planet']->getId();
             $activePlanetSummary = [
@@ -54,6 +55,11 @@ class ProfileController extends AbstractController
                     'hydrogen' => ['value' => $planetSummaries[0]['planet']->getHydrogen(), 'perHour' => $planetSummaries[0]['production']['hydrogen']],
                     'energy' => ['value' => $planetSummaries[0]['planet']->getEnergy(), 'perHour' => $planetSummaries[0]['production']['energy']],
                 ],
+            ];
+            $levels = $planetSummaries[0]['levels'] ?? [];
+            $facilityStatuses = [
+                'research_lab' => ($levels['research_lab'] ?? 0) > 0,
+                'shipyard' => ($levels['shipyard'] ?? 0) > 0,
             ];
         }
 
@@ -72,6 +78,7 @@ class ProfileController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'profile',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }
