@@ -79,4 +79,36 @@ class BuildingCalculatorTest extends TestCase
         self::assertSame(30, $levelOne['hydrogen'] ?? 0);
         self::assertGreaterThan($levelOne['hydrogen'], $levelTwo['hydrogen']);
     }
+
+    public function testAntimatterReactorUpkeepAndProduction(): void
+    {
+        $definition = new BuildingDefinition(
+            'antimatter_reactor',
+            'Réacteur à antimatière',
+            ['metal' => 3200, 'crystal' => 2200, 'hydrogen' => 1200],
+            1.55,
+            90,
+            1.6,
+            800,
+            1.2,
+            0,
+            1.0,
+            false,
+            'energy',
+            [],
+            null,
+            [],
+            ['hydrogen' => ['base' => 60, 'growth' => 1.2]]
+        );
+
+        $levelOneProduction = $this->calculator->productionAt($definition, 1);
+        $levelTwoProduction = $this->calculator->productionAt($definition, 2);
+        $levelOneUpkeep = $this->calculator->upkeepAt($definition, 1);
+        $levelTwoUpkeep = $this->calculator->upkeepAt($definition, 2);
+
+        self::assertSame(800, $levelOneProduction);
+        self::assertGreaterThan($levelOneProduction, $levelTwoProduction);
+        self::assertSame(60, $levelOneUpkeep['hydrogen'] ?? 0);
+        self::assertGreaterThan($levelOneUpkeep['hydrogen'] ?? 0, $levelTwoUpkeep['hydrogen'] ?? 0);
+    }
 }
