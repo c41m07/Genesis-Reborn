@@ -1,28 +1,8 @@
--- Genesis Reborn - Seed data for solo prototype
+-- Align catalog tables with updated game configuration
+START TRANSACTION;
 
--- Resources
-INSERT INTO resources (`key`, name, description, unit, is_tradable, is_consumable, created_at)
-VALUES
-    ('metal', 'Métal', 'Ressource structure de base extraite des mines planétaires.', 'tonnes', 1, 1, NOW()),
-    ('crystal', 'Cristal', 'Cristal ionique indispensable aux systèmes électroniques.', 'kg', 1, 1, NOW()),
-    ('hydrogen', 'Hydrogène', 'Hydrogène lourd raffiné utilisé comme carburant.', 'kg', 1, 1, NOW()),
-    ('energy', 'Énergie', 'Production énergétique nette disponible pour les opérations.', 'MW', 0, 0, NOW());
-
--- Building definitions
-INSERT INTO buildings (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_production_metal, base_production_crystal, base_production_hydrogen, base_storage, base_energy_production, base_energy_consumption, unlock_requirements, created_at, updated_at)
-VALUES
-    ('metal_mine', 'Mine de métal', 'Mine automatisée dédiée à l''extraction du métal brut.', 'production', 60, 15, 0, 0, 1.600, 100, 0, 0, 0, 0, 10, NULL, NOW(), NOW()),
-    ('crystal_mine', 'Mine de cristal', 'Extrayez du cristal pur pour vos technologies avancées.', 'production', 48, 24, 0, 0, 1.600, 0, 50, 0, 0, 0, 15, NULL, NOW(), NOW()),
-    ('solar_plant', 'Centrale solaire', 'Capte la lumière stellaire pour alimenter la colonie.', 'energy', 120, 60, 0, 0, 1.600, 0, 0, 0, 0, 100, 0, NULL, NOW(), NOW()),
-    ('fusion_reactor', 'Réacteur à fusion', 'Production énergétique stable via la fusion d''hydrogène.', 'energy', 900, 360, 180, 0, 1.550, 0, 0, 0, 0, 320, 0, '{"buildings":{"solar_plant":5,"hydrogen_plant":3},"technologies":{"reactor_advanced":2}}', NOW(), NOW()),
-    ('hydrogen_plant', 'Générateur d’hydrogène', 'Générateur atmosphérique spécialisé dans l''hydrogène lourd.', 'production', 150, 100, 0, 0, 1.600, 0, 0, 30, 0, 0, 20, '{"buildings":{"solar_plant":1}}', NOW(), NOW()),
-    ('storage_depot', 'Entrepôt planétaire', 'Augmente la capacité de stockage globale des ressources.', 'storage', 1000, 400, 0, 0, 1.600, 0, 0, 0, 50000, 0, 0, '{"buildings":{"metal_mine":4,"crystal_mine":3},"technologies":{"logistics":2}}', NOW(), NOW()),
-    ('research_lab', 'Laboratoire Helios', 'Centre scientifique pour développer de nouvelles technologies.', 'research', 200, 320, 80, 0, 1.650, 0, 0, 0, 0, 0, 22, '{"buildings":{"solar_plant":1,"crystal_mine":1}}', NOW(), NOW()),
-    ('shipyard', 'Chantier spatial Asterion', 'Infrastructures lourdes pour construire les vaisseaux.', 'shipyard', 420, 260, 120, 0, 1.700, 0, 0, 0, 0, 0, 35, '{"buildings":{"research_lab":1},"technologies":{"engineering_heavy":1}}', NOW(), NOW());
-
--- Technology definitions
-INSERT INTO technologies (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_duration_seconds, unlock_requirements, created_at, updated_at)
-VALUES
+-- Upsert technologies to ensure all expected research entries exist
+INSERT INTO technologies (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_duration_seconds, unlock_requirements, created_at, updated_at) VALUES
     ('propulsion_basic', 'Propulsion spatiale', 'Maîtrise des moteurs ioniques et de la navigation subluminique.', 'fleet', 120, 80, 40, 0, 1.650, 50, '{"buildings":{"research_lab":1}}', NOW(), NOW()),
     ('life_support', 'Systèmes de survie', 'Contrôle environnemental, recyclage et maintien des équipages.', 'research', 90, 110, 40, 0, 1.600, 55, '{"buildings":{"research_lab":1}}', NOW(), NOW()),
     ('miniaturisation', 'Miniaturisation des systèmes', 'Réduction des composants pour optimiser la place à bord.', 'research', 140, 150, 60, 0, 1.650, 60, '{"technologies":{"life_support":2},"buildings":{"research_lab":1}}', NOW(), NOW()),
@@ -44,11 +24,113 @@ VALUES
     ('stellar_shipyards', 'Chantiers stellaires', 'Assemblage orbital massif et infrastructures d’amarrage.', 'economy', 720, 660, 420, 0, 1.800, 185, '{"technologies":{"superstructures":5,"engineering_heavy":7},"buildings":{"research_lab":4}}', NOW(), NOW()),
     ('autonomous_hangars', 'Hangars autonomes', 'Réseaux de lancement automatisés pour escadrilles de chasseurs.', 'economy', 760, 680, 440, 0, 1.800, 190, '{"technologies":{"stellar_shipyards":2,"tactical_coordination":4},"buildings":{"research_lab":4}}', NOW(), NOW()),
     ('super_weapon', 'Armes de destruction massive', 'Rayons planétaires, bombardements orbitaux et super-armes.', 'military', 880, 760, 520, 0, 1.850, 210, '{"technologies":{"weapon_capital":4,"reactor_antimatter":4},"buildings":{"research_lab":5}}', NOW(), NOW()),
-    ('fleet_networks', 'Réseaux stratégiques de flotte', 'Commandement interstellaire et coordination des armadas.', 'support', 820, 780, 480, 0, 1.820, 205, '{"technologies":{"tactical_coordination":6,"autonomous_hangars":3},"buildings":{"research_lab":5}}', NOW(), NOW());
+    ('fleet_networks', 'Réseaux stratégiques de flotte', 'Commandement interstellaire et coordination des armadas.', 'support', 820, 780, 480, 0, 1.820, 205, '{"technologies":{"tactical_coordination":6,"autonomous_hangars":3},"buildings":{"research_lab":5}}', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    description = VALUES(description),
+    category = VALUES(category),
+    base_cost_metal = VALUES(base_cost_metal),
+    base_cost_crystal = VALUES(base_cost_crystal),
+    base_cost_hydrogen = VALUES(base_cost_hydrogen),
+    base_energy_cost = VALUES(base_energy_cost),
+    cost_multiplier = VALUES(cost_multiplier),
+    base_duration_seconds = VALUES(base_duration_seconds),
+    unlock_requirements = VALUES(unlock_requirements),
+    updated_at = VALUES(updated_at);
 
--- Ship definitions
-INSERT INTO ships (`key`, name, description, class, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, build_time_seconds, base_speed, base_cargo, fuel_per_distance, attack, defense, shield, unlock_requirements, created_at, updated_at)
-VALUES
+DROP TEMPORARY TABLE IF EXISTS tmp_technology_key_map;
+CREATE TEMPORARY TABLE tmp_technology_key_map (
+    old_key VARCHAR(64) PRIMARY KEY,
+    new_key VARCHAR(64) NOT NULL
+);
+INSERT INTO tmp_technology_key_map (old_key, new_key) VALUES
+    ('energy_technology', 'life_support'),
+    ('laser_technology', 'weapon_light'),
+    ('ion_technology', 'weapon_medium'),
+    ('plasma_technology', 'weapon_heavy'),
+    ('combustion_drive', 'propulsion_basic'),
+    ('impulse_drive', 'reactor_advanced'),
+    ('hyperspace_drive', 'reactor_antimatter'),
+    ('espionage_technology', 'radar_basic'),
+    ('computer_technology', 'logistics'),
+    ('astrophysics', 'fleet_networks');
+
+UPDATE research_queue rq
+JOIN tmp_technology_key_map map ON rq.rkey = map.old_key
+SET rq.rkey = map.new_key;
+
+INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
+SELECT pt.player_id, tnew.id, pt.level, pt.created_at, NOW()
+FROM player_technologies pt
+JOIN technologies told ON pt.technology_id = told.id
+JOIN tmp_technology_key_map map ON told.`key` = map.old_key
+JOIN technologies tnew ON tnew.`key` = map.new_key
+ON DUPLICATE KEY UPDATE level = GREATEST(player_technologies.level, VALUES(level)), updated_at = VALUES(updated_at);
+
+DELETE t FROM technologies t
+JOIN tmp_technology_key_map map ON t.`key` = map.old_key;
+
+INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
+SELECT p.id, t.id, 0, NOW(), NOW()
+FROM players p
+CROSS JOIN technologies t
+LEFT JOIN player_technologies pt ON pt.player_id = p.id AND pt.technology_id = t.id
+WHERE pt.id IS NULL;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_technology_key_map;
+
+-- Upsert buildings to match configuration keys
+INSERT INTO buildings (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_production_metal, base_production_crystal, base_production_hydrogen, base_storage, base_energy_production, base_energy_consumption, unlock_requirements, created_at, updated_at) VALUES
+    ('metal_mine', 'Mine de métal', 'Mine automatisée dédiée à l''extraction du métal brut.', 'production', 60, 15, 0, 0, 1.600, 100, 0, 0, 0, 0, 10, NULL, NOW(), NOW()),
+    ('crystal_mine', 'Mine de cristal', 'Extrayez du cristal pur pour vos technologies avancées.', 'production', 48, 24, 0, 0, 1.600, 0, 50, 0, 0, 0, 15, NULL, NOW(), NOW()),
+    ('solar_plant', 'Centrale solaire', 'Capte la lumière stellaire pour alimenter la colonie.', 'energy', 120, 60, 0, 0, 1.600, 0, 0, 0, 0, 100, 0, NULL, NOW(), NOW()),
+    ('fusion_reactor', 'Réacteur à fusion', 'Production énergétique stable via la fusion d''hydrogène.', 'energy', 900, 360, 180, 0, 1.550, 0, 0, 0, 0, 320, 0, '{"buildings":{"solar_plant":5,"hydrogen_plant":3},"technologies":{"reactor_advanced":2}}', NOW(), NOW()),
+    ('hydrogen_plant', 'Générateur d’hydrogène', 'Générateur atmosphérique spécialisé dans l''hydrogène lourd.', 'production', 150, 100, 0, 0, 1.600, 0, 0, 30, 0, 0, 20, '{"buildings":{"solar_plant":1}}', NOW(), NOW()),
+    ('storage_depot', 'Entrepôt planétaire', 'Augmente la capacité de stockage globale des ressources.', 'storage', 1000, 400, 0, 0, 1.600, 0, 0, 0, 50000, 0, 0, '{"buildings":{"metal_mine":4,"crystal_mine":3},"technologies":{"logistics":2}}', NOW(), NOW()),
+    ('research_lab', 'Laboratoire Helios', 'Centre scientifique pour développer de nouvelles technologies.', 'research', 200, 320, 80, 0, 1.650, 0, 0, 0, 0, 0, 22, '{"buildings":{"solar_plant":1,"crystal_mine":1}}', NOW(), NOW()),
+    ('shipyard', 'Chantier spatial Asterion', 'Infrastructures lourdes pour construire les vaisseaux.', 'shipyard', 420, 260, 120, 0, 1.700, 0, 0, 0, 0, 0, 35, '{"buildings":{"research_lab":1},"technologies":{"engineering_heavy":1}}', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    description = VALUES(description),
+    category = VALUES(category),
+    base_cost_metal = VALUES(base_cost_metal),
+    base_cost_crystal = VALUES(base_cost_crystal),
+    base_cost_hydrogen = VALUES(base_cost_hydrogen),
+    base_energy_cost = VALUES(base_energy_cost),
+    cost_multiplier = VALUES(cost_multiplier),
+    base_production_metal = VALUES(base_production_metal),
+    base_production_crystal = VALUES(base_production_crystal),
+    base_production_hydrogen = VALUES(base_production_hydrogen),
+    base_storage = VALUES(base_storage),
+    base_energy_production = VALUES(base_energy_production),
+    base_energy_consumption = VALUES(base_energy_consumption),
+    unlock_requirements = VALUES(unlock_requirements),
+    updated_at = VALUES(updated_at);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_building_key_map;
+CREATE TEMPORARY TABLE tmp_building_key_map (
+    old_key VARCHAR(64) PRIMARY KEY,
+    new_key VARCHAR(64) NOT NULL
+);
+INSERT INTO tmp_building_key_map (old_key, new_key) VALUES ('hydrogen_extractor', 'hydrogen_plant');
+
+UPDATE build_queue b
+JOIN tmp_building_key_map map ON b.bkey = map.old_key
+SET b.bkey = map.new_key;
+
+UPDATE planet_buildings pb
+JOIN buildings bold ON pb.building_id = bold.id
+JOIN tmp_building_key_map map ON bold.`key` = map.old_key
+JOIN buildings bnew ON bnew.`key` = map.new_key
+SET pb.building_id = bnew.id;
+
+DELETE b FROM buildings b
+JOIN tmp_building_key_map map ON b.`key` = map.old_key;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_building_key_map;
+
+-- Upsert ships to keep database aligned with ship catalog
+INSERT INTO ships (`key`, name, description, class, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, build_time_seconds, base_speed, base_cargo, fuel_per_distance, attack, defense, shield, unlock_requirements, created_at, updated_at) VALUES
     ('fighter', 'Ailes Lyrae', 'Véhicule agile conçu pour intercepter rapidement les menaces proches et saturer la défense adverse.', 'fighter', 220, 90, 45, 0, 60, 18, 0, 0.000000, 6, 3, 3, '{"technologies":{"propulsion_basic":1,"life_support":2,"miniaturisation":2,"weapon_light":2,"radar_basic":1}}', NOW(), NOW()),
     ('bomber', 'Maraudeur Obsidien', 'Transporte un arsenal de torpilles magnétiques capables de briser le blindage des cibles capitales.', 'fighter', 420, 260, 120, 0, 140, 12, 0, 0.000000, 15, 6, 6, '{"technologies":{"life_support":2,"miniaturisation":2,"armor_basic":2,"weapon_light":6,"weapon_medium":1}}', NOW(), NOW()),
     ('interceptor', 'Éclair Stentor', 'Priorité à la vitesse et à la précision pour contrer les chasseurs ennemis et les éclaireurs.', 'fighter', 280, 160, 90, 0, 90, 24, 0, 0.000000, 7, 4, 4, '{"technologies":{"propulsion_basic":2,"life_support":3,"miniaturisation":3,"weapon_light":3,"radar_basic":3}}', NOW(), NOW()),
@@ -68,49 +150,58 @@ VALUES
     ('super_battleship', 'Super-cuirassé Empyrium', 'Vaisseau emblématique, quasiment indestructible, arborant une armure multi-couches et un armement d’anéantissement.', 'capital', 54000, 42000, 12000, 0, 9000, 4, 0, 0.000000, 420, 520, 520, '{"technologies":{"engineering_heavy":7,"superstructures":5,"stellar_shipyards":3,"reactor_advanced":6,"reactor_antimatter":3,"weapon_heavy":6,"weapon_capital":3,"armor_enhanced":6,"shield_energy":5,"defense_multilayer":5}}', NOW(), NOW()),
     ('siege_breaker', 'Cuirassé de siège Ragnarok', 'Optimisé pour raser les fortifications planétaires grâce à des canons gravitoniques massifs.', 'capital', 62000, 46000, 15000, 0, 9600, 4, 0, 0.000000, 480, 480, 480, '{"technologies":{"engineering_heavy":7,"superstructures":5,"stellar_shipyards":3,"weapon_capital":3,"super_weapon":1,"reactor_antimatter":3,"defense_multilayer":4,"shield_energy":5}}', NOW(), NOW()),
     ('super_dreadnought', 'Super-dreadnought Nemesis', 'Capable de déployer un canon stellaire, ce navire dicte l’issue de n’importe quelle bataille.', 'capital', 72000, 56000, 18000, 0, 10800, 3, 0, 0.000000, 560, 580, 580, '{"technologies":{"engineering_heavy":7,"superstructures":5,"stellar_shipyards":3,"reactor_advanced":6,"reactor_antimatter":4,"weapon_heavy":6,"weapon_capital":4,"super_weapon":1,"armor_enhanced":6,"shield_energy":5,"defense_multilayer":5,"fleet_networks":3}}', NOW(), NOW()),
-    ('battle_station', 'Citadelle Astra', 'Forteresse orbitale dotée d’un anneau de super-lasers et de plates-formes autonomes.', 'capital', 95000, 82000, 25000, 0, 14400, 0, 0, 0.000000, 680, 760, 760, '{"technologies":{"engineering_heavy":7,"superstructures":6,"stellar_shipyards":4,"armor_enhanced":6,"shield_energy":5,"defense_multilayer":5,"weapon_capital":3,"super_weapon":1,"fleet_networks":3}}', NOW(), NOW());
+    ('battle_station', 'Citadelle Astra', 'Forteresse orbitale dotée d’un anneau de super-lasers et de plates-formes autonomes.', 'capital', 95000, 82000, 25000, 0, 14400, 0, 0, 0.000000, 680, 760, 760, '{"technologies":{"engineering_heavy":7,"superstructures":6,"stellar_shipyards":4,"armor_enhanced":6,"shield_energy":5,"defense_multilayer":5,"weapon_capital":3,"super_weapon":1,"fleet_networks":3}}', NOW(), NOW())
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    description = VALUES(description),
+    class = VALUES(class),
+    base_cost_metal = VALUES(base_cost_metal),
+    base_cost_crystal = VALUES(base_cost_crystal),
+    base_cost_hydrogen = VALUES(base_cost_hydrogen),
+    base_energy_cost = VALUES(base_energy_cost),
+    build_time_seconds = VALUES(build_time_seconds),
+    base_speed = VALUES(base_speed),
+    base_cargo = VALUES(base_cargo),
+    fuel_per_distance = VALUES(fuel_per_distance),
+    attack = VALUES(attack),
+    defense = VALUES(defense),
+    shield = VALUES(shield),
+    unlock_requirements = VALUES(unlock_requirements),
+    updated_at = VALUES(updated_at);
 
--- PvE missions
-INSERT INTO pve_missions (`key`, name, description, difficulty, recommended_power, base_duration_seconds, reward_metal, reward_crystal, reward_hydrogen, reward_experience, unlock_requirements, created_at, updated_at)
-VALUES
-    ('pirate_outpost', 'Avant-poste pirate', 'Éliminez une bande de pirates orbitant une lune minière.', 'easy', 1000, 900, 5000, 2000, 1000, 50, NULL, NOW(), NOW()),
-    ('asteroid_belt', 'Ceinture d''astéroïdes', 'Récupérez des minéraux rares au cœur d''une ceinture dense.', 'normal', 2000, 1200, 8000, 5000, 1500, 80, '{"technologies":{"propulsion_basic":3}}', NOW(), NOW()),
-    ('nebula_patrol', 'Patrouille de nébuleuse', 'Traquez des éclaireurs hostiles dissimulés dans la nébuleuse.', 'normal', 2500, 1800, 6000, 6000, 3000, 120, '{"technologies":{"reactor_advanced":3}}', NOW(), NOW()),
-    ('derelict_station', 'Station en dérive', 'Explorez une station abandonnée et sécurisez son noyau.', 'hard', 5000, 2400, 12000, 9000, 4000, 180, '{"technologies":{"weapon_heavy":2}}', NOW(), NOW()),
-    ('ancient_relay', 'Relais antique', 'Réactivez un relais précurseur pour obtenir des données uniques.', 'extreme', 8000, 3600, 20000, 16000, 8000, 300, '{"technologies":{"fleet_networks":2}}', NOW(), NOW());
+DROP TEMPORARY TABLE IF EXISTS tmp_ship_key_map;
+CREATE TEMPORARY TABLE tmp_ship_key_map (
+    old_key VARCHAR(64) PRIMARY KEY,
+    new_key VARCHAR(64) NOT NULL
+);
+INSERT INTO tmp_ship_key_map (old_key, new_key) VALUES
+    ('small_cargo', 'heavy_transport'),
+    ('large_cargo', 'heavy_transport'),
+    ('light_fighter', 'fighter'),
+    ('heavy_fighter', 'heavy_fighter'),
+    ('cruiser', 'light_cruiser'),
+    ('battleship', 'battleship');
 
--- Demo player
-INSERT INTO players (email, username, password_hash, created_at, updated_at, last_login_at)
-VALUES ('demo@genesis.test', 'demo', '$2y$12$e0UmNdog/qnt2fpgT6oGk.bhVZkN6nECqIFznKbkUM3bgzuHzMcpW', NOW(), NOW(), NULL);
+UPDATE ship_build_queue sbq
+JOIN tmp_ship_key_map map ON sbq.skey = map.old_key
+SET sbq.skey = map.new_key;
 
--- Home planet for demo player
-INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld,
-    metal, crystal, hydrogen, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
-VALUES
-    (LAST_INSERT_ID(), 'Nova Prime', 1, 7, 8, 12800, -10, 45, 1, 12000, 6000, 3000, 80, 120000, 90000, 60000, 150, NOW(), NOW(), NOW());
+INSERT INTO fleet_ships (player_id, fleet_id, ship_id, quantity, created_at, updated_at)
+SELECT fs.player_id, fs.fleet_id, snew.id, SUM(fs.quantity), NOW(), NOW()
+FROM fleet_ships fs
+JOIN ships sold ON sold.id = fs.ship_id
+JOIN tmp_ship_key_map map ON sold.`key` = map.old_key
+JOIN ships snew ON snew.`key` = map.new_key
+GROUP BY fs.player_id, fs.fleet_id, snew.id
+ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity), updated_at = VALUES(updated_at);
 
--- Ensure building levels for the demo colony
-INSERT INTO planet_buildings (player_id, planet_id, building_id, level, created_at, updated_at)
-SELECT p.player_id, p.planet_id, b.id, lvl.level, NOW(), NOW()
-FROM (
-    SELECT id AS planet_id, player_id FROM planets WHERE name = 'Nova Prime'
-) AS p
-JOIN (
-    SELECT 'metal_mine' AS bkey, 6 AS level UNION ALL
-    SELECT 'crystal_mine', 5 UNION ALL
-    SELECT 'hydrogen_plant', 3 UNION ALL
-    SELECT 'solar_plant', 7 UNION ALL
-    SELECT 'fusion_reactor', 3 UNION ALL
-    SELECT 'storage_depot', 3 UNION ALL
-    SELECT 'research_lab', 2 UNION ALL
-    SELECT 'shipyard', 2
-) AS lvl ON 1=1
-JOIN buildings b ON b.`key` = lvl.bkey;
+DELETE fs FROM fleet_ships fs
+JOIN ships sold ON sold.id = fs.ship_id
+JOIN tmp_ship_key_map map ON sold.`key` = map.old_key;
 
--- Initialise known technologies for the demo player at level 0
-INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
-SELECT pl.id AS player_id, tech.id, 0 AS level, NOW(), NOW()
-FROM players pl
-JOIN technologies tech ON 1=1
-WHERE pl.username = 'demo';
+DELETE s FROM ships s
+JOIN tmp_ship_key_map map ON s.`key` = map.old_key;
 
+DROP TEMPORARY TABLE IF EXISTS tmp_ship_key_map;
+
+COMMIT;

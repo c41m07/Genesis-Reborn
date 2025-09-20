@@ -100,19 +100,19 @@ class QueueProcessingTest extends TestCase
             1 => ['research_lab' => 3],
         ]);
         $researchStates = new InMemoryResearchStateRepository([
-            1 => ['energy_tech' => 0],
+            1 => ['propulsion_basic' => 0],
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
         $catalog = new ResearchCatalog([
-            'energy_tech' => [
-                'label' => 'Technologie énergétique',
-                'category' => 'Sciences',
+            'propulsion_basic' => [
+                'label' => 'Propulsion spatiale',
+                'category' => 'Propulsion',
                 'description' => '',
-                'base_cost' => ['metal' => 100],
-                'base_time' => 5,
-                'growth_cost' => 1.5,
-                'growth_time' => 2.0,
-                'max_level' => 5,
+                'base_cost' => ['metal' => 120, 'crystal' => 80, 'hydrogen' => 40],
+                'base_time' => 50,
+                'growth_cost' => 1.65,
+                'growth_time' => 1.6,
+                'max_level' => 10,
                 'requires' => [],
                 'requires_lab' => 1,
                 'image' => '',
@@ -124,17 +124,17 @@ class QueueProcessingTest extends TestCase
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
         $processor = new ProcessResearchQueue($researchQueue, $researchStates);
 
-        $result = $useCase->execute(1, 42, 'energy_tech');
+        $result = $useCase->execute(1, 42, 'propulsion_basic');
         self::assertTrue($result['success']);
-        self::assertSame(0, $researchStates->getLevels(1)['energy_tech']);
+        self::assertSame(0, $researchStates->getLevels(1)['propulsion_basic']);
         self::assertSame(1, $researchQueue->countActive(1));
 
         $researchQueue->forceComplete(1);
         $processor->process(1);
 
-        self::assertSame(1, $researchStates->getLevels(1)['energy_tech']);
+        self::assertSame(1, $researchStates->getLevels(1)['propulsion_basic']);
         self::assertSame(0, $researchQueue->countActive(1));
-        self::assertSame(100, $playerStats->getScienceSpending(42));
+        self::assertSame(240, $playerStats->getScienceSpending(42));
     }
 
     public function testShipProductionIsQueuedAndProcessed(): void
@@ -321,17 +321,17 @@ class QueueProcessingTest extends TestCase
             1 => ['research_lab' => 3],
         ]);
         $researchStates = new InMemoryResearchStateRepository([
-            1 => ['energy_tech' => 0],
+            1 => ['propulsion_basic' => 0],
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
         $catalog = new ResearchCatalog([
-            'energy_tech' => [
-                'label' => 'Technologie énergétique',
-                'category' => 'Sciences',
+            'propulsion_basic' => [
+                'label' => 'Propulsion spatiale',
+                'category' => 'Propulsion',
                 'description' => '',
-                'base_cost' => ['metal' => 100],
-                'base_time' => 5,
+                'base_cost' => ['metal' => 120, 'crystal' => 80],
+                'base_time' => 50,
                 'growth_cost' => 1.5,
                 'growth_time' => 2.0,
                 'max_level' => 5,
@@ -343,9 +343,9 @@ class QueueProcessingTest extends TestCase
         $calculator = new ResearchCalculator();
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
-        $useCase->execute(1, 11, 'energy_tech');
-        $useCase->execute(1, 11, 'energy_tech');
-        $useCase->execute(1, 11, 'energy_tech');
+        $useCase->execute(1, 11, 'propulsion_basic');
+        $useCase->execute(1, 11, 'propulsion_basic');
+        $useCase->execute(1, 11, 'propulsion_basic');
 
         $jobs = $researchQueue->getActiveQueue(1);
         usort($jobs, static fn ($a, $b) => $a->getTargetLevel() <=> $b->getTargetLevel());
@@ -363,14 +363,14 @@ class QueueProcessingTest extends TestCase
             1 => ['research_lab' => 3],
         ]);
         $researchStates = new InMemoryResearchStateRepository([
-            1 => ['energy_tech' => 0],
+            1 => ['propulsion_basic' => 0],
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
         $catalog = new ResearchCatalog([
-            'energy_tech' => [
-                'label' => 'Technologie énergétique',
-                'category' => 'Sciences',
+            'propulsion_basic' => [
+                'label' => 'Propulsion spatiale',
+                'category' => 'Propulsion',
                 'description' => '',
                 'base_cost' => ['metal' => 50],
                 'base_time' => 4,
@@ -386,11 +386,11 @@ class QueueProcessingTest extends TestCase
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         for ($i = 0; $i < 5; ++$i) {
-            $result = $useCase->execute(1, 21, 'energy_tech');
+            $result = $useCase->execute(1, 21, 'propulsion_basic');
             self::assertTrue($result['success']);
         }
 
-        $sixth = $useCase->execute(1, 21, 'energy_tech');
+        $sixth = $useCase->execute(1, 21, 'propulsion_basic');
         self::assertFalse($sixth['success']);
         self::assertSame('La file de recherche est pleine (5 programmes maximum).', $sixth['message']);
         self::assertSame(5, $researchQueue->countActive(1));
