@@ -104,7 +104,12 @@ return function (Container $container): void {
         return new ResearchCatalog($config);
     });
 
-    $container->set(ResearchCalculator::class, fn () => new ResearchCalculator());
+    $container->set(ResearchCalculator::class, function () {
+        $config = require __DIR__ . '/game/buildings.php';
+        $bonus = (float) ($config['research_lab']['research_speed_bonus'] ?? 0.0);
+
+        return new ResearchCalculator($bonus);
+    });
 
     $container->set(ShipCatalog::class, function () {
         $config = require __DIR__ . '/game/ships.php';
@@ -222,7 +227,9 @@ return function (Container $container): void {
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(ShipCatalog::class),
-        $c->get(ProcessShipBuildQueue::class)
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class)
     ));
 
     $container->set(BuildShips::class, fn (Container $c) => new BuildShips(
@@ -231,6 +238,8 @@ return function (Container $container): void {
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(PlayerStatsRepositoryInterface::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class),
         $c->get(ShipCatalog::class)
     ));
 

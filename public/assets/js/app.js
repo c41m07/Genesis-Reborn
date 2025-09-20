@@ -38,7 +38,7 @@ const resourceTicker = {
     intervalId: null,
 };
 
-const renderResourceMeter = (key, value, perHour) => {
+const renderResourceMeter = (key, value, perHour, capacity) => {
     const meter = document.querySelector(`.resource-meter[data-resource="${CSS.escape(key)}"]`);
     if (!meter) {
         return;
@@ -46,12 +46,29 @@ const renderResourceMeter = (key, value, perHour) => {
 
     const valueElement = meter.querySelector('[data-resource-value]');
     const rateElement = meter.querySelector('[data-resource-rate]');
-    const normalizedValue = Math.floor(Number.isFinite(value) ? value : 0);
-    const normalizedPerHour = Number.isFinite(perHour) ? perHour : 0;
+    const capacityElement = meter.querySelector('[data-resource-capacity-display]');
+    const numericCapacity = typeof capacity === 'number' ? capacity : Number(capacity ?? 0);
+    const normalizedCapacity = Math.max(0, Math.floor(Number.isFinite(numericCapacity) ? numericCapacity : 0));
+    const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+    const normalizedValue = Math.max(0, Math.floor(Number.isFinite(numericValue) ? numericValue : 0));
+    const cappedValue = normalizedCapacity > 0 ? Math.min(normalizedValue, normalizedCapacity) : normalizedValue;
+    const numericPerHour = typeof perHour === 'number' ? perHour : Number(perHour ?? 0);
+    const normalizedPerHour = Number.isFinite(numericPerHour) ? numericPerHour : 0;
 
     if (valueElement) {
-        valueElement.textContent = formatNumber(normalizedValue);
+        valueElement.textContent = formatNumber(cappedValue);
     }
+
+    if (capacityElement) {
+        capacityElement.textContent = normalizedCapacity > 0
+            ? `/ ${formatNumber(normalizedCapacity)}`
+            : '/ —';
+    }
+
+    meter.dataset.resourceCapacity = String(normalizedCapacity);
+
+    const isDepleted = cappedValue <= 0 && normalizedPerHour < 0;
+    meter.classList.toggle('resource-meter--warning', isDepleted);
 
     if (rateElement) {
         const ratePrefix = key !== 'energy' && normalizedPerHour > 0 ? '+' : '';
@@ -83,10 +100,21 @@ const startResourceTicker = () => {
                 return;
             }
 
-            const increment = state.perHour * (elapsedSeconds / 3600);
-            state.value += increment;
+            const perHour = Number.isFinite(state.perHour) ? state.perHour : 0;
+            const capacity = Number.isFinite(state.capacity) ? Math.max(0, state.capacity) : 0;
+            const currentValue = Number.isFinite(state.value) ? state.value : 0;
+            const increment = perHour * (elapsedSeconds / 3600);
+            let nextValue = currentValue + increment;
+            nextValue = Math.max(0, nextValue);
+            if (capacity > 0) {
+                nextValue = Math.min(nextValue, capacity);
+            }
+
+            state.value = nextValue;
+            state.perHour = perHour;
+            state.capacity = capacity;
             state.timestamp = now;
-            renderResourceMeter(key, state.value, state.perHour);
+            renderResourceMeter(key, state.value, perHour, capacity);
         });
     }, 1000);
 };
@@ -97,16 +125,22 @@ const applyResourceSnapshot = (resources = {}) => {
 
     Object.entries(resources).forEach(([key, data]) => {
         const source = data && typeof data === 'object' ? data : {};
-        const value = Number(source.value ?? 0);
-        const perHour = Number(source.perHour ?? 0);
+        const numericValue = typeof source.value === 'number' ? source.value : Number(source.value ?? 0);
+        const numericPerHour = typeof source.perHour === 'number' ? source.perHour : Number(source.perHour ?? 0);
+        const numericCapacity = typeof source.capacity === 'number' ? source.capacity : Number(source.capacity ?? 0);
+        const normalizedCapacity = Math.max(0, Math.floor(Number.isFinite(numericCapacity) ? numericCapacity : 0));
+        const normalizedPerHour = Number.isFinite(numericPerHour) ? numericPerHour : 0;
+        const normalizedValue = Math.max(0, Number.isFinite(numericValue) ? numericValue : 0);
+        const cappedValue = normalizedCapacity > 0 ? Math.min(normalizedValue, normalizedCapacity) : normalizedValue;
 
         resourceTicker.states.set(key, {
-            value,
-            perHour,
+            value: cappedValue,
+            perHour: normalizedPerHour,
+            capacity: normalizedCapacity,
             timestamp: now,
         });
 
-        renderResourceMeter(key, value, perHour);
+        renderResourceMeter(key, cappedValue, normalizedPerHour, normalizedCapacity);
     });
 
     startResourceTicker();
@@ -129,10 +163,18 @@ const bootstrapResourceTicker = () => {
         const rateText = meter.querySelector('[data-resource-rate]')?.textContent ?? '0';
         const numericValue = Number(valueText.replace(/[^0-9-]/g, ''));
         const numericRate = Number(rateText.replace(/[^0-9-]/g, ''));
+        const capacityAttr = meter.dataset.resourceCapacity ?? meter.getAttribute('data-resource-capacity') ?? '0';
+        let numericCapacity = Number(capacityAttr);
+        if (!Number.isFinite(numericCapacity)) {
+            const capacityText = meter.querySelector('[data-resource-capacity-display]')?.textContent ?? '0';
+            const parsedCapacity = Number(capacityText.replace(/[^0-9-]/g, ''));
+            numericCapacity = Number.isFinite(parsedCapacity) ? parsedCapacity : 0;
+        }
 
         snapshot[key] = {
             value: Number.isFinite(numericValue) ? numericValue : 0,
             perHour: Number.isFinite(numericRate) ? numericRate : 0,
+            capacity: Number.isFinite(numericCapacity) ? numericCapacity : 0,
         };
     });
 
@@ -398,6 +440,52 @@ const initAutoSubmitSelects = () => {
     });
 };
 
+const initRequirementsPanels = () => {
+    const panels = document.querySelectorAll('[data-requirements-panel]');
+    if (panels.length === 0) {
+        return;
+    }
+
+    let autoId = 0;
+    const ensureId = (element, suffix = '') => {
+        if (element.id) {
+            return element.id;
+        }
+
+        autoId += 1;
+        const id = `requirements-panel-${autoId}${suffix}`;
+        element.id = id;
+
+        return id;
+    };
+
+    panels.forEach((panel) => {
+        const summary = panel.querySelector('[data-requirements-summary]');
+        const content = panel.querySelector('[data-requirements-content]');
+        if (!summary || !content) {
+            return;
+        }
+
+        const summaryId = ensureId(summary);
+        const contentId = content.id || `${summaryId}-content`;
+        if (!content.id) {
+            content.id = contentId;
+        }
+
+        summary.setAttribute('aria-controls', content.id);
+        content.setAttribute('aria-labelledby', summaryId);
+
+        const syncState = () => {
+            const isOpen = panel.hasAttribute('open');
+            summary.setAttribute('aria-expanded', String(isOpen));
+            content.setAttribute('aria-hidden', String(!isOpen));
+        };
+
+        syncState();
+        panel.addEventListener('toggle', syncState);
+    });
+};
+
 const initTechTree = () => {
     const dataElement = document.getElementById('tech-tree-data');
     const detailContainer = document.getElementById('tech-tree-detail');
@@ -520,6 +608,7 @@ const ready = () => {
     initAsyncForms();
     bootstrapResourceTicker();
     initResourcePolling();
+    initRequirementsPanels();
     initTechTree();
 };
 

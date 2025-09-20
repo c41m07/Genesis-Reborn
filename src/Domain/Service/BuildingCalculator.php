@@ -112,6 +112,63 @@ class BuildingCalculator
         return $upkeep;
     }
 
+    public function shipBuildSpeedBonus(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getShipBuildSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        $base = (float) ($config['base'] ?? 0.0);
+        if ($base <= 0.0) {
+            return 0.0;
+        }
+
+        $bonus = $base;
+        $growth = (float) ($config['growth'] ?? 1.0);
+        if ($level > 1 && $growth !== 1.0) {
+            $bonus *= pow($growth, $level - 1);
+        }
+
+        if (!empty($config['linear'])) {
+            $bonus *= $level;
+        }
+
+        if (isset($config['max'])) {
+            $max = (float) $config['max'];
+            if ($max > 0.0) {
+                $bonus = min($bonus, $max);
+            }
+        }
+
+        return max(0.0, $bonus);
+    }
+
+    public function applyShipBuildSpeedBonus(BuildingDefinition $definition, int $level, int $baseTime): int
+    {
+        if ($baseTime <= 0) {
+            return 1;
+        }
+
+        $bonus = $this->shipBuildSpeedBonus($definition, $level);
+        if ($bonus <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $modifier = 1.0 + $bonus;
+        if ($modifier <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $time = (int) floor($baseTime / $modifier);
+
+        return max(1, $time);
+    }
+
     /**
      * @return array<string, int>
      */

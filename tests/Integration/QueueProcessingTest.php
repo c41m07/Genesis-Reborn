@@ -8,6 +8,7 @@ use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Research\StartResearch;
 use App\Application\UseCase\Shipyard\BuildShips;
+use App\Application\UseCase\Shipyard\GetShipyardOverview;
 use App\Controller\ResourceApiController;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
@@ -116,7 +117,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
@@ -126,6 +127,7 @@ class QueueProcessingTest extends TestCase
         self::assertTrue($result['success']);
         self::assertSame(0, $researchStates->getLevels(1)['propulsion_basic']);
         self::assertSame(1, $researchQueue->countActive(1));
+        self::assertSame(38, $researchQueue->getLastDuration());
 
         $researchQueue->forceComplete(1);
         $processor->process(1);
@@ -148,6 +150,23 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
+        $buildingCatalog = new BuildingCatalog([
+            'shipyard' => [
+                'label' => 'Chantier',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.0,
+                'base_time' => 1,
+                'growth_time' => 1.0,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+                'energy_use_linear' => false,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
+            ],
+        ]);
+        $buildingCalculator = new BuildingCalculator();
         $catalog = new ShipCatalog([
             'fighter' => [
                 'label' => 'Chasseur',
@@ -163,13 +182,15 @@ class QueueProcessingTest extends TestCase
         ]);
 
         $playerStats = new InMemoryPlayerStatsRepository();
-        $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
+        $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
         $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $useCase->execute(1, 42, 'fighter', 3);
         self::assertTrue($result['success']);
         self::assertSame([], $fleetRepository->getFleet(1));
         self::assertSame(1, $shipQueue->countActive(1));
+        $expectedPerUnit = max(1, (int) floor(4 / (1 + 0.1 * 2)));
+        self::assertSame($expectedPerUnit * 3, $shipQueue->getLastDuration(1));
 
         $shipQueue->forceComplete(1);
         $processor->process(1);
@@ -177,6 +198,141 @@ class QueueProcessingTest extends TestCase
         self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
         self::assertSame(0, $shipQueue->countActive(1));
         self::assertSame(600, $playerStats->getScienceSpending(42));
+    }
+
+    public function testShipProductionDurationRespectsMinimumPerUnit(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 84, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['shipyard' => 12],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
+        $shipQueue = new InMemoryShipBuildQueueRepository();
+        $fleetRepository = new InMemoryFleetRepository();
+        $buildingCatalog = new BuildingCatalog([
+            'shipyard' => [
+                'label' => 'Chantier',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.0,
+                'base_time' => 1,
+                'growth_time' => 1.0,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+                'energy_use_linear' => false,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
+            ],
+        ]);
+        $buildingCalculator = new BuildingCalculator();
+        $catalog = new ShipCatalog([
+            'probe' => [
+                'label' => 'Sonde',
+                'category' => 'Divers',
+                'role' => 'Exploration',
+                'description' => '',
+                'base_cost' => ['metal' => 20],
+                'build_time' => 1,
+                'stats' => [],
+                'requires_research' => [],
+                'image' => '',
+            ],
+        ]);
+
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
+
+        $result = $buildShips->execute(1, 84, 'probe', 5);
+        self::assertTrue($result['success']);
+        self::assertSame(1, $shipQueue->countActive(1));
+        self::assertSame(5, $shipQueue->getLastDuration(1));
+    }
+
+    public function testShipyardOverviewReflectsSpeedBonus(): void
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['shipyard' => 3],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
+        $shipQueue = new InMemoryShipBuildQueueRepository();
+        $fleetRepository = new InMemoryFleetRepository();
+        $buildingCatalog = new BuildingCatalog([
+            'shipyard' => [
+                'label' => 'Chantier',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.0,
+                'base_time' => 1,
+                'growth_time' => 1.0,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+                'energy_use_linear' => false,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
+            ],
+        ]);
+        $buildingCalculator = new BuildingCalculator();
+        $catalog = new ShipCatalog([
+            'fighter' => [
+                'label' => 'Chasseur',
+                'category' => 'Escadre',
+                'role' => 'Intercepteur',
+                'description' => '',
+                'base_cost' => ['metal' => 200],
+                'build_time' => 10,
+                'stats' => [],
+                'requires_research' => [],
+                'image' => '',
+            ],
+        ]);
+        $queueProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
+
+        $overviewUseCase = new GetShipyardOverview(
+            $planetRepository,
+            $buildingStates,
+            $researchStates,
+            $shipQueue,
+            $fleetRepository,
+            $catalog,
+            $queueProcessor,
+            $buildingCatalog,
+            $buildingCalculator
+        );
+
+        $overview = $overviewUseCase->execute(1);
+        $shipyardDefinition = $buildingCatalog->get('shipyard');
+        $expectedBonus = $buildingCalculator->shipBuildSpeedBonus($shipyardDefinition, 3);
+        $expectedBuildTime = $buildingCalculator->applyShipBuildSpeedBonus($shipyardDefinition, 3, 10);
+
+        $foundBuildTime = null;
+        $foundBaseTime = null;
+        foreach ($overview['categories'] as $category) {
+            foreach ($category['items'] as $item) {
+                $definition = $item['definition'];
+                if ($definition->getKey() === 'fighter') {
+                    $foundBuildTime = $item['buildTime'] ?? null;
+                    $foundBaseTime = $item['baseBuildTime'] ?? null;
+                    break 2;
+                }
+            }
+        }
+
+        self::assertNotNull($foundBuildTime);
+        self::assertNotNull($foundBaseTime);
+        self::assertSame($expectedBuildTime, $foundBuildTime);
+        self::assertSame(10, $foundBaseTime);
+        self::assertEqualsWithDelta($expectedBonus, $overview['shipyardBonus'], 0.0001);
     }
 
     public function testBuildingQueueSequentialTargets(): void
@@ -338,7 +494,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         $useCase->execute(1, 11, 'propulsion_basic');
@@ -380,7 +536,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         for ($i = 0; $i < 5; ++$i) {
@@ -561,6 +717,23 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
+        $buildingCatalog = new BuildingCatalog([
+            'shipyard' => [
+                'label' => 'Chantier',
+                'base_cost' => ['metal' => 100],
+                'growth_cost' => 1.0,
+                'base_time' => 1,
+                'growth_time' => 1.0,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 0,
+                'energy_use_growth' => 1.0,
+                'energy_use_linear' => false,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
+            ],
+        ]);
+        $buildingCalculator = new BuildingCalculator();
         $catalog = new ShipCatalog([
             'fighter' => [
                 'label' => 'Chasseur',
@@ -576,7 +749,7 @@ class QueueProcessingTest extends TestCase
         ]);
 
         $playerStats = new InMemoryPlayerStatsRepository();
-        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
+        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
         $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $buildShips->execute(1, 7, 'fighter', 4);
@@ -807,6 +980,7 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
     /** @var array<int, array{planet_id: int, research: string, target: int, ends_at: \DateTimeImmutable}> */
     private array $jobs = [];
     private int $nextId = 1;
+    private ?int $lastDuration = null;
 
     public function getActiveQueue(int $planetId): array
     {
@@ -842,6 +1016,12 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
             'target' => $targetLevel,
             'ends_at' => (new \DateTimeImmutable())->modify('+' . $durationSeconds . ' seconds'),
         ];
+        $this->lastDuration = $durationSeconds;
+    }
+
+    public function getLastDuration(): ?int
+    {
+        return $this->lastDuration;
     }
 
     public function finalizeDueJobs(int $planetId): array
@@ -887,7 +1067,7 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
  */
 class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
 {
-    /** @var array<int, array{planet_id: int, ship: string, quantity: int, ends_at: \DateTimeImmutable}> */
+    /** @var array<int, array{planet_id: int, ship: string, quantity: int, ends_at: \DateTimeImmutable, duration: int}> */
     private array $jobs = [];
     private int $nextId = 1;
 
@@ -924,7 +1104,20 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
             'ship' => $shipKey,
             'quantity' => $quantity,
             'ends_at' => (new \DateTimeImmutable())->modify('+' . $durationSeconds . ' seconds'),
+            'duration' => $durationSeconds,
         ];
+    }
+
+    public function getLastDuration(int $planetId): ?int
+    {
+        for ($i = count($this->jobs) - 1; $i >= 0; $i--) {
+            $job = $this->jobs[$i];
+            if ($job['planet_id'] === $planetId) {
+                return $job['duration'] ?? null;
+            }
+        }
+
+        return null;
     }
 
     public function finalizeDueJobs(int $planetId): array

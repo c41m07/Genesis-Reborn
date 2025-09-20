@@ -81,6 +81,32 @@ return [
             'hydrogen' => ['base' => 30, 'growth' => 1.16],
         ],
     ],
+    'antimatter_reactor' => [
+        'label' => 'Réacteur à antimatière',
+        'base_cost' => ['metal' => 3200, 'crystal' => 2200, 'hydrogen' => 1200],
+        'base_time' => 90,
+        'growth_cost' => 1.55,
+        'growth_time' => 1.6,
+        'prod_base' => 800,
+        'prod_growth' => 1.2,
+        'energy_use_base' => 0,
+        'energy_use_growth' => 1.0,
+        'energy_use_linear' => false,
+        'affects' => 'energy',
+        'image' => 'assets/svg/illustrations/buildings/antimatter-reactor.svg',
+        'requires' => [
+            'buildings' => [
+                'fusion_reactor' => 5,
+                'research_lab' => 6,
+            ],
+            'research' => [
+                'reactor_antimatter' => 1,
+            ],
+        ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 60, 'growth' => 1.2],
+        ],
+    ],
     'hydrogen_plant' => [
         'label' => 'Générateur d’hydrogène',
         'base_cost' => ['metal' => 150, 'crystal' => 100],
@@ -203,6 +229,7 @@ return [
             ],
             'research' => [],
         ],
+        'research_speed_bonus' => 0.1,
     ],
     'shipyard' => [
         'label' => 'Chantier spatial Asterion',
@@ -216,6 +243,7 @@ return [
         'energy_use_growth' => 1.25,
         'energy_use_linear' => true,
         'affects' => 'energy',
+        'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
         'image' => 'assets/svg/illustrations/buildings/shipyard.svg',
         'requires' => [
             'buildings' => ['research_lab' => 1],

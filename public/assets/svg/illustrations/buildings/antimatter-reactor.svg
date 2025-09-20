@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="antimatter-bg" x1="5%" y1="0%" x2="95%" y2="100%">
+      <stop offset="0" stop-color="#1c0f2f" />
+      <stop offset="1" stop-color="#05030f" />
+    </linearGradient>
+    <radialGradient id="antimatter-core" cx="50%" cy="45%" r="55%">
+      <stop offset="0" stop-color="#fff8d8" />
+      <stop offset="0.35" stop-color="#ff8b47" />
+      <stop offset="0.7" stop-color="#c132ff" />
+      <stop offset="1" stop-color="#4216ff" />
+    </radialGradient>
+    <linearGradient id="antimatter-rings" x1="20%" y1="20%" x2="80%" y2="80%">
+      <stop offset="0" stop-color="#ffcf66" />
+      <stop offset="1" stop-color="#ff4fd8" />
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#antimatter-bg)" />
+  <ellipse cx="48" cy="46" rx="22" ry="16" fill="url(#antimatter-rings)" opacity="0.35" />
+  <ellipse cx="48" cy="46" rx="28" ry="10" fill="url(#antimatter-rings)" opacity="0.18" />
+  <circle cx="48" cy="44" r="18" fill="url(#antimatter-core)" />
+  <circle cx="48" cy="44" r="10" fill="#120b2c" opacity="0.6" />
+  <path d="M30 72h36l-5.5 10H35.5z" fill="#140c29" opacity="0.7" />
+  <path d="M32 66h32l-3.5-9H35.5z" fill="#241447" opacity="0.9" />
+  <circle cx="48" cy="44" r="5" fill="#ffeab6" opacity="0.8" />
+</svg>

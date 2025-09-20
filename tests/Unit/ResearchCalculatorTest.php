@@ -16,7 +16,7 @@ class ResearchCalculatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->calculator = new ResearchCalculator();
+        $this->calculator = new ResearchCalculator(0.1);
         $this->definition = new ResearchDefinition(
             'hyperdrive',
             'Propulsion hyperspatial',
@@ -92,10 +92,23 @@ class ResearchCalculatorTest extends TestCase
         self::assertGreaterThan($level0Cost['crystal'], $level2Cost['crystal']);
         self::assertGreaterThan($level0Cost['hydrogen'], $level2Cost['hydrogen']);
 
-        $baseTime = $this->calculator->nextTime($this->definition, 0);
-        $levelThreeTime = $this->calculator->nextTime($this->definition, 3);
+        $baseTime = $this->calculator->nextTime($this->definition, 0, 0);
+        $levelThreeTime = $this->calculator->nextTime($this->definition, 3, 0);
 
         self::assertSame(120, $baseTime);
         self::assertGreaterThan($baseTime, $levelThreeTime);
+    }
+
+    public function testNextTimeAppliesLabBonusAndRespectsMinimum(): void
+    {
+        $noLab = $this->calculator->nextTime($this->definition, 0, 0);
+        $withLab = $this->calculator->nextTime($this->definition, 0, 5);
+
+        self::assertLessThan($noLab, $withLab);
+
+        $aggressiveCalculator = new ResearchCalculator(0.5);
+        $shortDuration = $aggressiveCalculator->nextTime($this->definition, 0, 1000);
+
+        self::assertSame(1, $shortDuration);
     }
 }

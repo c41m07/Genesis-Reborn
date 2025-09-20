@@ -13,6 +13,7 @@ $buildings = $overview['buildings'] ?? [];
 
 $icon = require __DIR__ . '/../components/_icon.php';
 $card = require __DIR__ . '/../components/_card.php';
+$requirementsPanel = require __DIR__ . '/../components/_requirements.php';
 require_once __DIR__ . '/../components/helpers.php';
 
 $resourceLabels = [
@@ -31,6 +32,7 @@ $buildingTypeMap = [
     'hydrogen_plant' => ['group' => 'production', 'label' => 'Production'],
     'solar_plant' => ['group' => 'energy', 'label' => 'Énergie'],
     'fusion_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
+    'antimatter_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
     'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
     'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
     'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
@@ -257,17 +259,32 @@ ob_start();
                             echo '</div>';
 
                             if (!($requirements['ok'] ?? true)) {
-                                echo '<div class="building-card__block building-card__block--requirements">';
-                                echo '<h3>Pré-requis</h3>';
-                                echo '<ul class="building-card__requirements">';
-                                foreach ($requirements['missing'] as $missing) {
-                                    $label = htmlspecialchars((string) ($missing['label'] ?? $missing['key'] ?? ''));
-                                    $current = number_format((int) ($missing['current'] ?? 0));
-                                    $required = number_format((int) ($missing['level'] ?? 0));
-                                    echo '<li><span class="building-card__requirement-name">' . $label . '</span><span class="building-card__requirement-progress">(' . $current . '/' . $required . ')</span></li>';
+                                $requirementItems = [];
+                                foreach ($requirements['missing'] ?? [] as $missing) {
+                                    if (!is_array($missing)) {
+                                        continue;
+                                    }
+
+                                    $requirementItems[] = [
+                                        'label' => $missing['label'] ?? $missing['key'] ?? '',
+                                        'current' => (int) ($missing['current'] ?? 0),
+                                        'required' => (int) ($missing['level'] ?? 0),
+                                    ];
                                 }
-                                echo '</ul>';
-                                echo '</div>';
+
+                                if ($requirementItems !== []) {
+                                    echo '<div class="building-card__block building-card__block--requirements">';
+                                    echo $requirementsPanel([
+                                        'title' => 'Pré-requis',
+                                        'items' => $requirementItems,
+                                        'icon' => $icon('buildings', [
+                                            'baseUrl' => $baseUrl,
+                                            'class' => 'icon-sm requirements-panel__glyph',
+                                        ]),
+                                        'open' => true,
+                                    ]);
+                                    echo '</div>';
+                                }
                             }
 
                             echo '</div>';

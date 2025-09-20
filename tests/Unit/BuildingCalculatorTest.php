@@ -104,6 +104,7 @@ class BuildingCalculatorTest extends TestCase
             [],
             null,
             [],
+            [],
             ['hydrogen' => ['base' => 30, 'growth' => 1.16]]
         );
 
@@ -134,5 +135,6 @@ class BuildingCalculatorTest extends TestCase
         self::assertSame(20, $baseTime);
         self::assertLessThan($baseTime, $reduced);
         self::assertGreaterThanOrEqual(1, $reduced);
+
     }
 }
