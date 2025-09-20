@@ -21,7 +21,6 @@ use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\FleetNavigationService;
-use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
@@ -32,7 +31,6 @@ use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
-use DateInterval;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -602,39 +600,6 @@ class QueueProcessingTest extends TestCase
         self::assertSame(12000, $plan['speed']);
         self::assertSame(36, $plan['travel_time']);
         self::assertSame(144, $plan['fuel']);
-
-        $mission = [
-            'mission_type' => 'pve',
-            'status' => 'outbound',
-            'arrival_at' => $plan['arrival_time'],
-            'return_at' => null,
-            'travel_time_seconds' => $plan['travel_time'],
-            'mission_payload' => [
-                'mission' => 'derelict_station',
-                'composition' => $composition,
-                'origin_planet' => 1,
-                'fuel_used' => $plan['fuel'],
-            ],
-        ];
-
-        $resolution = new FleetResolutionService();
-        $afterArrival = $plan['arrival_time']->add(new DateInterval('PT1S'));
-        $stateAfterArrival = $resolution->advance([$mission], $afterArrival);
-
-        $fleetAfterArrival = $stateAfterArrival[0];
-        self::assertSame('returning', $fleetAfterArrival['status']);
-        self::assertEquals($afterArrival, $fleetAfterArrival['arrival_at']);
-        $expectedReturnAt = $afterArrival->add(new DateInterval('PT' . $plan['travel_time'] . 'S'));
-        self::assertEquals($expectedReturnAt, $fleetAfterArrival['return_at']);
-        self::assertSame('victory', $fleetAfterArrival['mission_payload']['last_resolution']['result']);
-
-        $afterReturn = $expectedReturnAt->add(new DateInterval('PT5S'));
-        $stateAfterReturn = $resolution->advance($stateAfterArrival, $afterReturn);
-        $fleetAfterReturn = $stateAfterReturn[0];
-
-        self::assertSame('completed', $fleetAfterReturn['status']);
-        self::assertEquals($afterReturn, $fleetAfterReturn['return_at']);
-        self::assertSame('victory', $fleetAfterReturn['mission_payload']['last_resolution']['result']);
     }
 }
 

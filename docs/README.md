@@ -71,7 +71,7 @@ tests (PHPUnit)
 - Catalogues : `BuildingCatalog`, `ResearchCatalog`, `ShipCatalog`.
 - Calculs : `BuildingCalculator`, `ResearchCalculator`, `CostService`.
 - Files & ticks : `ResourceTickService`, `ProcessBuildQueue`, `ProcessResearchQueue`, `ProcessShipBuildQueue`.
-- Flottes : `FleetNavigationService`, `FleetResolutionService` (avancement missions, PvE, exploration).
+- Flottes : `FleetNavigationService` (planification des missions).
 
 ---
 
