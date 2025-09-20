@@ -95,7 +95,7 @@ ob_start();
                     $definition = $item['definition'];
                     $canBuild = (bool) ($item['canBuild'] ?? false);
                     ?>
-                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>">
+                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>" data-ship-card="<?= htmlspecialchars($definition->getKey()) ?>">
                         <header class="ship-card__header">
                             <div>
                                 <h3><?= htmlspecialchars($definition->getLabel()) ?></h3>

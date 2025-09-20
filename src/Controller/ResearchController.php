@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\UseCase\Research\GetResearchOverview;
 use App\Application\UseCase\Research\StartResearch;
+use App\Domain\Entity\ResearchDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -12,6 +13,8 @@ use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Security\CsrfTokenManager;
+use DateTimeInterface;
+use RuntimeException;
 
 class ResearchController extends AbstractController
 {
@@ -111,12 +114,16 @@ class ResearchController extends AbstractController
             if ($request->wantsJson()) {
                 $updated = $this->getOverview->execute($selectedId);
                 $planet = $updated['planet'];
+                $queue = $this->formatResearchQueue($updated['queue'] ?? []);
+                $researchKey = (string) ($data['research'] ?? '');
+                $researchEntry = $this->findResearchEntry($updated['categories'] ?? [], $researchKey);
 
                 return $this->json([
                     'success' => $result['success'],
                     'message' => $result['message'] ?? ($result['success'] ? 'Recherche planifiée.' : 'Action impossible.'),
                     'resources' => $this->formatResourceSnapshot($planet),
-                    'queue' => $updated['queue'],
+                    'queue' => $queue,
+                    'research' => $researchEntry ? $this->normalizeResearchEntry($researchEntry) : null,
                     'planetId' => $selectedId,
                 ], $result['success'] ? 200 : 400);
             }
@@ -150,5 +157,96 @@ class ResearchController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
+}
+
+    /**
+     * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     */
+    private function formatResearchQueue(array $queue): array
+    {
+        $jobs = [];
+
+        foreach ($queue['jobs'] ?? [] as $job) {
+            $jobs[] = [
+                'research' => (string) ($job['research'] ?? ''),
+                'label' => (string) ($job['label'] ?? ''),
+                'targetLevel' => (int) ($job['targetLevel'] ?? 0),
+                'remaining' => (int) ($job['remaining'] ?? 0),
+                'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
+            ];
+        }
+
+        return [
+            'count' => count($jobs),
+            'jobs' => $jobs,
+        ];
+    }
+
+    /**
+     * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
+     */
+    private function findResearchEntry(array $categories, string $key): ?array
+    {
+        if ($key === '') {
+            return null;
+        }
+
+        foreach ($categories as $category) {
+            foreach ($category['items'] ?? [] as $item) {
+                $definition = $item['definition'] ?? null;
+                if ($definition instanceof ResearchDefinition && $definition->getKey() === $key) {
+                    return $item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{definition: ResearchDefinition, level?: int, maxLevel?: int, progress?: float, nextCost?: array<string, int>, nextTime?: int, requirements?: array<string, mixed>, canResearch?: bool} $entry
+     */
+    private function normalizeResearchEntry(array $entry): array
+    {
+        $definition = $entry['definition'];
+        if (!$definition instanceof ResearchDefinition) {
+            throw new RuntimeException('Définition de recherche introuvable.');
+        }
+
+        $requirements = $entry['requirements'] ?? ['ok' => true, 'missing' => []];
+        $missing = [];
+        foreach ($requirements['missing'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $missing[] = [
+                'type' => (string) ($item['type'] ?? ''),
+                'key' => (string) ($item['key'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'level' => (int) ($item['level'] ?? 0),
+                'current' => (int) ($item['current'] ?? 0),
+            ];
+        }
+
+        return [
+            'key' => $definition->getKey(),
+            'label' => $definition->getLabel(),
+            'level' => (int) ($entry['level'] ?? 0),
+            'maxLevel' => (int) ($entry['maxLevel'] ?? 0),
+            'progress' => (float) ($entry['progress'] ?? 0.0),
+            'nextCost' => array_map(static fn ($value) => (int) $value, $entry['nextCost'] ?? []),
+            'nextTime' => (int) ($entry['nextTime'] ?? 0),
+            'requirements' => [
+                'ok' => (bool) ($requirements['ok'] ?? false),
+                'missing' => $missing,
+            ],
+            'canResearch' => (bool) ($entry['canResearch'] ?? false),
+        ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }

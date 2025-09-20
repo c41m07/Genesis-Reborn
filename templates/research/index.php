@@ -105,6 +105,9 @@ ob_start();
                         'badge' => 'Niveau ' . $level . ' / ' . ($maxLevel > 0 ? $maxLevel : '∞'),
                         'status' => $status,
                         'class' => 'tech-card',
+                        'attributes' => [
+                            'data-research-card' => $definition->getKey(),
+                        ],
                         'body' => static function () use ($definition, $item, $progress, $level, $maxLevel, $baseUrl, $icon): void {
                             echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
                             echo '<div class="tech-card__progress">';
