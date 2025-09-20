@@ -30,7 +30,8 @@ class BuildingCatalog
                 (bool) ($data['energy_use_linear'] ?? false),
                 $data['affects'],
                 $data['requires'] ?? [],
-                $data['image'] ?? null
+                $data['image'] ?? null,
+                $data['storage'] ?? []
             );
         }
     }

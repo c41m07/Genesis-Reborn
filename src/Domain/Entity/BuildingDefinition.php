@@ -6,6 +6,7 @@ class BuildingDefinition
 {
     /** @param array<string, int> $baseCost */
     /** @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements */
+    /** @param array<string, array{base: float, growth: float}> $storage */
     public function __construct(
         private readonly string $key,
         private readonly string $label,
@@ -20,7 +21,8 @@ class BuildingDefinition
         private readonly bool $energyUseLinear,
         private readonly string $affects,
         private readonly array $requirements = [],
-        private readonly ?string $image = null
+        private readonly ?string $image = null,
+        private readonly array $storage = []
     ) {
     }
 
@@ -94,5 +96,13 @@ class BuildingDefinition
     public function getImage(): ?string
     {
         return $this->image;
+    }
+
+    /**
+     * @return array<string, array{base: float, growth: float}>
+     */
+    public function getStorageConfig(): array
+    {
+        return $this->storage;
     }
 }

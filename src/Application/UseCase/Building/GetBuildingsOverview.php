@@ -6,8 +6,11 @@ use App\Application\Service\ProcessBuildQueue;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Domain\Service\ResearchCatalog;
+use InvalidArgumentException;
 use RuntimeException;
 
 class GetBuildingsOverview
@@ -18,7 +21,9 @@ class GetBuildingsOverview
         private readonly BuildQueueRepositoryInterface $buildQueue,
         private readonly BuildingCatalog $catalog,
         private readonly BuildingCalculator $calculator,
-        private readonly ProcessBuildQueue $queueProcessor
+        private readonly ProcessBuildQueue $queueProcessor,
+        private readonly ResearchStateRepositoryInterface $researchStates,
+        private readonly ResearchCatalog $researchCatalog
     ) {
     }
 
@@ -35,7 +40,8 @@ class GetBuildingsOverview
      *         canUpgrade: bool,
      *         requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>},
      *         production: array{resource: string, current: int, next: int, delta: int},
-     *         energy: array{current: int, next: int, delta: int}
+     *         energy: array{current: int, next: int, delta: int},
+     *         storage: array{current: array<string, int>, next: array<string, int>, delta: array<string, int>}
      *     }>
      * }
      */
@@ -49,10 +55,18 @@ class GetBuildingsOverview
         }
 
         $levels = $this->buildingStates->getLevels($planet->getId());
+        $researchLevels = $this->researchStates->getLevels($planet->getId());
         $buildings = [];
         $queueJobs = $this->buildQueue->getActiveQueue($planetId);
         $queueView = [];
         $queuedByBuilding = [];
+
+        $researchCatalogMap = [];
+        foreach ($this->researchCatalog->all() as $researchDefinition) {
+            $researchCatalogMap[$researchDefinition->getKey()] = [
+                'label' => $researchDefinition->getLabel(),
+            ];
+        }
 
         foreach ($queueJobs as $job) {
             $definition = $this->catalog->get($job->getBuildingKey());
@@ -75,13 +89,33 @@ class GetBuildingsOverview
             $nextTargetLevel = $effectiveLevel + 1;
             $cost = $this->calculator->nextCost($definition, $effectiveLevel);
             $time = $this->calculator->nextTime($definition, $effectiveLevel);
-            $requirements = $this->calculator->checkRequirements($definition, $levels, []);
+            $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels, $researchCatalogMap);
+            if (!empty($requirements['missing'])) {
+                $requirements['missing'] = array_map(function (array $missing): array {
+                    if (($missing['type'] ?? '') === 'building') {
+                        try {
+                            $definition = $this->catalog->get($missing['key']);
+                            $missing['label'] = $definition->getLabel();
+                        } catch (InvalidArgumentException $exception) {
+                            // Keep fallback label when definition is unknown.
+                        }
+                    }
+
+                    return $missing;
+                }, $requirements['missing']);
+            }
             $canUpgrade = !$queueLimitReached && $requirements['ok'] && $this->canAfford($planet, $cost);
 
             $currentProduction = $this->calculator->productionAt($definition, $currentLevel);
             $nextProduction = $this->calculator->productionAt($definition, $nextTargetLevel);
             $currentEnergy = $this->calculator->energyUseAt($definition, $currentLevel);
             $nextEnergy = $this->calculator->energyUseAt($definition, $nextTargetLevel);
+            $currentStorage = $this->calculator->storageAt($definition, $currentLevel);
+            $nextStorage = $this->calculator->storageAt($definition, $nextTargetLevel);
+            $storageDelta = [];
+            foreach ($nextStorage as $resource => $value) {
+                $storageDelta[$resource] = $value - ($currentStorage[$resource] ?? 0);
+            }
 
             $buildings[] = [
                 'definition' => $definition,
@@ -100,6 +134,11 @@ class GetBuildingsOverview
                     'current' => $currentEnergy,
                     'next' => $nextEnergy,
                     'delta' => $nextEnergy - $currentEnergy,
+                ],
+                'storage' => [
+                    'current' => $currentStorage,
+                    'next' => $nextStorage,
+                    'delta' => $storageDelta,
                 ],
             ];
         }

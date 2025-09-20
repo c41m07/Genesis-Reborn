@@ -18,6 +18,7 @@ use App\Controller\AuthController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\GalaxyController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
 use App\Controller\ResearchController;
@@ -173,7 +174,9 @@ return function (Container $container): void {
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class),
-        $c->get(ProcessBuildQueue::class)
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ResearchStateRepositoryInterface::class),
+        $c->get(ResearchCatalog::class)
     ));
 
     $container->set(UpgradeBuilding::class, fn (Container $c) => new UpgradeBuilding(
@@ -181,6 +184,7 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(PlayerStatsRepositoryInterface::class),
+        $c->get(ResearchStateRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class)
     ));
@@ -245,6 +249,16 @@ return function (Container $container): void {
 
     $container->set(DashboardController::class, fn (Container $c) => new DashboardController(
         $c->get(GetDashboard::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(GalaxyController::class, fn (Container $c) => new GalaxyController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

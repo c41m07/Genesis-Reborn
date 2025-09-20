@@ -65,7 +65,10 @@ class QueueProcessingTest extends TestCase
         $calculator = new BuildingCalculator();
 
         $playerStats = new InMemoryPlayerStatsRepository();
-        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
 
         $result = $useCase->execute(1, 42, 'metal_mine');
@@ -188,6 +191,9 @@ class QueueProcessingTest extends TestCase
         ]);
         $buildQueue = new InMemoryBuildQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
         $catalog = new BuildingCatalog([
             'metal_mine' => [
                 'label' => 'Mine de métal',
@@ -205,7 +211,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $calculator = new BuildingCalculator();
 
-        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $useCase->execute(1, 99, 'metal_mine');
         $useCase->execute(1, 99, 'metal_mine');
         $useCase->execute(1, 99, 'metal_mine');
@@ -230,6 +236,9 @@ class QueueProcessingTest extends TestCase
         ]);
         $buildQueue = new InMemoryBuildQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
         $catalog = new BuildingCatalog([
             'metal_mine' => [
                 'label' => 'Mine de métal',
@@ -247,7 +256,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $calculator = new BuildingCalculator();
 
-        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         for ($i = 0; $i < 5; ++$i) {
             $result = $useCase->execute(1, 77, 'metal_mine');
             self::assertTrue($result['success']);
@@ -269,6 +278,9 @@ class QueueProcessingTest extends TestCase
         ]);
         $buildQueue = new InMemoryBuildQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
         $catalog = new BuildingCatalog([
             'metal_mine' => [
                 'label' => 'Mine de métal',
@@ -285,7 +297,7 @@ class QueueProcessingTest extends TestCase
             ],
         ]);
         $calculator = new BuildingCalculator();
-        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $catalog, $calculator);
+        $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
 
         $useCase->execute(1, 55, 'metal_mine');

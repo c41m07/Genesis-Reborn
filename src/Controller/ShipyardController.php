@@ -71,6 +71,28 @@ class ShipyardController extends AbstractController
 
         $this->shipQueueProcessor->process($selectedId);
 
+        $overview = $this->getOverview->execute($selectedId);
+        $buildingLevels = $overview['buildingLevels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
+
+        if (!($facilityStatuses['shipyard'] ?? false)) {
+            $message = 'Le chantier spatial n’est pas disponible sur cette planète.';
+            if ($request->wantsJson()) {
+                return $this->json([
+                    'success' => false,
+                    'message' => $message,
+                    'planetId' => $selectedId,
+                ], 403);
+            }
+
+            $this->addFlash('warning', $message);
+
+            return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
+        }
+
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();
             if (!$this->isCsrfTokenValid('shipyard_' . $selectedId, $data['csrf_token'] ?? null)) {
@@ -89,14 +111,14 @@ class ShipyardController extends AbstractController
             $quantity = max(1, $quantity);
             $result = $this->buildShips->execute($selectedId, $userId, $data['ship'] ?? '', $quantity);
             if ($request->wantsJson()) {
-                $overview = $this->getOverview->execute($selectedId);
-                $planet = $overview['planet'];
+                $updated = $this->getOverview->execute($selectedId);
+                $planet = $updated['planet'];
 
                 return $this->json([
                     'success' => $result['success'],
                     'message' => $result['message'] ?? ($result['success'] ? 'Production planifiée.' : 'Action impossible.'),
                     'resources' => $this->formatResourceSnapshot($planet),
-                    'queue' => $overview['queue'],
+                    'queue' => $updated['queue'],
                     'planetId' => $selectedId,
                 ], $result['success'] ? 200 : 400);
             }
@@ -110,13 +132,7 @@ class ShipyardController extends AbstractController
             return $this->redirect($this->baseUrl . '/shipyard?planet=' . $selectedId);
         }
 
-        $overview = $this->getOverview->execute($selectedId);
         $planet = $overview['planet'];
-        $buildingLevels = $overview['buildingLevels'] ?? [];
-        $facilityStatuses = [
-            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
-            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
-        ];
         $activePlanetSummary = [
             'planet' => $planet,
             'resources' => [

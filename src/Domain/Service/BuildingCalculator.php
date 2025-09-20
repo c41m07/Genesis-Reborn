@@ -53,6 +53,29 @@ class BuildingCalculator
     /**
      * @return array<string, int>
      */
+    public function storageAt(BuildingDefinition $definition, int $level): array
+    {
+        $storage = [];
+        if ($level <= 0) {
+            return $storage;
+        }
+
+        foreach ($definition->getStorageConfig() as $resource => $config) {
+            $base = (float) ($config['base'] ?? 0);
+            $growth = (float) ($config['growth'] ?? 1.0);
+            if ($base <= 0) {
+                continue;
+            }
+
+            $storage[$resource] = (int) round($base * pow($growth, $level - 1));
+        }
+
+        return $storage;
+    }
+
+    /**
+     * @return array<string, int>
+     */
     public function cumulativeCost(BuildingDefinition $definition, int $targetLevel): array
     {
         $totals = [];

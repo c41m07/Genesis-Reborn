@@ -4,6 +4,7 @@ use App\Controller\AuthController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\GalaxyController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
 use App\Controller\ResearchController;
@@ -21,6 +22,8 @@ return function (Router $router): void {
     $router->add('POST', '/logout', [AuthController::class, 'logout']);
 
     $router->add('GET', '/dashboard', [DashboardController::class, 'index']);
+
+    $router->add('GET', '/galaxy', [GalaxyController::class, 'index']);
 
     $router->add('GET', '/colony', [ColonyController::class, 'index']);
     $router->add('POST', '/colony', [ColonyController::class, 'index']);
