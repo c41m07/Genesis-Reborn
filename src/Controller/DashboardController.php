@@ -85,12 +85,7 @@ class DashboardController extends AbstractController
 
         $activePlanetSummary = [
             'planet' => $planet,
-            'resources' => [
-                'metal' => ['value' => $planet->getMetal(), 'perHour' => $production['metal']],
-                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $production['crystal']],
-                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $production['hydrogen']],
-                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $production['energy']],
-            ],
+            'resources' => $this->summarizePlanetResources($planet, $production),
         ];
 
         return $this->render('pages/dashboard/index.php', [

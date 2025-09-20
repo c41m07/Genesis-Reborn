@@ -38,7 +38,7 @@ const resourceTicker = {
     intervalId: null,
 };
 
-const renderResourceMeter = (key, value, perHour) => {
+const renderResourceMeter = (key, value, perHour, capacity) => {
     const meter = document.querySelector(`.resource-meter[data-resource="${CSS.escape(key)}"]`);
     if (!meter) {
         return;
@@ -46,11 +46,18 @@ const renderResourceMeter = (key, value, perHour) => {
 
     const valueElement = meter.querySelector('[data-resource-value]');
     const rateElement = meter.querySelector('[data-resource-rate]');
-    const normalizedValue = Math.floor(Number.isFinite(value) ? value : 0);
+    const capacityElement = meter.querySelector('[data-resource-capacity]');
+    const actualValue = Number.isFinite(value) ? value : 0;
     const normalizedPerHour = Number.isFinite(perHour) ? perHour : 0;
+    const normalizedCapacity = Number.isFinite(capacity)
+        ? capacity
+        : Number(capacityElement?.dataset.resourceCapacity ?? 0);
+    const displayValue = actualValue < 0 ? 0 : Math.floor(actualValue);
 
     if (valueElement) {
-        valueElement.textContent = formatNumber(normalizedValue);
+        valueElement.textContent = formatNumber(displayValue);
+        valueElement.classList.toggle('is-depleted', actualValue < 0);
+        valueElement.dataset.resourceActual = String(actualValue);
     }
 
     if (rateElement) {
@@ -58,6 +65,12 @@ const renderResourceMeter = (key, value, perHour) => {
         rateElement.textContent = `${ratePrefix}${formatNumber(Math.round(normalizedPerHour))}/h`;
         rateElement.classList.toggle('is-positive', normalizedPerHour >= 0);
         rateElement.classList.toggle('is-negative', normalizedPerHour < 0);
+    }
+
+    if (capacityElement) {
+        const safeCapacity = Math.max(0, Math.floor(normalizedCapacity));
+        capacityElement.textContent = ` / ${formatNumber(safeCapacity)}`;
+        capacityElement.dataset.resourceCapacity = String(Math.max(0, normalizedCapacity));
     }
 };
 
@@ -86,7 +99,7 @@ const startResourceTicker = () => {
             const increment = state.perHour * (elapsedSeconds / 3600);
             state.value += increment;
             state.timestamp = now;
-            renderResourceMeter(key, state.value, state.perHour);
+            renderResourceMeter(key, state.value, state.perHour, state.capacity);
         });
     }, 1000);
 };
@@ -99,14 +112,16 @@ const applyResourceSnapshot = (resources = {}) => {
         const source = data && typeof data === 'object' ? data : {};
         const value = Number(source.value ?? 0);
         const perHour = Number(source.perHour ?? 0);
+        const capacity = Number(source.capacity ?? 0);
 
         resourceTicker.states.set(key, {
             value,
             perHour,
+            capacity,
             timestamp: now,
         });
 
-        renderResourceMeter(key, value, perHour);
+        renderResourceMeter(key, value, perHour, capacity);
     });
 
     startResourceTicker();
@@ -125,14 +140,19 @@ const bootstrapResourceTicker = () => {
             return;
         }
 
-        const valueText = meter.querySelector('[data-resource-value]')?.textContent ?? '0';
+        const valueElement = meter.querySelector('[data-resource-value]');
+        const rawValue = valueElement?.dataset.resourceActual ?? valueElement?.textContent ?? '0';
         const rateText = meter.querySelector('[data-resource-rate]')?.textContent ?? '0';
-        const numericValue = Number(valueText.replace(/[^0-9-]/g, ''));
+        const capacityElement = meter.querySelector('[data-resource-capacity]');
+        const rawCapacity = capacityElement?.dataset.resourceCapacity ?? capacityElement?.textContent ?? '0';
+        const numericValue = Number(String(rawValue).replace(/[^0-9.-]/g, ''));
         const numericRate = Number(rateText.replace(/[^0-9-]/g, ''));
+        const numericCapacity = Number(String(rawCapacity).replace(/[^0-9.-]/g, ''));
 
         snapshot[key] = {
             value: Number.isFinite(numericValue) ? numericValue : 0,
             perHour: Number.isFinite(numericRate) ? numericRate : 0,
+            capacity: Number.isFinite(numericCapacity) ? numericCapacity : 0,
         };
     });
 

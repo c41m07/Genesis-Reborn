@@ -162,12 +162,16 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                 <div class="topbar__resources">
                     <?php foreach (['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'] as $key => $label): ?>
                         <?php
-                        $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0];
+                        $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0, 'capacity' => 0];
+                        $rawValue = (int) ($data['value'] ?? 0);
+                        $displayValue = $rawValue < 0 ? 0 : $rawValue;
+                        $capacityValue = max(0, (int) ($data['capacity'] ?? 0));
                         $perHourValue = (int) ($data['perHour'] ?? 0);
                         $rateNumber = number_format($perHourValue);
                         $ratePrefix = ($key !== 'energy' && $perHourValue > 0) ? '+' : '';
                         $rateDisplay = $ratePrefix . $rateNumber . '/h';
                         $rateClass = $perHourValue >= 0 ? 'is-positive' : 'is-negative';
+                        $valueClasses = 'resource-meter__value' . ($rawValue < 0 ? ' is-depleted' : '');
                         ?>
                         <div class="resource-meter" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>">
                             <div class="resource-meter__icon">
@@ -178,7 +182,12 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                             <div class="resource-meter__details">
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
-                                    <span class="resource-meter__value" data-resource-value><?= number_format((int) ($data['value'] ?? 0)) ?></span>
+                                    <span class="<?= htmlspecialchars($valueClasses) ?>" data-resource-value data-resource-actual="<?= htmlspecialchars((string) $rawValue) ?>">
+                                        <?= number_format($displayValue) ?>
+                                    </span>
+                                    <span class="resource-meter__capacity" data-resource-capacity="<?= htmlspecialchars((string) $capacityValue) ?>">
+                                        / <?= number_format($capacityValue) ?>
+                                    </span>
                                     <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                 </div>
                             </div>

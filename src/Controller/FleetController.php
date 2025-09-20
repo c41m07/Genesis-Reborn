@@ -236,12 +236,7 @@ class FleetController extends AbstractController
 
         $activePlanetSummary = [
             'planet' => $selectedPlanet,
-            'resources' => [
-                'metal' => ['value' => $selectedPlanet->getMetal(), 'perHour' => $selectedPlanet->getMetalPerHour()],
-                'crystal' => ['value' => $selectedPlanet->getCrystal(), 'perHour' => $selectedPlanet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $selectedPlanet->getHydrogen(), 'perHour' => $selectedPlanet->getHydrogenPerHour()],
-                'energy' => ['value' => $selectedPlanet->getEnergy(), 'perHour' => $selectedPlanet->getEnergyPerHour()],
-            ],
+            'resources' => $this->summarizePlanetResources($selectedPlanet),
         ];
 
         return $this->render('fleet/index.php', [

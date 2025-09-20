@@ -107,12 +107,7 @@ class GalaxyController extends AbstractController
         $planet = $selectedPlanet;
         $activePlanetSummary = [
             'planet' => $planet,
-            'resources' => [
-                'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-            ],
+            'resources' => $this->summarizePlanetResources($planet),
         ];
 
         return $this->render('galaxy/index.php', [

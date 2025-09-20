@@ -47,14 +47,11 @@ class ProfileController extends AbstractController
         $facilityStatuses = [];
         if ($planetSummaries !== []) {
             $selectedPlanetId = $planetSummaries[0]['planet']->getId();
+            $firstPlanet = $planetSummaries[0]['planet'];
+            $production = $planetSummaries[0]['production'] ?? [];
             $activePlanetSummary = [
-                'planet' => $planetSummaries[0]['planet'],
-                'resources' => [
-                    'metal' => ['value' => $planetSummaries[0]['planet']->getMetal(), 'perHour' => $planetSummaries[0]['production']['metal']],
-                    'crystal' => ['value' => $planetSummaries[0]['planet']->getCrystal(), 'perHour' => $planetSummaries[0]['production']['crystal']],
-                    'hydrogen' => ['value' => $planetSummaries[0]['planet']->getHydrogen(), 'perHour' => $planetSummaries[0]['production']['hydrogen']],
-                    'energy' => ['value' => $planetSummaries[0]['planet']->getEnergy(), 'perHour' => $planetSummaries[0]['production']['energy']],
-                ],
+                'planet' => $firstPlanet,
+                'resources' => $this->summarizePlanetResources($firstPlanet, $production),
             ];
             $levels = $planetSummaries[0]['levels'] ?? [];
             $facilityStatuses = [

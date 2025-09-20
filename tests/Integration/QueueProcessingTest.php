@@ -190,6 +190,26 @@ class QueueProcessingTest extends TestCase
         self::assertSame(600, $playerStats->getScienceSpending(42));
     }
 
+    public function testShipyardLevelImpactsDurationsAndRespectsFloor(): void
+    {
+        $defaultEconomy = new EconomySettings();
+        $durationLevelOne = $this->planShipProductionDuration(1, 10, $defaultEconomy);
+        $durationLevelFive = $this->planShipProductionDuration(5, 10, $defaultEconomy);
+
+        self::assertGreaterThan($durationLevelFive, $durationLevelOne);
+
+        $fastEconomy = new EconomySettings([
+            'ship_time' => 0.01,
+            'shipyard_bonus_per_level' => 0.5,
+            'ship_time_reduction_cap' => 0.99,
+        ]);
+
+        $minimalDuration = $this->planShipProductionDuration(20, 1, $fastEconomy);
+
+        self::assertGreaterThanOrEqual(1, $minimalDuration);
+        self::assertLessThanOrEqual(2, $minimalDuration);
+    }
+
     public function testBuildingQueueSequentialTargets(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
@@ -652,6 +672,54 @@ class QueueProcessingTest extends TestCase
         self::assertSame('completed', $fleetAfterReturn['status']);
         self::assertEquals($afterReturn, $fleetAfterReturn['return_at']);
         self::assertSame('victory', $fleetAfterReturn['mission_payload']['last_resolution']['result']);
+    }
+
+    private function planShipProductionDuration(int $shipyardLevel, int $quantity, EconomySettings $economy): int
+    {
+        $planetRepository = new InMemoryPlanetRepository([
+            1 => new Planet(1, 123, 1, 1, 1, 'Gaia', 500000, 500000, 500000, 0, 0, 0, 0, 0, 200000, 200000, 200000, 1000, new DateTimeImmutable()),
+        ]);
+        $buildingStates = new InMemoryBuildingStateRepository([
+            1 => ['shipyard' => $shipyardLevel],
+        ]);
+        $researchStates = new InMemoryResearchStateRepository([
+            1 => [],
+        ]);
+        $shipQueue = new InMemoryShipBuildQueueRepository();
+        $playerStats = new InMemoryPlayerStatsRepository();
+        $catalog = new ShipCatalog([
+            'fighter' => [
+                'label' => 'Chasseur',
+                'category' => 'Test',
+                'role' => 'Prototype',
+                'description' => '',
+                'base_cost' => ['metal' => 1],
+                'build_time' => 4,
+                'stats' => [],
+                'requires_research' => [],
+                'image' => '',
+            ],
+        ]);
+
+        $useCase = new BuildShips(
+            $planetRepository,
+            $buildingStates,
+            $researchStates,
+            $shipQueue,
+            $playerStats,
+            $catalog,
+            $economy
+        );
+
+        $result = $useCase->execute(1, 123, 'fighter', $quantity);
+        self::assertTrue($result['success']);
+
+        $jobs = $shipQueue->getActiveQueue(1);
+        self::assertCount(1, $jobs);
+        $job = $jobs[0];
+        $now = new DateTimeImmutable();
+
+        return max(0, $job->getEndsAt()->getTimestamp() - $now->getTimestamp());
     }
 }
 

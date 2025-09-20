@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Domain\Entity\Planet;
 use App\Infrastructure\Http\Response;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -71,5 +72,41 @@ abstract class AbstractController
     protected function isCsrfTokenValid(string $id, ?string $token): bool
     {
         return $this->csrfTokenManager->isTokenValid($id, $token);
+    }
+
+    /**
+     * @param array<string, int|float> $perHourOverrides
+     *
+     * @return array<string, array{value: int, perHour: int, capacity: int}>
+     */
+    protected function summarizePlanetResources(Planet $planet, array $perHourOverrides = []): array
+    {
+        $resources = [];
+
+        $resources['metal'] = [
+            'value' => (int) $planet->getMetal(),
+            'perHour' => (int) ($perHourOverrides['metal'] ?? $planet->getMetalPerHour()),
+            'capacity' => max(0, (int) $planet->getMetalCapacity()),
+        ];
+
+        $resources['crystal'] = [
+            'value' => (int) $planet->getCrystal(),
+            'perHour' => (int) ($perHourOverrides['crystal'] ?? $planet->getCrystalPerHour()),
+            'capacity' => max(0, (int) $planet->getCrystalCapacity()),
+        ];
+
+        $resources['hydrogen'] = [
+            'value' => (int) $planet->getHydrogen(),
+            'perHour' => (int) ($perHourOverrides['hydrogen'] ?? $planet->getHydrogenPerHour()),
+            'capacity' => max(0, (int) $planet->getHydrogenCapacity()),
+        ];
+
+        $resources['energy'] = [
+            'value' => (int) $planet->getEnergy(),
+            'perHour' => (int) ($perHourOverrides['energy'] ?? $planet->getEnergyPerHour()),
+            'capacity' => max(0, (int) $planet->getEnergyCapacity()),
+        ];
+
+        return $resources;
     }
 }

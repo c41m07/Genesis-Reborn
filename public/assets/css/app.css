@@ -478,6 +478,15 @@ main.workspace__content {
     font-size: 1.25rem;
 }
 
+.resource-meter__value.is-depleted {
+    color: var(--color-danger);
+}
+
+.resource-meter__capacity {
+    font-size: var(--font-size-sm);
+    color: var(--color-muted);
+}
+
 .resource-meter__rate {
     font-size: var(--font-size-sm);
     color: var(--color-muted);

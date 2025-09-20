@@ -80,39 +80,3 @@ VALUES
     ('nebula_patrol', 'Patrouille de nébuleuse', 'Traquez des éclaireurs hostiles dissimulés dans la nébuleuse.', 'normal', 2500, 1800, 6000, 6000, 3000, 120, '{"technologies":{"reactor_advanced":3}}', NOW(), NOW()),
     ('derelict_station', 'Station en dérive', 'Explorez une station abandonnée et sécurisez son noyau.', 'hard', 5000, 2400, 12000, 9000, 4000, 180, '{"technologies":{"weapon_heavy":2}}', NOW(), NOW()),
     ('ancient_relay', 'Relais antique', 'Réactivez un relais précurseur pour obtenir des données uniques.', 'extreme', 8000, 3600, 20000, 16000, 8000, 300, '{"technologies":{"fleet_networks":2}}', NOW(), NOW());
-
--- Demo player
-INSERT INTO players (email, username, password_hash, created_at, updated_at, last_login_at)
-VALUES ('demo@genesis.test', 'demo', '$2y$12$e0UmNdog/qnt2fpgT6oGk.bhVZkN6nECqIFznKbkUM3bgzuHzMcpW', NOW(), NOW(), NULL);
-
--- Home planet for demo player
-INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld,
-    metal, crystal, hydrogen, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
-VALUES
-    (LAST_INSERT_ID(), 'Nova Prime', 1, 7, 8, 12800, -10, 45, 1, 12000, 6000, 3000, 80, 120000, 90000, 60000, 150, NOW(), NOW(), NOW());
-
--- Ensure building levels for the demo colony
-INSERT INTO planet_buildings (player_id, planet_id, building_id, level, created_at, updated_at)
-SELECT p.player_id, p.planet_id, b.id, lvl.level, NOW(), NOW()
-FROM (
-    SELECT id AS planet_id, player_id FROM planets WHERE name = 'Nova Prime'
-) AS p
-JOIN (
-    SELECT 'metal_mine' AS bkey, 6 AS level UNION ALL
-    SELECT 'crystal_mine', 5 UNION ALL
-    SELECT 'hydrogen_plant', 3 UNION ALL
-    SELECT 'solar_plant', 7 UNION ALL
-    SELECT 'fusion_reactor', 3 UNION ALL
-    SELECT 'storage_depot', 3 UNION ALL
-    SELECT 'research_lab', 2 UNION ALL
-    SELECT 'shipyard', 2
-) AS lvl ON 1=1
-JOIN buildings b ON b.`key` = lvl.bkey;
-
--- Initialise known technologies for the demo player at level 0
-INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
-SELECT pl.id AS player_id, tech.id, 0 AS level, NOW(), NOW()
-FROM players pl
-JOIN technologies tech ON 1=1
-WHERE pl.username = 'demo';
-

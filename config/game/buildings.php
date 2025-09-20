@@ -165,7 +165,7 @@ return [
         'prod_growth' => 1.0,
         'energy_use_base' => 11,
         'energy_use_growth' => 1.22,
-        'energy_use_linear' => true,
+        'energy_use_linear' => false,
         'affects' => 'energy',
         'image' => 'assets/svg/illustrations/buildings/research-lab.svg',
         'requires' => [
@@ -186,7 +186,7 @@ return [
         'prod_growth' => 1.0,
         'energy_use_base' => 17.5,
         'energy_use_growth' => 1.25,
-        'energy_use_linear' => true,
+        'energy_use_linear' => false,
         'affects' => 'energy',
         'image' => 'assets/svg/illustrations/buildings/shipyard.svg',
         'requires' => [
@@ -204,7 +204,7 @@ return [
         'prod_growth' => 1.0,
         'energy_use_base' => 7,
         'energy_use_growth' => 1.12,
-        'energy_use_linear' => true,
+        'energy_use_linear' => false,
         'affects' => 'support',
         'image' => 'assets/svg/illustrations/buildings/storage-depot.svg',
         'requires' => [
@@ -227,7 +227,7 @@ return [
         'prod_growth' => 1.0,
         'energy_use_base' => 15,
         'energy_use_growth' => 1.14,
-        'energy_use_linear' => true,
+        'energy_use_linear' => false,
         'affects' => 'support',
         'image' => 'assets/svg/illustrations/buildings/research-lab.svg',
         'requires' => [

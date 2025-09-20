@@ -110,4 +110,31 @@ class ResearchCalculatorTest extends TestCase
 
         self::assertGreaterThan($fasterLab, $slowLab);
     }
+
+    public function testResearchTimeNeverDropsBelowOneSecond(): void
+    {
+        $calculator = new ResearchCalculator(new EconomySettings([
+            'research_lab_bonus_per_level' => 0.2,
+            'research_time_reduction_cap' => 0.95,
+        ]));
+
+        $definition = new ResearchDefinition(
+            'instant_calc',
+            'Analyse instantanée',
+            'utility',
+            'Recherche de test à durée minimale.',
+            ['metal' => 1],
+            4,
+            1.0,
+            1.0,
+            0,
+            [],
+            0,
+            ''
+        );
+
+        $time = $calculator->nextTime($definition, 0, 20);
+
+        self::assertSame(1, $time);
+    }
 }
