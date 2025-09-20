@@ -6,6 +6,10 @@ use App\Domain\Entity\BuildingDefinition;
 
 class BuildingCalculator
 {
+    public function __construct(private readonly ?BuildingCatalog $catalog = null)
+    {
+    }
+
     /**
      * @return array<string, int>
      */
@@ -19,9 +23,15 @@ class BuildingCalculator
         return $costs;
     }
 
-    public function nextTime(BuildingDefinition $definition, int $currentLevel): int
+    /**
+     * @param array<string, int> $buildingLevels
+     */
+    public function nextTime(BuildingDefinition $definition, int $currentLevel, array $buildingLevels = []): int
     {
-        return (int) round($definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel));
+        $baseTime = $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
+        $modifier = $this->constructionTimeModifier($buildingLevels);
+
+        return (int) max(1, round($baseTime * $modifier));
     }
 
     public function productionAt(BuildingDefinition $definition, int $level): int
@@ -102,6 +112,63 @@ class BuildingCalculator
         return $upkeep;
     }
 
+    public function shipBuildSpeedBonus(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getShipBuildSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        $base = (float) ($config['base'] ?? 0.0);
+        if ($base <= 0.0) {
+            return 0.0;
+        }
+
+        $bonus = $base;
+        $growth = (float) ($config['growth'] ?? 1.0);
+        if ($level > 1 && $growth !== 1.0) {
+            $bonus *= pow($growth, $level - 1);
+        }
+
+        if (!empty($config['linear'])) {
+            $bonus *= $level;
+        }
+
+        if (isset($config['max'])) {
+            $max = (float) $config['max'];
+            if ($max > 0.0) {
+                $bonus = min($bonus, $max);
+            }
+        }
+
+        return max(0.0, $bonus);
+    }
+
+    public function applyShipBuildSpeedBonus(BuildingDefinition $definition, int $level, int $baseTime): int
+    {
+        if ($baseTime <= 0) {
+            return 1;
+        }
+
+        $bonus = $this->shipBuildSpeedBonus($definition, $level);
+        if ($bonus <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $modifier = 1.0 + $bonus;
+        if ($modifier <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $time = (int) floor($baseTime / $modifier);
+
+        return max(1, $time);
+    }
+
     /**
      * @return array<string, int>
      */
@@ -168,5 +235,82 @@ class BuildingCalculator
             'ok' => empty($missing),
             'missing' => $missing,
         ];
+    }
+
+    public function constructionSpeedBonusAt(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getConstructionSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        return $this->calculateConstructionBonus($config, $level);
+    }
+
+    /**
+     * @param array<string, int> $buildingLevels
+     */
+    private function constructionTimeModifier(array $buildingLevels): float
+    {
+        if ($buildingLevels === [] || $this->catalog === null) {
+            return 1.0;
+        }
+
+        $modifier = 1.0;
+
+        foreach ($this->catalog->all() as $definition) {
+            $level = $buildingLevels[$definition->getKey()] ?? 0;
+            if ($level <= 0) {
+                continue;
+            }
+
+            $bonus = $this->constructionSpeedBonusAt($definition, $level);
+            if ($bonus <= 0.0) {
+                continue;
+            }
+
+            $modifier *= max(0.01, 1 - $bonus);
+        }
+
+        return max(0.01, $modifier);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function calculateConstructionBonus(array $config, int $level): float
+    {
+        $level = max(0, $level);
+        if ($level === 0) {
+            return 0.0;
+        }
+
+        $bonus = 0.0;
+        $perLevel = (float) ($config['per_level'] ?? 0.0);
+
+        if ($perLevel > 0.0) {
+            $bonus = $perLevel * $level;
+        } else {
+            $base = (float) ($config['base'] ?? 0.0);
+            $growth = (float) ($config['growth'] ?? 1.0);
+            $linear = (bool) ($config['linear'] ?? false);
+
+            if ($linear) {
+                for ($i = 1; $i <= $level; $i++) {
+                    $bonus += $base * pow($growth, $i - 1);
+                }
+            } else {
+                $bonus = $base * pow($growth, max(0, $level - 1));
+            }
+        }
+
+        $max = array_key_exists('max', $config) ? (float) $config['max'] : 0.95;
+        $max = max(0.0, min($max, 0.95));
+
+        return max(0.0, min($bonus, $max));
     }
 }

@@ -13,6 +13,7 @@ $buildings = $overview['buildings'] ?? [];
 
 $icon = require __DIR__ . '/../components/_icon.php';
 $card = require __DIR__ . '/../components/_card.php';
+$requirementsPanel = require __DIR__ . '/../components/_requirements.php';
 require_once __DIR__ . '/../components/helpers.php';
 
 $resourceLabels = [
@@ -21,6 +22,7 @@ $resourceLabels = [
     'hydrogen' => 'Hydrogène',
     'energy' => 'Énergie',
     'storage' => 'Capacité',
+    'infrastructure' => 'Infrastructure',
 ];
 
 $assetBase = rtrim($baseUrl, '/');
@@ -30,9 +32,12 @@ $buildingTypeMap = [
     'hydrogen_plant' => ['group' => 'production', 'label' => 'Production'],
     'solar_plant' => ['group' => 'energy', 'label' => 'Énergie'],
     'fusion_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
+    'antimatter_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
     'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
     'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
     'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
+    'worker_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
+    'robot_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
 ];
 $groupOrder = [
     'production' => 0,
@@ -142,6 +147,7 @@ ob_start();
                         ],
                         'body' => static function () use ($building, $production, $consumption, $requirements, $baseUrl,
                                 $resourceLabels, $icon): void {
+                            $bonuses = $building['bonuses'] ?? [];
                             echo '<div class="building-card__sections">';
                             echo '<div class="building-card__block">';
                             echo '<h3>Prochaine amélioration</h3>';
@@ -160,7 +166,7 @@ ob_start();
                             echo '<h3>Effets</h3>';
                             $resourceKey = $production['resource'] ?? '';
                             $resourceLabel = $resourceLabels[$resourceKey] ?? ucfirst((string) $resourceKey);
-                            $hasProduction = $resourceKey !== 'storage';
+                            $hasProduction = !in_array($resourceKey, ['storage', 'infrastructure'], true);
                             if ($hasProduction) {
                                 $unitSuffix = $resourceKey === 'energy'
                                     ? ' énergie/h'
@@ -195,6 +201,26 @@ ob_start();
                                     echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--positive">' . number_format((int) $value) . '</span></li>';
                                 }
                                 echo '</ul>';
+                                echo '</div>';
+                            }
+
+                            if (!empty($bonuses['construction_speed'])) {
+                                $bonus = $bonuses['construction_speed'];
+                                $currentBonus = max(0.0, (float) ($bonus['current'] ?? 0.0));
+                                $nextBonus = max(0.0, (float) ($bonus['next'] ?? 0.0));
+                                $formatPercent = static function (float $value): string {
+                                    return number_format($value * 100, 1) . ' %';
+                                };
+                                $currentClass = $currentBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                $nextClass = $nextBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                echo '<div class="metric-section">';
+                                echo '<p class="metric-section__title">Accélération de construction</p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction actuelle</span><span class="' . $currentClass . '">-' . $formatPercent($currentBonus) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction prochain niveau</span><span class="' . $nextClass . '">-' . $formatPercent($nextBonus) . '</span></p>';
                                 echo '</div>';
                             }
 
@@ -236,17 +262,32 @@ ob_start();
                             echo '</div>';
 
                             if (!($requirements['ok'] ?? true)) {
-                                echo '<div class="building-card__block building-card__block--requirements">';
-                                echo '<h3>Pré-requis</h3>';
-                                echo '<ul class="building-card__requirements">';
-                                foreach ($requirements['missing'] as $missing) {
-                                    $label = htmlspecialchars((string) ($missing['label'] ?? $missing['key'] ?? ''));
-                                    $current = number_format((int) ($missing['current'] ?? 0));
-                                    $required = number_format((int) ($missing['level'] ?? 0));
-                                    echo '<li><span class="building-card__requirement-name">' . $label . '</span><span class="building-card__requirement-progress">(' . $current . '/' . $required . ')</span></li>';
+                                $requirementItems = [];
+                                foreach ($requirements['missing'] ?? [] as $missing) {
+                                    if (!is_array($missing)) {
+                                        continue;
+                                    }
+
+                                    $requirementItems[] = [
+                                        'label' => $missing['label'] ?? $missing['key'] ?? '',
+                                        'current' => (int) ($missing['current'] ?? 0),
+                                        'required' => (int) ($missing['level'] ?? 0),
+                                    ];
                                 }
-                                echo '</ul>';
-                                echo '</div>';
+
+                                if ($requirementItems !== []) {
+                                    echo '<div class="building-card__block building-card__block--requirements">';
+                                    echo $requirementsPanel([
+                                        'title' => 'Pré-requis',
+                                        'items' => $requirementItems,
+                                        'icon' => $icon('buildings', [
+                                            'baseUrl' => $baseUrl,
+                                            'class' => 'icon-sm requirements-panel__glyph',
+                                        ]),
+                                        'open' => true,
+                                    ]);
+                                    echo '</div>';
+                                }
                             }
 
                             echo '</div>';

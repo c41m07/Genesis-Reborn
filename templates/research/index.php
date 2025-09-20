@@ -9,13 +9,12 @@
 $title = $title ?? 'Laboratoire de recherche';
 $icon = require __DIR__ . '/../components/_icon.php';
 $card = require __DIR__ . '/../components/_card.php';
+$requirementsPanel = require __DIR__ . '/../components/_requirements.php';
 require_once __DIR__ . '/../components/helpers.php';
 
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $categories = $overview['categories'] ?? [];
-$totals = $overview['totals'] ?? ['completedLevels' => 0, 'unlockedResearch' => 0, 'highestLevel' => 0];
-$labLevel = $overview['labLevel'] ?? 0;
 $assetBase = rtrim($baseUrl, '/');
 
 ob_start();
@@ -72,18 +71,6 @@ ob_start();
         },
     ]) ?>
 
-    <?= $card([
-        'title' => 'Laboratoire Helios',
-        'subtitle' => 'Niveau actuel : ' . number_format((int) $labLevel),
-        'body' => static function () use ($totals): void {
-            echo '<div class="metrics metrics--compact">';
-            echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . number_format((int) $totals['completedLevels']) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Domaines actifs</span><strong class="metric__value">' . number_format((int) $totals['unlockedResearch']) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Meilleur niveau</span><strong class="metric__value">' . number_format((int) $totals['highestLevel']) . '</strong></div>';
-            echo '</div>';
-        },
-    ]) ?>
-
     <?php foreach ($categories as $category): ?>
         <?php if (empty($category['items'])) { continue; } ?>
         <section class="content-section">
@@ -109,6 +96,7 @@ ob_start();
                             'data-research-card' => $definition->getKey(),
                         ],
                         'body' => static function () use ($definition, $item, $progress, $level, $maxLevel, $baseUrl, $icon): void {
+
                             echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
                             echo '<div class="tech-card__progress">';
                             echo '<div class="progress-bar"><span class="progress-bar__value" style="width: ' . $progress . '%"></span></div>';
@@ -124,14 +112,32 @@ ob_start();
                             echo '</ul>';
                             echo '</div>';
                             if (!($item['requirements']['ok'] ?? true)) {
-                                echo '<div class="tech-card__section tech-card__requirements">';
-                                echo '<h3>Pré-requis</h3>';
-                                echo '<ul>';
-                                foreach ($item['requirements']['missing'] as $missing) {
-                                    echo '<li>' . htmlspecialchars($missing['label']) . ' (' . number_format((int) $missing['current']) . '/' . number_format((int) $missing['level']) . ')</li>';
+                                $requirementItems = [];
+                                foreach ($item['requirements']['missing'] ?? [] as $missing) {
+                                    if (!is_array($missing)) {
+                                        continue;
+                                    }
+
+                                    $requirementItems[] = [
+                                        'label' => $missing['label'] ?? $missing['key'] ?? '',
+                                        'current' => (int) ($missing['current'] ?? 0),
+                                        'required' => (int) ($missing['level'] ?? 0),
+                                    ];
                                 }
-                                echo '</ul>';
-                                echo '</div>';
+
+                                if ($requirementItems !== []) {
+                                    echo '<div class="tech-card__section">';
+                                    echo $requirementsPanel([
+                                        'title' => 'Pré-requis',
+                                        'items' => $requirementItems,
+                                        'icon' => $icon('research', [
+                                            'baseUrl' => $baseUrl,
+                                            'class' => 'icon-sm requirements-panel__glyph',
+                                        ]),
+                                        'open' => true,
+                                    ]);
+                                    echo '</div>';
+                                }
                             }
                         },
                         'footer' => static function () use ($baseUrl, $definition, $csrf_start, $selectedPlanetId, $canResearch): void {

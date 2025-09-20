@@ -6,8 +6,10 @@ class BuildingDefinition
 {
     /** @param array<string, int> $baseCost */
     /** @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements */
+    /** @param array{base?: float, growth?: float, linear?: bool, max?: float} $shipBuildSpeedBonus */
     /** @param array<string, array{base: float, growth: float}> $storage */
     /** @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep */
+    /** @param array<string, mixed> $constructionSpeedBonus */
     public function __construct(
         private readonly string $key,
         private readonly string $label,
@@ -23,8 +25,11 @@ class BuildingDefinition
         private readonly string $affects,
         private readonly array $requirements = [],
         private readonly ?string $image = null,
+        private readonly array $shipBuildSpeedBonus = [],
         private readonly array $storage = [],
-        private readonly array $upkeep = []
+        private readonly array $upkeep = [],
+        private readonly array $constructionSpeedBonus = []
+
     ) {
     }
 
@@ -101,6 +106,14 @@ class BuildingDefinition
     }
 
     /**
+     * @return array{base?: float, growth?: float, linear?: bool, max?: float}
+     */
+    public function getShipBuildSpeedBonusConfig(): array
+    {
+        return $this->shipBuildSpeedBonus;
+    }
+
+    /**
      * @return array<string, array{base: float, growth: float}>
      */
     public function getStorageConfig(): array
@@ -114,5 +127,14 @@ class BuildingDefinition
     public function getUpkeepConfig(): array
     {
         return $this->upkeep;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getConstructionSpeedBonusConfig(): array
+    {
+        return $this->constructionSpeedBonus;
+
     }
 }

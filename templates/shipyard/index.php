@@ -17,6 +17,7 @@ $fleet = $overview['fleet'] ?? [];
 $fleetSummary = $overview['fleetSummary'] ?? [];
 $categories = $overview['categories'] ?? [];
 $shipyardLevel = $overview['shipyardLevel'] ?? 0;
+$shipyardBonus = (float) ($overview['shipyardBonus'] ?? 0);
 $fleetCount = 0;
 if (!empty($fleetSummary)) {
     foreach ($fleetSummary as $ship) {
@@ -57,9 +58,14 @@ ob_start();
     <?= $card([
         'title' => 'Commandes de vaisseaux',
         'subtitle' => 'Suivi des constructions orbitales',
-        'body' => static function () use ($queue, $shipyardLevel): void {
+        'body' => static function () use ($queue, $shipyardLevel, $shipyardBonus): void {
             $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
             echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . number_format((int) $shipyardLevel) . '</span></p>';
+            if ($shipyardBonus > 0) {
+                $bonusPercent = $shipyardBonus * 100;
+                $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">+' . htmlspecialchars($bonusDisplay) . ' %</span></p>';
+            }
             echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
@@ -94,6 +100,8 @@ ob_start();
                     <?php
                     $definition = $item['definition'];
                     $canBuild = (bool) ($item['canBuild'] ?? false);
+                    $buildTime = (int) ($item['buildTime'] ?? $definition->getBuildTime());
+                    $baseBuildTime = (int) ($item['baseBuildTime'] ?? $definition->getBuildTime());
                     ?>
                     <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>" data-ship-card="<?= htmlspecialchars($definition->getKey()) ?>">
                         <header class="ship-card__header">
@@ -119,7 +127,7 @@ ob_start();
                                     <?php foreach ($definition->getBaseCost() as $resource => $amount): ?>
                                         <li><?= $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= number_format((int) $amount) ?></span></li>
                                     <?php endforeach; ?>
-                                    <li><?= $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= htmlspecialchars(format_duration((int) $definition->getBuildTime())) ?></span></li>
+                                    <li><?= $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= htmlspecialchars(format_duration($buildTime)) ?><?php if ($baseBuildTime !== $buildTime): ?> <small>(base <?= htmlspecialchars(format_duration($baseBuildTime)) ?>)</small><?php endif; ?></span></li>
                                 </ul>
                             </div>
                             <?php if (!($item['requirements']['ok'] ?? true)): ?>
