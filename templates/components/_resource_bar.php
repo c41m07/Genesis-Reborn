@@ -9,7 +9,6 @@ return static function (array $resources, array $options = []): string {
         return '';
     }
 
-    $baseUrl = $options['baseUrl'] ?? '';
     $showRates = (bool) ($options['showRates'] ?? true);
     $class = trim('resource-bar ' . ($options['class'] ?? ''));
 
@@ -39,9 +38,10 @@ return static function (array $resources, array $options = []): string {
             $rateClass = $trend;
         }
 
+        $iconHref = '/assets/svg/sprite.svg#icon-' . (string) $key;
         $icon = sprintf(
             '<svg class="icon icon-sm" aria-hidden="true"><use href="%s"></use></svg>',
-            rtrim($baseUrl, '/') . '/assets/svg/sprite.svg#icon-' . htmlspecialchars((string) $key, ENT_QUOTES)
+            htmlspecialchars($iconHref, ENT_QUOTES)
         );
 
         $hintMarkup = '';
