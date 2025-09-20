@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Domain\Entity\ResearchDefinition;
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\ResearchCalculator;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,10 @@ class ResearchCalculatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->calculator = new ResearchCalculator();
+        $this->calculator = new ResearchCalculator(new EconomySettings([
+            'research_lab_bonus_per_level' => 0.05,
+            'research_time_reduction_cap' => 0.8,
+        ]));
         $this->definition = new ResearchDefinition(
             'hyperdrive',
             'Propulsion hyperspatial',
@@ -92,10 +96,18 @@ class ResearchCalculatorTest extends TestCase
         self::assertGreaterThan($level0Cost['crystal'], $level2Cost['crystal']);
         self::assertGreaterThan($level0Cost['hydrogen'], $level2Cost['hydrogen']);
 
-        $baseTime = $this->calculator->nextTime($this->definition, 0);
-        $levelThreeTime = $this->calculator->nextTime($this->definition, 3);
+        $baseTime = $this->calculator->nextTime($this->definition, 0, 0);
+        $levelThreeTime = $this->calculator->nextTime($this->definition, 3, 0);
 
         self::assertSame(120, $baseTime);
         self::assertGreaterThan($baseTime, $levelThreeTime);
+    }
+
+    public function testLabLevelReducesResearchTime(): void
+    {
+        $slowLab = $this->calculator->nextTime($this->definition, 0, 0);
+        $fasterLab = $this->calculator->nextTime($this->definition, 0, 5);
+
+        self::assertGreaterThan($fasterLab, $slowLab);
     }
 }

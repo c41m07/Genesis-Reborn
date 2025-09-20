@@ -6,6 +6,10 @@ use App\Domain\Entity\ResearchDefinition;
 
 class ResearchCalculator
 {
+    public function __construct(private readonly EconomySettings $settings)
+    {
+    }
+
     /**
      * @return array<string, int>
      */
@@ -13,15 +17,21 @@ class ResearchCalculator
     {
         $costs = [];
         foreach ($definition->getBaseCost() as $resource => $baseCost) {
-            $costs[$resource] = (int) round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
+            $value = $baseCost * pow($definition->getGrowthCost(), $currentLevel);
+            $value *= $this->settings->getResearchCostMultiplier();
+            $costs[$resource] = (int) round($value);
         }
 
         return $costs;
     }
 
-    public function nextTime(ResearchDefinition $definition, int $currentLevel): int
+    public function nextTime(ResearchDefinition $definition, int $currentLevel, int $labLevel = 0): int
     {
-        return (int) round($definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel));
+        $time = $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
+        $time *= $this->settings->getResearchTimeMultiplier();
+        $time *= $this->settings->getResearchSpeedFactor($labLevel);
+
+        return (int) max(1, round($time));
     }
 
     /**

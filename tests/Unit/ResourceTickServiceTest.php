@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Unit;
 
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\ResourceTickService;
 use DateInterval;
 use DateTimeImmutable;
@@ -13,7 +14,7 @@ class ResourceTickServiceTest extends TestCase
 {
     public function testTickUpdatesResourcesForMultiplePlanets(): void
     {
-        $service = new ResourceTickService();
+        $service = new ResourceTickService(new EconomySettings());
 
         $effects = [
             'metal_mine' => [

@@ -20,6 +20,7 @@ use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
@@ -62,7 +63,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator(new EconomySettings());
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $researchStates = new InMemoryResearchStateRepository([
@@ -118,7 +119,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(new EconomySettings());
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
@@ -165,7 +166,15 @@ class QueueProcessingTest extends TestCase
         ]);
 
         $playerStats = new InMemoryPlayerStatsRepository();
-        $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
+        $useCase = new BuildShips(
+            $planetRepository,
+            $buildingStates,
+            $researchStates,
+            $shipQueue,
+            $playerStats,
+            $catalog,
+            new EconomySettings()
+        );
         $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $useCase->execute(1, 42, 'fighter', 3);
@@ -209,7 +218,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator(new EconomySettings());
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $useCase->execute(1, 99, 'metal_mine');
@@ -254,7 +263,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator(new EconomySettings());
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         for ($i = 0; $i < 5; ++$i) {
@@ -296,7 +305,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator(new EconomySettings());
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
 
@@ -340,7 +349,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(new EconomySettings());
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         $useCase->execute(1, 11, 'propulsion_basic');
@@ -382,7 +391,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]);
-        $calculator = new ResearchCalculator();
+        $calculator = new ResearchCalculator(new EconomySettings());
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
         for ($i = 0; $i < 5; ++$i) {
@@ -433,7 +442,7 @@ class QueueProcessingTest extends TestCase
             ],
         ];
 
-        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+        $resourceTick = new ResourceTickService(new EconomySettings(), ResourceEffectFactory::fromBuildingConfig($buildingConfig));
 
         $sessionStorage = ['user_id' => 5];
         $session = new Session($sessionStorage);
@@ -507,7 +516,7 @@ class QueueProcessingTest extends TestCase
             ],
         ];
 
-        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+        $resourceTick = new ResourceTickService(new EconomySettings(), ResourceEffectFactory::fromBuildingConfig($buildingConfig));
 
         $sessionStorage = ['user_id' => 5];
         $session = new Session($sessionStorage);
@@ -578,7 +587,15 @@ class QueueProcessingTest extends TestCase
         ]);
 
         $playerStats = new InMemoryPlayerStatsRepository();
-        $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $catalog);
+        $buildShips = new BuildShips(
+            $planetRepository,
+            $buildingStates,
+            $researchStates,
+            $shipQueue,
+            $playerStats,
+            $catalog,
+            new EconomySettings()
+        );
         $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $result = $buildShips->execute(1, 7, 'fighter', 4);

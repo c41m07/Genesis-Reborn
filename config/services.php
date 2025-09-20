@@ -36,6 +36,7 @@ use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\CostService;
 use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\FleetResolutionService;
@@ -88,13 +89,19 @@ return function (Container $container): void {
         return new BuildingCatalog($config);
     });
 
-    $container->set(BuildingCalculator::class, fn () => new BuildingCalculator());
+    $container->set(EconomySettings::class, function () {
+        $config = require __DIR__ . '/game/economy.php';
 
-    $container->set(ResourceTickService::class, function () {
+        return new EconomySettings($config);
+    });
+
+    $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(EconomySettings::class)));
+
+    $container->set(ResourceTickService::class, function (Container $c) {
         $config = require __DIR__ . '/game/buildings.php';
         $effects = ResourceEffectFactory::fromBuildingConfig($config);
 
-        return new ResourceTickService($effects);
+        return new ResourceTickService($c->get(EconomySettings::class), $effects);
     });
     $container->set(CostService::class, fn () => new CostService());
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
@@ -106,7 +113,7 @@ return function (Container $container): void {
         return new ResearchCatalog($config);
     });
 
-    $container->set(ResearchCalculator::class, fn () => new ResearchCalculator());
+    $container->set(ResearchCalculator::class, fn (Container $c) => new ResearchCalculator($c->get(EconomySettings::class)));
 
     $container->set(ShipCatalog::class, function () {
         $config = require __DIR__ . '/game/ships.php';
@@ -233,7 +240,8 @@ return function (Container $container): void {
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(PlayerStatsRepositoryInterface::class),
-        $c->get(ShipCatalog::class)
+        $c->get(ShipCatalog::class),
+        $c->get(EconomySettings::class)
     ));
 
     $container->set(AuthController::class, fn (Container $c) => new AuthController(

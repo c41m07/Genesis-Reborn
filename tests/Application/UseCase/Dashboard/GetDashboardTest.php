@@ -17,6 +17,7 @@ use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
+use App\Domain\Service\EconomySettings;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ShipCatalog;
@@ -66,7 +67,7 @@ class GetDashboardTest extends TestCase
             new BuildingCatalog([]),
             new ResearchCatalog([]),
             new ShipCatalog([]),
-            new BuildingCalculator(),
+            new BuildingCalculator(new EconomySettings()),
             $processBuildQueue,
             $processResearchQueue,
             $processShipQueue

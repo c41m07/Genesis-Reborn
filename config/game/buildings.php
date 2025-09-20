@@ -167,4 +167,50 @@ return [
             'research' => ['engineering_heavy' => 1],
         ],
     ],
+    'workers_hub' => [
+        'label' => 'Centre d’ouvriers',
+        'base_cost' => ['metal' => 450, 'crystal' => 220],
+        'base_time' => 40,
+        'growth_cost' => 1.55,
+        'growth_time' => 1.5,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 14,
+        'energy_use_growth' => 1.12,
+        'energy_use_linear' => true,
+        'affects' => 'support',
+        'image' => 'assets/svg/illustrations/buildings/storage-depot.svg',
+        'requires' => [
+            'buildings' => [
+                'metal_mine' => 6,
+                'crystal_mine' => 5,
+            ],
+            'research' => [
+                'logistics' => 3,
+            ],
+        ],
+    ],
+    'robotics_center' => [
+        'label' => 'Centre robotique',
+        'base_cost' => ['metal' => 1200, 'crystal' => 650, 'hydrogen' => 200],
+        'base_time' => 65,
+        'growth_cost' => 1.6,
+        'growth_time' => 1.55,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 30,
+        'energy_use_growth' => 1.14,
+        'energy_use_linear' => true,
+        'affects' => 'support',
+        'image' => 'assets/svg/illustrations/buildings/research-lab.svg',
+        'requires' => [
+            'buildings' => [
+                'workers_hub' => 5,
+                'research_lab' => 4,
+            ],
+            'research' => [
+                'engineering_heavy' => 4,
+            ],
+        ],
+    ],
 ];

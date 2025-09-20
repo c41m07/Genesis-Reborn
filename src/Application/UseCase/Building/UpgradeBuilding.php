@@ -41,29 +41,28 @@ class UpgradeBuilding
         }
 
         $existingJobs = $this->buildQueue->getActiveQueue($planetId);
-        $queuedOccurrences = 0;
+        $levelsAfterQueue = $levels;
         foreach ($existingJobs as $job) {
-            if ($job->getBuildingKey() === $buildingKey) {
-                ++$queuedOccurrences;
-            }
+            $levelsAfterQueue[$job->getBuildingKey()] = $job->getTargetLevel();
         }
 
-        $targetLevel = $currentLevel + $queuedOccurrences + 1;
+        $startLevel = $levelsAfterQueue[$buildingKey] ?? $currentLevel;
+        $targetLevel = $startLevel + 1;
 
         $researchLevels = $this->researchStates->getLevels($planetId);
-        $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels);
+        $requirements = $this->calculator->checkRequirements($definition, $levelsAfterQueue, $researchLevels);
         if (!$requirements['ok']) {
             return ['success' => false, 'message' => 'Pré-requis manquants.'];
         }
 
-        $cost = $this->calculator->nextCost($definition, $targetLevel - 1);
+        $cost = $this->calculator->nextCost($definition, $startLevel);
         if (!$this->canAfford($planet, $cost)) {
             return ['success' => false, 'message' => 'Ressources insuffisantes.'];
         }
 
         $this->deductCost($planet, $cost);
 
-        $duration = $this->calculator->nextTime($definition, $targetLevel - 1);
+        $duration = $this->calculator->nextTime($definition, $startLevel, $levelsAfterQueue);
         $this->buildQueue->enqueue($planetId, $buildingKey, $targetLevel, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
