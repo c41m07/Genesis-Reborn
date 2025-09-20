@@ -788,27 +788,153 @@ main.workspace__content {
     gap: var(--space-2);
 }
 
-.building-card__requirements {
+.requirements-panel {
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    background: var(--bg-soft);
+    transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+    overflow: hidden;
+}
+
+.requirements-panel:hover {
+    border-color: var(--color-border);
+}
+
+.requirements-panel[open] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px rgba(108, 216, 255, 0.25);
+}
+
+.requirements-panel__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    list-style: none;
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color var(--transition-base);
+    user-select: none;
+}
+
+.requirements-panel__summary::-webkit-details-marker {
+    display: none;
+}
+
+.requirements-panel__summary:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: inherit;
+}
+
+.requirements-panel__summary:hover {
+    color: var(--accent);
+}
+
+.requirements-panel[open] .requirements-panel__summary {
+    color: var(--accent);
+}
+
+.requirements-panel__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.requirements-panel__glyph {
+    color: inherit;
+}
+
+.requirements-panel__title {
+    flex: 1;
+}
+
+.requirements-panel__chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    transition: transform var(--transition-base), color var(--transition-base);
+}
+
+.requirements-panel__chevron::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    display: block;
+}
+
+.requirements-panel[open] .requirements-panel__chevron {
+    transform: rotate(-135deg);
+    color: var(--accent);
+}
+
+.requirements-panel__content {
+    padding: 0 var(--space-3) var(--space-3);
+    border-top: 1px solid var(--border-soft);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.requirements-panel[open] .requirements-panel__content {
+    animation: requirements-panel-reveal var(--transition-base) ease;
+}
+
+.building-card__requirements,
+.requirements-panel__list {
     margin: 0;
-    padding-left: 1.25rem;
-    display: grid;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-1);
 }
 
-.building-card__requirements li {
-    list-style: disc;
-    color: var(--text-primary);
+.requirements-panel__item {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    justify-content: space-between;
     font-size: var(--font-size-sm);
+    color: var(--text-primary);
 }
 
+.requirements-panel__name,
 .building-card__requirement-name {
     font-weight: 600;
 }
 
+.requirements-panel__name {
+    flex: 1;
+}
+
+.requirements-panel__progress,
 .building-card__requirement-progress {
     color: var(--color-muted);
-    margin-left: var(--space-1);
     font-variant-numeric: tabular-nums;
+}
+
+.requirements-panel__progress {
+    margin-left: var(--space-2);
+}
+
+@keyframes requirements-panel-reveal {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .status-pill {
@@ -1151,14 +1277,6 @@ main.workspace__content {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-}
-
-.tech-card__requirements ul {
-    margin: 0;
-    padding-left: 1.2rem;
-    display: grid;
-    gap: var(--space-1);
-    color: var(--color-muted);
 }
 
 /* Metrics */
