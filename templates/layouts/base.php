@@ -8,6 +8,11 @@
 /** @var array<int, \App\Domain\Entity\Planet> $planets */
 /** @var string|null $activeSection */
 /** @var int|null $selectedPlanetId */
+
+$assetBase = rtrim($baseUrl ?? '', '/');
+if ($assetBase === '') {
+    $assetBase = '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -15,9 +20,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Genesis Reborn') ?></title>
-    <link rel="preload" href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg" as="image" type="image/svg+xml">
-    <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>/assets/css/tokens.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>/assets/css/app.css">
+    <link rel="preload" href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg" as="image" type="image/svg+xml">
+    <link rel="stylesheet" href="<?= htmlspecialchars($assetBase) ?>/assets/css/tokens.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($assetBase) ?>/assets/css/app.css">
 </head>
 <?php
 $planets = $planets ?? [];
@@ -34,7 +39,7 @@ if (is_array($activePlanetSummary) && isset($activePlanetSummary['planet']) && $
 $activePlanetName = $activePlanet ? $activePlanet->getName() : 'Planète active';
 $currentPlanetId = $selectedPlanetId ?? ($activePlanet ? $activePlanet->getId() : null);
 $resourceSummary = is_array($activePlanetSummary) ? ($activePlanetSummary['resources'] ?? []) : [];
-$resourceEndpoint = $baseUrl . '/api/resources';
+$resourceEndpoint = $assetBase . '/api/resources';
 $resourcePlanetId = $currentPlanetId ?? 0;
 
 $facilityStatuses = $facilityStatuses ?? [];
@@ -84,7 +89,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
             <div class="sidebar__inner">
                 <div class="sidebar__header">
                     <div class="sidebar__brand">
-                        <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/dashboard">Genesis Reborn</a>
+                        <a class="brand" href="<?= htmlspecialchars($assetBase) ?>/dashboard">Genesis Reborn</a>
                         <span class="brand__tagline">Nouvelle ère galactique</span>
                     </div>
                     <button class="sidebar__close" type="button" aria-label="Fermer la navigation" data-sidebar-close></button>
@@ -111,7 +116,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 if ($isLocked) {
                                     $linkAttributes .= ' role="link" aria-disabled="true" tabindex="-1"';
                                 } else {
-                                    $linkAttributes .= ' href="' . htmlspecialchars($baseUrl . $item['path']) . '"';
+                                    $linkAttributes .= ' href="' . htmlspecialchars($assetBase . $item['path']) . '"';
                                     if ($isCurrent) {
                                         $linkAttributes .= ' aria-current="page"';
                                     }
@@ -120,7 +125,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
                                     <<?= $tag . $linkAttributes ?>>
                                         <svg class="icon icon-sm" aria-hidden="true">
-                                            <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
+                                            <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
                                         </svg>
                                         <span><?= htmlspecialchars($item['label']) ?></span>
                                         <?php if ($isLocked): ?>
@@ -149,7 +154,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <h1 class="topbar__title"><?= htmlspecialchars($activePlanetName) ?></h1>
                     </div>
                     <?php if (!empty($planets)): ?>
-                        <form class="topbar__selector" method="get" action="<?= htmlspecialchars($baseUrl . $currentSectionPath) ?>">
+                        <form class="topbar__selector" method="get" action="<?= htmlspecialchars($assetBase . $currentSectionPath) ?>">
                             <label class="visually-hidden" for="topbar-planet-select">Changer de planète</label>
                             <select id="topbar-planet-select" name="planet" data-auto-submit>
                                 <?php foreach ($planets as $planetOption): ?>
@@ -176,7 +181,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>" data-resource-capacity="<?= $capacityValue ?>">
                             <div class="resource-meter__icon">
                                 <svg class="icon icon-sm" aria-hidden="true">
-                                    <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key) ?>"></use>
+                                    <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key) ?>"></use>
                                 </svg>
                             </div>
                             <div class="resource-meter__details">
@@ -191,13 +196,13 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                     <?php endforeach; ?>
                 </div>
                 <div class="topbar__actions">
-                    <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/profile">Profil</a>
+                    <a class="button button--ghost" href="<?= htmlspecialchars($assetBase) ?>/profile">Profil</a>
                     <?php if (!empty($csrf_logout)): ?>
-                        <form method="post" action="<?= htmlspecialchars($baseUrl) ?>/logout" class="logout-form">
+                        <form method="post" action="<?= htmlspecialchars($assetBase) ?>/logout" class="logout-form">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_logout ?? '') ?>">
                             <button type="submit" class="button button--ghost">
                                 <svg class="icon icon-sm" aria-hidden="true">
-                                    <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-logout"></use>
+                                    <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-logout"></use>
                                 </svg>
                                 <span>Déconnexion</span>
                             </button>
@@ -206,10 +211,10 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                 </div>
             <?php else: ?>
                 <div class="guest-branding">
-                    <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/">Genesis Reborn</a>
+                    <a class="brand" href="<?= htmlspecialchars($assetBase) ?>/">Genesis Reborn</a>
                     <nav class="guest-nav" aria-label="Accès invité">
-                        <a href="<?= htmlspecialchars($baseUrl) ?>/login">Connexion</a>
-                        <a href="<?= htmlspecialchars($baseUrl) ?>/register">Inscription</a>
+                        <a href="<?= htmlspecialchars($assetBase) ?>/login">Connexion</a>
+                        <a href="<?= htmlspecialchars($assetBase) ?>/register">Inscription</a>
                     </nav>
                 </div>
             <?php endif; ?>
@@ -231,6 +236,6 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
         </footer>
     </div>
 </div>
-<script type="module" src="<?= htmlspecialchars($baseUrl) ?>/assets/js/app.js"></script>
+<script type="module" src="<?= htmlspecialchars($assetBase) ?>/assets/js/app.js"></script>
 </body>
 </html>
