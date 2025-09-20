@@ -168,7 +168,7 @@ ob_start();
                                 <li>
                                     <div class="planet-summary__resource-label">
                                         <svg class="icon icon-sm" aria-hidden="true">
-                                            <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($meta['icon']) ?>"></use>
+                                            <use href="/assets/svg/sprite.svg#icon-<?= htmlspecialchars($meta['icon'], ENT_QUOTES) ?>"></use>
                                         </svg>
                                         <span><?= htmlspecialchars($meta['label']) ?></span>
                                     </div>

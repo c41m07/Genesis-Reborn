@@ -1,7 +1,6 @@
 <?php
 
 return static function (string $name, array $options = []): string {
-    $baseUrl = $options['baseUrl'] ?? '';
     $label = $options['label'] ?? null;
     $classes = trim('icon ' . ($options['class'] ?? ''));
     $size = $options['size'] ?? null;
@@ -36,8 +35,9 @@ return static function (string $name, array $options = []): string {
         $attributeString .= sprintf(' %s="%s"', $attributeKey, htmlspecialchars((string) $value, ENT_QUOTES));
     }
 
-    $href = rtrim($baseUrl, '/') . '/assets/svg/sprite.svg#icon-' . htmlspecialchars($name, ENT_QUOTES);
-    $svg = sprintf('<svg%s><use href="%s"></use></svg>', $attributeString, $href);
+    $iconName = (string) $name;
+    $href = '/assets/svg/sprite.svg#icon-' . $iconName;
+    $svg = sprintf('<svg%s><use href="%s"></use></svg>', $attributeString, htmlspecialchars($href, ENT_QUOTES));
 
     if ($label) {
         $svg .= sprintf('<span class="visually-hidden">%s</span>', htmlspecialchars((string) $label, ENT_QUOTES));

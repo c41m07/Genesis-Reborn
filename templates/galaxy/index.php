@@ -132,7 +132,7 @@ ob_start();
             } else {
                 $planet = $slot['planet'];
                 echo '<div class="galaxy-slot__title">';
-                echo '<svg class="icon icon-sm" aria-hidden="true"><use href="' . htmlspecialchars($baseUrl) . '/assets/svg/sprite.svg#icon-planet"></use></svg>';
+                echo '<svg class="icon icon-sm" aria-hidden="true"><use href="/assets/svg/sprite.svg#icon-planet"></use></svg>';
                 echo '<h3>' . htmlspecialchars($planet ? $planet->getName() : 'Planète inconnue') . '</h3>';
                 echo '</div>';
                 echo '<div class="galaxy-slot__meta">';

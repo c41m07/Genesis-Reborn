@@ -20,9 +20,9 @@ if ($assetBase === '') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Genesis Reborn') ?></title>
-    <link rel="preload" href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg" as="image" type="image/svg+xml">
-    <link rel="stylesheet" href="<?= htmlspecialchars($assetBase) ?>/assets/css/tokens.css">
-    <link rel="stylesheet" href="<?= htmlspecialchars($assetBase) ?>/assets/css/app.css">
+    <link rel="preload" href="/assets/svg/sprite.svg" as="image" type="image/svg+xml">
+    <link rel="stylesheet" href="/assets/css/tokens.css">
+    <link rel="stylesheet" href="/assets/css/app.css">
 </head>
 <?php
 $planets = $planets ?? [];
@@ -125,7 +125,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
                                     <<?= $tag . $linkAttributes ?>>
                                         <svg class="icon icon-sm" aria-hidden="true">
-                                            <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
+                                            <use href="/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon'], ENT_QUOTES) ?>"></use>
                                         </svg>
                                         <span><?= htmlspecialchars($item['label']) ?></span>
                                         <?php if ($isLocked): ?>
@@ -181,7 +181,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>" data-resource-capacity="<?= $capacityValue ?>">
                             <div class="resource-meter__icon">
                                 <svg class="icon icon-sm" aria-hidden="true">
-                                    <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key) ?>"></use>
+                                    <use href="/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key, ENT_QUOTES) ?>"></use>
                                 </svg>
                             </div>
                             <div class="resource-meter__details">
@@ -202,7 +202,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_logout ?? '') ?>">
                             <button type="submit" class="button button--ghost">
                                 <svg class="icon icon-sm" aria-hidden="true">
-                                    <use href="<?= htmlspecialchars($assetBase) ?>/assets/svg/sprite.svg#icon-logout"></use>
+                                    <use href="/assets/svg/sprite.svg#icon-logout"></use>
                                 </svg>
                                 <span>Déconnexion</span>
                             </button>
@@ -236,6 +236,6 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
         </footer>
     </div>
 </div>
-<script type="module" src="<?= htmlspecialchars($assetBase) ?>/assets/js/app.js"></script>
+<script type="module" src="/assets/js/app.js"></script>
 </body>
 </html>
