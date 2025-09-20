@@ -174,6 +174,7 @@ return [
             ],
             'research' => [],
         ],
+        'research_speed_bonus' => 0.1,
     ],
     'shipyard' => [
         'label' => 'Chantier spatial Asterion',

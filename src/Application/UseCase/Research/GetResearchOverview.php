@@ -81,7 +81,7 @@ class GetResearchOverview
                 $effectiveResearchLevels = $researchLevels;
                 $effectiveResearchLevels[$definition->getKey()] = $effectiveLevel;
                 $nextCost = $this->calculator->nextCost($definition, $effectiveLevel);
-                $nextTime = $this->calculator->nextTime($definition, $effectiveLevel);
+                $nextTime = $this->calculator->nextTime($definition, $effectiveLevel, $labLevel);
                 $requirements = $this->calculator->checkRequirements(
                     $definition,
                     $effectiveResearchLevels,

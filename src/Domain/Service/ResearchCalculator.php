@@ -6,6 +6,10 @@ use App\Domain\Entity\ResearchDefinition;
 
 class ResearchCalculator
 {
+    public function __construct(private readonly float $labSpeedBonusPerLevel = 0.0)
+    {
+    }
+
     /**
      * @return array<string, int>
      */
@@ -19,9 +23,18 @@ class ResearchCalculator
         return $costs;
     }
 
-    public function nextTime(ResearchDefinition $definition, int $currentLevel): int
+    public function nextTime(ResearchDefinition $definition, int $currentLevel, int $labLevel): int
     {
-        return (int) round($definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel));
+        $baseDuration = (float) $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
+        $effectiveLabLevel = max(0, $labLevel);
+        $bonusPerLevel = max(0.0, $this->labSpeedBonusPerLevel);
+        $speedMultiplier = 1.0 + ($effectiveLabLevel * $bonusPerLevel);
+
+        if ($speedMultiplier > 0.0) {
+            $baseDuration /= $speedMultiplier;
+        }
+
+        return max(1, (int) round($baseDuration));
     }
 
     /**

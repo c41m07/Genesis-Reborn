@@ -24,7 +24,8 @@ class BuildingDefinition
         private readonly array $requirements = [],
         private readonly ?string $image = null,
         private readonly array $storage = [],
-        private readonly array $upkeep = []
+        private readonly array $upkeep = [],
+        private readonly float $researchSpeedBonus = 0.0
     ) {
     }
 
@@ -114,5 +115,10 @@ class BuildingDefinition
     public function getUpkeepConfig(): array
     {
         return $this->upkeep;
+    }
+
+    public function getResearchSpeedBonus(): float
+    {
+        return $this->researchSpeedBonus;
     }
 }
