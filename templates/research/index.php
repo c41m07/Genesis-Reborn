@@ -8,7 +8,6 @@
 
 $title = $title ?? 'Recherche';
 $icon = require __DIR__ . '/../components/_icon.php';
-$resourceBar = require __DIR__ . '/../components/_resource_bar.php';
 $card = require __DIR__ . '/../components/_card.php';
 
 if (!function_exists('format_duration')) {
@@ -31,18 +30,6 @@ if (!function_exists('format_duration')) {
         }
 
         return implode(' ', $parts);
-    }
-}
-
-$resourceSummaryData = [];
-if (is_array($activePlanetSummary)) {
-    $labels = ['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'];
-    foreach ($activePlanetSummary['resources'] as $key => $data) {
-        $resourceSummaryData[$key] = [
-            'label' => $labels[$key] ?? ucfirst((string) $key),
-            'value' => $data['value'] ?? 0,
-            'perHour' => $data['perHour'] ?? 0,
-        ];
     }
 }
 
@@ -89,40 +76,31 @@ ob_start();
         },
     ]) ?>
 <?php else: ?>
-    <?php if ($resourceSummaryData !== []): ?>
-        <?= $card([
-            'title' => 'Ressources disponibles',
-            'subtitle' => 'Budget scientifique actuel',
-            'body' => static function () use ($resourceBar, $resourceSummaryData, $baseUrl): void {
-                echo $resourceBar($resourceSummaryData, ['baseUrl' => $baseUrl]);
-            },
-        ]) ?>
-    <?php endif; ?>
-
     <?= $card([
         'title' => 'Recherches en cours',
         'subtitle' => 'Suivi des programmes scientifiques actifs',
         'body' => static function () use ($queue): void {
+            $emptyMessage = 'Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.';
+            echo '<div class="queue-block" data-queue="research" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
-                echo '<p class="empty-state">Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.</p>';
-
-                return;
-            }
-
-            echo '<ul class="queue-list">';
-            foreach ($queue['jobs'] as $job) {
-                $label = $job['label'] ?? $job['research'] ?? '';
-                echo '<li class="queue-list__item">';
-                echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
-                echo '<div class="queue-list__timing">';
-                echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
-                if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
-                    echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
+            } else {
+                echo '<ul class="queue-list">';
+                foreach ($queue['jobs'] as $job) {
+                    $label = $job['label'] ?? $job['research'] ?? '';
+                    echo '<li class="queue-list__item">';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
+                    echo '<div class="queue-list__timing">';
+                    echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
+                    if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
+                        echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
+                    }
+                    echo '</div>';
+                    echo '</li>';
                 }
-                echo '</div>';
-                echo '</li>';
+                echo '</ul>';
             }
-            echo '</ul>';
+            echo '</div>';
         },
     ]) ?>
 
@@ -184,7 +162,7 @@ ob_start();
                         }
                         echo '</div>';
                         echo '<footer class="research-entry__footer">';
-                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/research?planet=' . (int) $selectedPlanetId . '">';
+                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/research?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="research">';
                         echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_start) . '">';
                         echo '<input type="hidden" name="research" value="' . htmlspecialchars($definition->getKey()) . '">';
                         $label = $canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';

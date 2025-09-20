@@ -31,8 +31,14 @@ if (!function_exists('format_duration')) {
     }
 }
 
-$empire = $dashboard['empire'] ?? ['points' => 0, 'militaryPower' => 0, 'planetCount' => 0];
-$researchTotals = $dashboard['researchTotals'] ?? ['sumLevels' => 0, 'unlocked' => 0, 'best' => ['label' => 'Aucune technologie', 'level' => 0]];
+$empire = $dashboard['empire'] ?? [
+    'points' => 0,
+    'buildingPoints' => 0,
+    'sciencePoints' => 0,
+    'militaryPoints' => 0,
+    'militaryPower' => 0,
+    'planetCount' => 0,
+];
 $planetSummaries = $dashboard['planets'] ?? [];
 $selectedPlanetId = $selectedPlanetId ?? null;
 if ($selectedPlanetId === null && $activePlanetSummary) {
@@ -56,8 +62,6 @@ $queues = $activeSummary['queues'] ?? [
 ];
 $activePlanet = $activeSummary['planet'] ?? null;
 $activeProduction = $activeSummary['production'] ?? ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
-$fleetData = $activeSummary['fleet'] ?? ['ships' => [], 'power' => 0];
-$activeFleet = $fleetData['ships'] ?? [];
 $now = new DateTimeImmutable();
 $resourceMeta = [
     'metal' => ['label' => 'Métal', 'icon' => 'metal'],
@@ -65,7 +69,6 @@ $resourceMeta = [
     'hydrogen' => ['label' => 'Hydrogène', 'icon' => 'hydrogen'],
     'energy' => ['label' => 'Énergie', 'icon' => 'energy'],
 ];
-$bestTech = $researchTotals['best'] ?? ['label' => 'Aucune technologie', 'level' => 0];
 ob_start();
 ?>
 <section class="dashboard">
@@ -80,12 +83,8 @@ ob_start();
                 <strong class="dashboard-banner__value"><?= $activePlanet ? htmlspecialchars($activePlanet->getName()) : 'Aucune planète' ?></strong>
             </li>
             <li>
-                <span class="dashboard-banner__label">Planètes colonisées</span>
-                <strong class="dashboard-banner__value"><?= number_format($empire['planetCount'] ?? count($planetSummaries)) ?></strong>
-            </li>
-            <li>
-                <span class="dashboard-banner__label">Niveaux de recherche</span>
-                <strong class="dashboard-banner__value"><?= number_format($researchTotals['sumLevels'] ?? 0) ?></strong>
+                <span class="dashboard-banner__label">Score impérial</span>
+                <strong class="dashboard-banner__value"><?= number_format($empire['points'] ?? 0) ?></strong>
             </li>
         </ul>
     </div>
@@ -94,62 +93,35 @@ ob_start();
             <article class="panel panel--highlight">
                 <header class="panel__header">
                     <h2>Vue d’ensemble</h2>
-                    <p class="panel__subtitle">Bilan rapide de votre progression impériale.</p>
+                    <p class="panel__subtitle">Synthèse des forces civiles, scientifiques et militaires.</p>
                 </header>
                 <div class="panel__body metrics metrics--compact">
                     <div class="metric">
-                        <span class="metric__label">Points d’empire</span>
+                        <span class="metric__label">Score impérial</span>
                         <strong class="metric__value"><?= number_format($empire['points'] ?? 0) ?></strong>
-                        <span class="metric__hint">Somme des niveaux de bâtiments et de recherches.</span>
+                        <span class="metric__hint">Bâtiments + recherches + puissance militaire.</span>
                     </div>
                     <div class="metric">
-                        <span class="metric__label">Planètes colonisées</span>
-                        <strong class="metric__value"><?= number_format($empire['planetCount'] ?? count($planetSummaries)) ?></strong>
-                        <span class="metric__hint">Mondes actuellement sous votre contrôle.</span>
+                        <span class="metric__label">Points d’infrastructure</span>
+                        <strong class="metric__value"><?= number_format($empire['buildingPoints'] ?? 0) ?></strong>
+                        <span class="metric__hint">Total des niveaux de bâtiments développés.</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric__label">Points scientifiques</span>
+                        <strong class="metric__value"><?= number_format($empire['sciencePoints'] ?? 0) ?></strong>
+                        <span class="metric__hint">Somme des niveaux de recherches actives.</span>
                     </div>
                     <div class="metric">
                         <span class="metric__label">Puissance militaire</span>
-                        <strong class="metric__value"><?= number_format($empire['militaryPower'] ?? 0) ?></strong>
-                        <span class="metric__hint">Indice basé sur l’armement et la défense de votre flotte.</span>
-                    </div>
-                </div>
-            </article>
-            <article class="panel">
-                <header class="panel__header">
-                    <h2>Programme scientifique</h2>
-                    <p class="panel__subtitle">Suivi des avancées et des projets en laboratoire.</p>
-                </header>
-                <div class="panel__body science-grid">
-                    <div class="science-stat">
-                        <span class="science-stat__label">Niveaux cumulés</span>
-                        <strong class="science-stat__value"><?= number_format($researchTotals['sumLevels'] ?? 0) ?></strong>
-                    </div>
-                    <div class="science-stat">
-                        <span class="science-stat__label">Découvertes actives</span>
-                        <strong class="science-stat__value"><?= number_format($researchTotals['unlocked'] ?? 0) ?></strong>
-                    </div>
-                    <div class="science-stat">
-                        <span class="science-stat__label">Meilleure technologie</span>
-                        <strong class="science-stat__value"><?= htmlspecialchars(($bestTech['label'] ?? 'Aucune technologie') . ' • Niveau ' . ($bestTech['level'] ?? 0)) ?></strong>
-                    </div>
-                    <div class="science-stat science-stat--wide">
-                        <?php $researchJob = $queues['research']['next'] ?? null; ?>
-                        <span class="science-stat__label">Recherche en cours</span>
-                        <p class="science-stat__detail">
-                            <?php if ($researchJob): ?>
-                                <?= htmlspecialchars($researchJob['label'] ?? $researchJob['research']) ?> – fin dans <?= htmlspecialchars(format_duration((int) $researchJob['remaining'])) ?>
-                            <?php else: ?>
-                                Aucune étude active pour le moment.
-                            <?php endif; ?>
-                        </p>
-                        <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Accéder au laboratoire</a>
+                        <strong class="metric__value"><?= number_format($empire['militaryPoints'] ?? ($empire['militaryPower'] ?? 0)) ?></strong>
+                        <span class="metric__hint">Valeur combinée d’attaque et de défense de la flotte.</span>
                     </div>
                 </div>
             </article>
             <article class="panel">
                 <header class="panel__header">
                     <h2>Production en cours</h2>
-                    <p class="panel__subtitle">Suivi des files de construction et de chantier spatial.</p>
+                    <p class="panel__subtitle">Bâtiments, recherches et chantiers spatiaux alignés.</p>
                 </header>
                 <div class="panel__body production-grid">
                     <div class="production-card">
@@ -164,6 +136,20 @@ ob_start();
                         <footer class="production-card__footer">
                             <span><?= number_format($queues['buildings']['count'] ?? 0) ?> amélioration(s) en attente</span>
                             <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">Ouvrir la colonie</a>
+                        </footer>
+                    </div>
+                    <div class="production-card">
+                        <h3>Recherches</h3>
+                        <?php $researchJob = $queues['research']['next'] ?? null; ?>
+                        <?php if (($queues['research']['count'] ?? 0) === 0 || !$researchJob): ?>
+                            <p class="production-card__empty">Aucune étude active pour le moment.</p>
+                        <?php else: ?>
+                            <p class="production-card__title"><?= htmlspecialchars($researchJob['label'] ?? $researchJob['research']) ?> • niveau <?= number_format($researchJob['targetLevel'] ?? 0) ?></p>
+                            <p class="production-card__time">Termine dans <?= htmlspecialchars(format_duration((int) $researchJob['remaining'])) ?></p>
+                        <?php endif; ?>
+                        <footer class="production-card__footer">
+                            <span><?= number_format($queues['research']['count'] ?? 0) ?> programme(s) planifié(s)</span>
+                            <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Accéder au laboratoire</a>
                         </footer>
                     </div>
                     <div class="production-card">
@@ -182,38 +168,12 @@ ob_start();
                     </div>
                 </div>
             </article>
-            <article class="panel">
-                <header class="panel__header">
-                    <h2>Forces spatiales</h2>
-                    <p class="panel__subtitle">État rapide de la flotte stationnée.</p>
-                </header>
-                <div class="panel__body fleet-panel">
-                    <div class="fleet-panel__summary">
-                        <span class="fleet-panel__label">Puissance actuelle</span>
-                        <strong class="fleet-panel__value"><?= number_format($fleetData['power'] ?? 0) ?></strong>
-                        <span class="fleet-panel__hint">Basé sur l’attaque et la défense cumulées.</span>
-                    </div>
-                    <?php if (empty($activeFleet)): ?>
-                        <p class="fleet-panel__empty">Aucun vaisseau n’est encore stationné en orbite.</p>
-                    <?php else: ?>
-                        <?php $displayFleet = array_slice($activeFleet, 0, 5); ?>
-                        <ul class="fleet-panel__list">
-                            <?php foreach ($displayFleet as $ship): ?>
-                                <li>
-                                    <span class="fleet-panel__ship"><?= htmlspecialchars($ship['label']) ?></span>
-                                    <span class="fleet-panel__qty">× <?= number_format($ship['quantity']) ?></span>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
-                    <?php endif; ?>
-                </div>
-            </article>
         </div>
         <aside class="dashboard-side">
             <article class="panel planet-summary">
                 <header class="panel__header">
                     <h2>Planète sélectionnée</h2>
-                    <p class="panel__subtitle">Ressources et état énergétique.</p>
+                    <p class="panel__subtitle">Ressources stockées et rythme de production.</p>
                 </header>
                 <div class="panel__body planet-summary__body">
                     <div class="planet-summary__preview"></div>

@@ -34,6 +34,8 @@ if (is_array($activePlanetSummary) && isset($activePlanetSummary['planet']) && $
 $activePlanetName = $activePlanet ? $activePlanet->getName() : 'Planète active';
 $currentPlanetId = $selectedPlanetId ?? ($activePlanet ? $activePlanet->getId() : null);
 $resourceSummary = is_array($activePlanetSummary) ? ($activePlanetSummary['resources'] ?? []) : [];
+$resourceEndpoint = $baseUrl . '/api/resources';
+$resourcePlanetId = $currentPlanetId ?? 0;
 
 $menu = [
     'dashboard' => ['label' => 'Tableau de bord', 'path' => '/dashboard', 'icon' => 'overview'],
@@ -80,7 +82,7 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
         <div class="sidebar-overlay" data-sidebar-overlay></div>
     <?php endif; ?>
     <div class="workspace">
-        <header class="topbar <?= $isAuthenticated ? '' : 'topbar--guest' ?>">
+        <header class="topbar <?= $isAuthenticated ? '' : 'topbar--guest' ?>"<?= $isAuthenticated ? ' data-resource-endpoint="' . htmlspecialchars($resourceEndpoint) . '" data-planet-id="' . (int) $resourcePlanetId . '" data-resource-poll="15000"' : '' ?>>
             <?php if ($isAuthenticated): ?>
                 <div class="topbar__primary">
                     <button class="topbar__menu" type="button" aria-label="Ouvrir la navigation" data-sidebar-toggle aria-controls="primary-sidebar" aria-expanded="false">
@@ -111,7 +113,7 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
                         $rateDisplay = $ratePrefix . $rateNumber . '/h';
                         $rateClass = $perHourValue >= 0 ? 'is-positive' : 'is-negative';
                         ?>
-                        <div class="resource-meter" role="group" aria-label="<?= htmlspecialchars($label) ?>">
+                        <div class="resource-meter" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>">
                             <div class="resource-meter__icon">
                                 <svg class="icon icon-sm" aria-hidden="true">
                                     <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($key) ?>"></use>
@@ -120,8 +122,8 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
                             <div class="resource-meter__details">
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
-                                    <span class="resource-meter__value"><?= number_format((int) ($data['value'] ?? 0)) ?></span>
-                                    <span class="resource-meter__rate <?= $rateClass ?>"><?= htmlspecialchars($rateDisplay) ?></span>
+                                    <span class="resource-meter__value" data-resource-value><?= number_format((int) ($data['value'] ?? 0)) ?></span>
+                                    <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                 </div>
                             </div>
                         </div>

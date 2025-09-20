@@ -7,9 +7,28 @@ $title = $title ?? 'Arbre technologique';
 $categories = $tree['categories'] ?? [];
 $nodes = [];
 $initialNodeId = null;
+if (!function_exists('getTechState')) {
+    function getTechState(array $requirements): array
+    {
+        $total = count($requirements);
+        $met = 0;
+        foreach ($requirements as $requirement) {
+            if (!empty($requirement['met'])) {
+                ++$met;
+            }
+        }
+
+        return [
+            'met' => $met,
+            'total' => $total,
+            'allMet' => $total === 0 ? true : ($met === $total),
+        ];
+    }
+}
 foreach ($categories as $category) {
     foreach ($category['items'] as $item) {
         $nodeId = $category['key'] . ':' . $item['key'];
+        $item['state'] = getTechState($item['requires'] ?? []);
         $item['category'] = $category['label'];
         $nodes[$nodeId] = $item;
         if ($initialNodeId === null) {
@@ -17,7 +36,8 @@ foreach ($categories as $category) {
         }
     }
 }
-$nodesJson = htmlspecialchars(json_encode($nodes, JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+$nodesJson = json_encode($nodes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+$nodesJson = $nodesJson !== false ? $nodesJson : '{}';
 ob_start();
 ?>
 <section class="page-header">
@@ -58,8 +78,9 @@ ob_start();
                         <ul class="tech-section__list">
                             <?php foreach ($category['items'] as $item): ?>
                                 <?php $nodeId = $category['key'] . ':' . $item['key']; ?>
+                                <?php $state = getTechState($item['requires'] ?? []); ?>
                                 <li>
-                                    <button class="tech-node-link" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>">
+                                    <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
                                         <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
                                         <?php if (isset($item['level'])): ?>
                                             <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>

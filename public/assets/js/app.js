@@ -6,6 +6,331 @@ const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => 
     "'": '&#039;',
 }[char] || char));
 
+const numberFormatter = new Intl.NumberFormat('fr-FR');
+
+const formatNumber = (value) => {
+    const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+
+    return numberFormatter.format(Number.isFinite(numericValue) ? numericValue : 0);
+};
+
+const formatSeconds = (value) => {
+    const seconds = Math.max(0, Math.floor(Number(value ?? 0)));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    const parts = [];
+    if (hours > 0) {
+        parts.push(`${hours} h`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes} min`);
+    }
+    if (parts.length === 0 || remainingSeconds > 0) {
+        parts.push(`${remainingSeconds} s`);
+    }
+
+    return parts.join(' ');
+};
+
+const resourceTicker = {
+    states: new Map(),
+    intervalId: null,
+};
+
+const renderResourceMeter = (key, value, perHour) => {
+    const meter = document.querySelector(`.resource-meter[data-resource="${CSS.escape(key)}"]`);
+    if (!meter) {
+        return;
+    }
+
+    const valueElement = meter.querySelector('[data-resource-value]');
+    const rateElement = meter.querySelector('[data-resource-rate]');
+    const normalizedValue = Math.floor(Number.isFinite(value) ? value : 0);
+    const normalizedPerHour = Number.isFinite(perHour) ? perHour : 0;
+
+    if (valueElement) {
+        valueElement.textContent = formatNumber(normalizedValue);
+    }
+
+    if (rateElement) {
+        const ratePrefix = key !== 'energy' && normalizedPerHour > 0 ? '+' : '';
+        rateElement.textContent = `${ratePrefix}${formatNumber(Math.round(normalizedPerHour))}/h`;
+        rateElement.classList.toggle('is-positive', normalizedPerHour >= 0);
+        rateElement.classList.toggle('is-negative', normalizedPerHour < 0);
+    }
+};
+
+const stopResourceTicker = () => {
+    if (resourceTicker.intervalId !== null) {
+        window.clearInterval(resourceTicker.intervalId);
+        resourceTicker.intervalId = null;
+    }
+};
+
+const startResourceTicker = () => {
+    stopResourceTicker();
+
+    if (resourceTicker.states.size === 0) {
+        return;
+    }
+
+    resourceTicker.intervalId = window.setInterval(() => {
+        const now = Date.now();
+        resourceTicker.states.forEach((state, key) => {
+            const elapsedSeconds = Math.max(0, Math.floor((now - state.timestamp) / 1000));
+            if (elapsedSeconds === 0) {
+                return;
+            }
+
+            const increment = state.perHour * (elapsedSeconds / 3600);
+            state.value += increment;
+            state.timestamp = now;
+            renderResourceMeter(key, state.value, state.perHour);
+        });
+    }, 1000);
+};
+
+const applyResourceSnapshot = (resources = {}) => {
+    const now = Date.now();
+    resourceTicker.states.clear();
+
+    Object.entries(resources).forEach(([key, data]) => {
+        const source = data && typeof data === 'object' ? data : {};
+        const value = Number(source.value ?? 0);
+        const perHour = Number(source.perHour ?? 0);
+
+        resourceTicker.states.set(key, {
+            value,
+            perHour,
+            timestamp: now,
+        });
+
+        renderResourceMeter(key, value, perHour);
+    });
+
+    startResourceTicker();
+};
+
+const bootstrapResourceTicker = () => {
+    const meters = document.querySelectorAll('.resource-meter[data-resource]');
+    if (meters.length === 0) {
+        return;
+    }
+
+    const snapshot = {};
+    meters.forEach((meter) => {
+        const key = meter.getAttribute('data-resource');
+        if (!key) {
+            return;
+        }
+
+        const valueText = meter.querySelector('[data-resource-value]')?.textContent ?? '0';
+        const rateText = meter.querySelector('[data-resource-rate]')?.textContent ?? '0';
+        const numericValue = Number(valueText.replace(/[^0-9-]/g, ''));
+        const numericRate = Number(rateText.replace(/[^0-9-]/g, ''));
+
+        snapshot[key] = {
+            value: Number.isFinite(numericValue) ? numericValue : 0,
+            perHour: Number.isFinite(numericRate) ? numericRate : 0,
+        };
+    });
+
+    applyResourceSnapshot(snapshot);
+};
+
+const renderQueue = (queue, target) => {
+    const container = document.querySelector(`[data-queue="${CSS.escape(target)}"]`);
+    if (!container) {
+        return;
+    }
+
+    const emptyMessage = container.dataset.empty || 'Aucune action en cours.';
+    if (!queue || !Array.isArray(queue.jobs) || queue.jobs.length === 0) {
+        container.innerHTML = `<p class="empty-state">${escapeHtml(emptyMessage)}</p>`;
+        return;
+    }
+
+    const items = queue.jobs.map((job) => {
+        const label = escapeHtml(job.label ?? job.building ?? job.research ?? job.ship ?? '');
+        const remaining = formatSeconds(job.remaining ?? 0);
+        const endsAt = job.endsAt ? new Date(job.endsAt) : null;
+        const timeHtml = endsAt && !Number.isNaN(endsAt.getTime())
+            ? `<time datetime="${endsAt.toISOString()}">${endsAt.toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+            })}</time>`
+            : '';
+
+        let detail = '';
+        if (target === 'shipyard') {
+            const quantity = formatNumber(job.quantity ?? 0);
+            detail = `${quantity} unité(s)`;
+        } else {
+            const level = formatNumber(job.targetLevel ?? 0);
+            detail = `Niveau ${level}`;
+        }
+
+        return `
+            <li class="queue-list__item">
+                <div><strong>${label}</strong><span>${detail}</span></div>
+                <div class="queue-list__timing">
+                    <span>Termine dans ${escapeHtml(remaining)}</span>
+                    ${timeHtml}
+                </div>
+            </li>
+        `;
+    }).join('');
+
+    container.innerHTML = `<ul class="queue-list">${items}</ul>`;
+};
+
+const ensureFlashContainer = () => {
+    let container = document.querySelector('.flashes');
+    if (!container) {
+        const mainContent = document.querySelector('.workspace__content');
+        container = document.createElement('div');
+        container.className = 'flashes';
+        if (mainContent) {
+            mainContent.prepend(container);
+        }
+    }
+
+    return container;
+};
+
+const showFlashMessage = (type, message) => {
+    if (!message) {
+        return;
+    }
+
+    const container = ensureFlashContainer();
+    const flash = document.createElement('div');
+    flash.className = `flash flash--${type}`;
+    flash.textContent = message;
+    container.appendChild(flash);
+
+    window.setTimeout(() => {
+        flash.classList.add('is-hidden');
+        window.setTimeout(() => {
+            flash.remove();
+        }, 400);
+    }, 5000);
+};
+
+const submitAsyncForm = async (form) => {
+    const action = form.getAttribute('action') || window.location.href;
+    const method = (form.getAttribute('method') || 'POST').toUpperCase();
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('[type="submit"]');
+    const buttonWasDisabled = submitButton?.disabled ?? false;
+    if (submitButton) {
+        submitButton.disabled = true;
+    }
+
+    try {
+        const response = await fetch(action, {
+            method,
+            body: formData,
+            headers: {
+                Accept: 'application/json',
+            },
+            credentials: 'same-origin',
+        });
+        const data = await response.json().catch(() => null);
+
+        if (!data) {
+            throw new Error('Invalid JSON response');
+        }
+
+        if (!response.ok || data.success === false) {
+            showFlashMessage('danger', data.message ?? 'Action impossible.');
+            if (data.resources) {
+                applyResourceSnapshot(data.resources);
+            }
+            if (form.dataset.queueTarget && data.queue) {
+                renderQueue(data.queue, form.dataset.queueTarget);
+            }
+
+            return;
+        }
+
+        showFlashMessage('success', data.message ?? 'Action effectuée.');
+        if (data.resources) {
+            applyResourceSnapshot(data.resources);
+        }
+        if (form.dataset.queueTarget && data.queue) {
+            renderQueue(data.queue, form.dataset.queueTarget);
+        }
+        if (typeof data.planetId === 'number') {
+            const topbar = document.querySelector('.topbar[data-resource-endpoint]');
+            if (topbar) {
+                topbar.dataset.planetId = String(data.planetId);
+            }
+        }
+    } catch (_error) {
+        showFlashMessage('danger', 'Impossible de traiter votre demande pour le moment.');
+    } finally {
+        if (submitButton && !buttonWasDisabled) {
+            submitButton.disabled = false;
+        }
+    }
+};
+
+const initAsyncForms = () => {
+    const forms = document.querySelectorAll('form[data-async]');
+    forms.forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitAsyncForm(form);
+        });
+    });
+};
+
+const initResourcePolling = () => {
+    const topbar = document.querySelector('.topbar[data-resource-endpoint]');
+    if (!topbar) {
+        return;
+    }
+
+    const endpoint = topbar.dataset.resourceEndpoint || '';
+    const pollDelay = Number(topbar.dataset.resourcePoll || 0);
+    let planetId = Number(topbar.dataset.planetId || 0);
+
+    if (!endpoint || !pollDelay || planetId <= 0) {
+        return;
+    }
+
+    const fetchResources = async () => {
+        planetId = Number(topbar.dataset.planetId || planetId);
+        if (planetId <= 0) {
+            return;
+        }
+
+        try {
+            const url = new URL(endpoint, window.location.origin);
+            url.searchParams.set('planet', String(planetId));
+            const response = await fetch(url.toString(), {
+                headers: {
+                    Accept: 'application/json',
+                },
+                credentials: 'same-origin',
+            });
+            const data = await response.json().catch(() => null);
+            if (data?.success && data.resources) {
+                applyResourceSnapshot(data.resources);
+            }
+        } catch (_error) {
+            // Ignore polling errors silently.
+        }
+    };
+
+    fetchResources();
+    window.setInterval(fetchResources, pollDelay);
+};
+
 const initSidebar = () => {
     const sidebar = document.querySelector('[data-sidebar]');
     if (!sidebar) {
@@ -169,6 +494,7 @@ const initTechTree = () => {
     };
 
     nodeLinks.forEach((link) => {
+        link.classList.toggle('tech-node-link--ready', link.dataset.techReady === '1');
         link.addEventListener('click', () => {
             const target = link.dataset.techTarget || '';
             if (target !== '') {
@@ -191,6 +517,9 @@ const initTechTree = () => {
 const ready = () => {
     initSidebar();
     initAutoSubmitSelects();
+    initAsyncForms();
+    bootstrapResourceTicker();
+    initResourcePolling();
     initTechTree();
 };
 

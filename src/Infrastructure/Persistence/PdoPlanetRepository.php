@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use DateTimeImmutable;
 use PDO;
 use PDOException;
 use RuntimeException;
@@ -66,9 +67,11 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             $hydrogenCapacity = 40000;
             $energyCapacity = 1000;
 
+            $now = new DateTimeImmutable('now');
+
             $this->pdo->prepare(
                 'INSERT INTO planets (player_id, name, galaxy, `system`, `position`, diameter, temperature_min, temperature_max, is_homeworld, metal, crystal, hydrogen, prod_metal_per_hour, prod_crystal_per_hour, prod_hydrogen_per_hour, prod_energy_per_hour, energy, metal_capacity, crystal_capacity, hydrogen_capacity, energy_capacity, last_resource_tick, created_at, updated_at)
-                VALUES (:player, :name, :galaxy, :system, :position, :diameter, :tmin, :tmax, 1, :metal, :crystal, :hydrogen, :mPH, :cPH, :hPH, :ePH, :energy, :metalCap, :crystalCap, :hydrogenCap, :energyCap, NOW(), NOW(), NOW())'
+                VALUES (:player, :name, :galaxy, :system, :position, :diameter, :tmin, :tmax, 1, :metal, :crystal, :hydrogen, :mPH, :cPH, :hPH, :ePH, :energy, :metalCap, :crystalCap, :hydrogenCap, :energyCap, :now, :now, :now)'
             )->execute([
                 'player' => $userId,
                 'name' => 'Planète mère',
@@ -90,6 +93,7 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
                 'crystalCap' => $crystalCapacity,
                 'hydrogenCap' => $hydrogenCapacity,
                 'energyCap' => $energyCapacity,
+                'now' => $now->format('Y-m-d H:i:s'),
             ]);
 
             $id = (int) $this->pdo->lastInsertId();
@@ -110,7 +114,9 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
     public function update(Planet $planet): void
     {
         $stmt = $this->pdo->prepare('UPDATE planets SET name = :name, metal = :metal, crystal = :crystal, hydrogen = :hydrogen, energy = :energy,
-            prod_metal_per_hour = :mPH, prod_crystal_per_hour = :cPH, prod_hydrogen_per_hour = :hPH, prod_energy_per_hour = :ePH WHERE id = :id');
+            prod_metal_per_hour = :mPH, prod_crystal_per_hour = :cPH, prod_hydrogen_per_hour = :hPH, prod_energy_per_hour = :ePH,
+            metal_capacity = :metalCapacity, crystal_capacity = :crystalCapacity, hydrogen_capacity = :hydrogenCapacity, energy_capacity = :energyCapacity,
+            last_resource_tick = :lastTick WHERE id = :id');
 
         $stmt->execute([
             'name' => $planet->getName(),
@@ -122,6 +128,11 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             'cPH' => $planet->getCrystalPerHour(),
             'hPH' => $planet->getHydrogenPerHour(),
             'ePH' => $planet->getEnergyPerHour(),
+            'metalCapacity' => $planet->getMetalCapacity(),
+            'crystalCapacity' => $planet->getCrystalCapacity(),
+            'hydrogenCapacity' => $planet->getHydrogenCapacity(),
+            'energyCapacity' => $planet->getEnergyCapacity(),
+            'lastTick' => $planet->getLastResourceTick()->format('Y-m-d H:i:s'),
             'id' => $planet->getId(),
         ]);
     }
@@ -154,7 +165,12 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             (int) ($data['prod_metal_per_hour'] ?? 0),
             (int) ($data['prod_crystal_per_hour'] ?? 0),
             (int) ($data['prod_hydrogen_per_hour'] ?? 0),
-            (int) ($data['prod_energy_per_hour'] ?? 0)
+            (int) ($data['prod_energy_per_hour'] ?? 0),
+            (int) ($data['metal_capacity'] ?? 0),
+            (int) ($data['crystal_capacity'] ?? 0),
+            (int) ($data['hydrogen_capacity'] ?? 0),
+            (int) ($data['energy_capacity'] ?? 0),
+            isset($data['last_resource_tick']) ? new DateTimeImmutable($data['last_resource_tick']) : null
         );
     }
 }

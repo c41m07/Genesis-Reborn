@@ -108,6 +108,9 @@ tests (PHPUnit)
 composer install
 composer dump-autoload --optimize
 
+# Base de données
+composer db:create
+
 # QA & tests
 composer test
 composer stan
@@ -133,16 +136,9 @@ npm run svgo:build
 ---
 
 ## Bugs connus & TODO
-- **Header** : ne s’actualise pas avec les ressources → rafraîchissement auto à implémenter.
 - **Files d’attente** :
     - Construction & recherches doivent être **séquentielles** (5 max).
     - Les niveaux doivent s’enchaîner correctement (mine lvl1 → lvl2).
-- **Arbre techno** : afficher les prérequis (valides = vert, invalides = gris avec niveau actuel/requis).
-- **Vue d’ensemble** : remplacer nombre de planètes colonisées par **puissance scientifique**
-    - Formule : `1 point = 1000 ressources dépensées`.
-- **Dashboard** :
-    - Supprimer : niveaux de recherche, bloc recherche scientifique, bloc force spatiale.
-    - Déplacer "recherches en cours" → section "productions en cours".
 
 ---
 

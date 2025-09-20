@@ -54,6 +54,7 @@ class GetResearchOverview
 
         $queueJobs = $this->researchQueue->getActiveQueue($planetId);
         $queueView = [];
+        $queuedByResearch = [];
 
         foreach ($queueJobs as $job) {
             $definition = $this->catalog->get($job->getResearchKey());
@@ -64,23 +65,34 @@ class GetResearchOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
+            $queuedByResearch[$job->getResearchKey()] = ($queuedByResearch[$job->getResearchKey()] ?? 0) + 1;
         }
+
+        $queueLimitReached = count($queueJobs) >= 5;
 
         $categories = [];
         foreach ($this->catalog->groupedByCategory() as $category => $data) {
             $items = [];
             foreach ($data['items'] as $definition) {
                 $currentLevel = $researchLevels[$definition->getKey()] ?? 0;
-                $nextCost = $this->calculator->nextCost($definition, $currentLevel);
-                $nextTime = $this->calculator->nextTime($definition, $currentLevel);
+                $queuedCount = $queuedByResearch[$definition->getKey()] ?? 0;
+                $effectiveLevel = $currentLevel + $queuedCount;
+                $targetLevel = $effectiveLevel + 1;
+                $effectiveResearchLevels = $researchLevels;
+                $effectiveResearchLevels[$definition->getKey()] = $effectiveLevel;
+                $nextCost = $this->calculator->nextCost($definition, $effectiveLevel);
+                $nextTime = $this->calculator->nextTime($definition, $effectiveLevel);
                 $requirements = $this->calculator->checkRequirements(
                     $definition,
-                    $researchLevels,
+                    $effectiveResearchLevels,
                     $labLevel,
                     $catalogMap
                 );
 
-                $canResearch = $currentLevel < $definition->getMaxLevel()
+                $maxLevel = $definition->getMaxLevel();
+                $hasLevelRoom = $maxLevel === 0 || $targetLevel <= $maxLevel;
+                $canResearch = !$queueLimitReached
+                    && $hasLevelRoom
                     && $requirements['ok']
                     && $this->canAfford($planet->getMetal(), $planet->getCrystal(), $planet->getHydrogen(), $nextCost);
 

@@ -4,6 +4,7 @@ namespace App\Application\UseCase\Shipyard;
 
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\ShipCatalog;
@@ -15,6 +16,7 @@ class BuildShips
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
+        private readonly PlayerStatsRepositoryInterface $playerStats,
         private readonly ShipCatalog $catalog
     ) {
     }
@@ -25,6 +27,10 @@ class BuildShips
         $planet = $this->planets->find($planetId);
         if (!$planet || $planet->getUserId() !== $userId) {
             return ['success' => false, 'message' => 'Action non autorisée.'];
+        }
+
+        if ($this->shipQueue->countActive($planetId) >= 5) {
+            return ['success' => false, 'message' => 'La file du chantier spatial est pleine (5 ordres maximum).'];
         }
 
         $definition = $this->catalog->get($shipKey);
@@ -55,6 +61,7 @@ class BuildShips
         $this->deductCost($planet, $cost);
         $duration = max(0, $definition->getBuildTime() * $quantity);
         $this->shipQueue->enqueue($planetId, $shipKey, $quantity, $duration);
+        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Production planifiée.'];
@@ -122,5 +129,20 @@ class BuildShips
                     break;
             }
         }
+    }
+
+    /**
+     * @param array<string, int> $cost
+     */
+    private function sumCost(array $cost): int
+    {
+        $total = 0;
+        foreach ($cost as $amount) {
+            if ($amount > 0) {
+                $total += (int) $amount;
+            }
+        }
+
+        return $total;
     }
 }

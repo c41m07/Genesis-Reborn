@@ -7,6 +7,7 @@ use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Security\CsrfTokenManager;
+use RuntimeException;
 
 abstract class AbstractController
 {
@@ -24,6 +25,17 @@ abstract class AbstractController
         $content = $this->renderer->render($template, $parameters);
 
         return new Response($content, $status);
+    }
+
+    protected function json(array $data, int $status = 200): Response
+    {
+        try {
+            $payload = json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } catch (\JsonException $exception) {
+            throw new RuntimeException('Impossible de sérialiser la réponse JSON.', 0, $exception);
+        }
+
+        return (new Response($payload, $status))->addHeader('Content-Type', 'application/json');
     }
 
     protected function redirect(string $path): Response

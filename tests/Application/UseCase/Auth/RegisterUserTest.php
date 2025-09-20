@@ -10,6 +10,7 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\UserRepositoryInterface;
 use App\Infrastructure\Http\Session\Session;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
 class RegisterUserTest extends TestCase
@@ -116,6 +117,9 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
         $planet = new Planet(
             $this->autoIncrement++,
             $userId,
+            1,
+            1,
+            1,
             'Planète mère',
             1000,
             1000,
@@ -124,7 +128,12 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
             0,
             0,
             0,
-            0
+            0,
+            80000,
+            60000,
+            40000,
+            1000,
+            new DateTimeImmutable()
         );
         $this->planets[$planet->getId()] = $planet;
 

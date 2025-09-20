@@ -52,6 +52,7 @@ class GetBuildingsOverview
         $buildings = [];
         $queueJobs = $this->buildQueue->getActiveQueue($planetId);
         $queueView = [];
+        $queuedByBuilding = [];
 
         foreach ($queueJobs as $job) {
             $definition = $this->catalog->get($job->getBuildingKey());
@@ -62,19 +63,25 @@ class GetBuildingsOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
+            $queuedByBuilding[$job->getBuildingKey()] = ($queuedByBuilding[$job->getBuildingKey()] ?? 0) + 1;
         }
+
+        $queueLimitReached = count($queueJobs) >= 5;
 
         foreach ($this->catalog->all() as $definition) {
             $currentLevel = $levels[$definition->getKey()] ?? 0;
-            $cost = $this->calculator->nextCost($definition, $currentLevel);
-            $time = $this->calculator->nextTime($definition, $currentLevel);
+            $queuedCount = $queuedByBuilding[$definition->getKey()] ?? 0;
+            $effectiveLevel = $currentLevel + $queuedCount;
+            $nextTargetLevel = $effectiveLevel + 1;
+            $cost = $this->calculator->nextCost($definition, $effectiveLevel);
+            $time = $this->calculator->nextTime($definition, $effectiveLevel);
             $requirements = $this->calculator->checkRequirements($definition, $levels, []);
-            $canUpgrade = $requirements['ok'] && $this->canAfford($planet, $cost);
+            $canUpgrade = !$queueLimitReached && $requirements['ok'] && $this->canAfford($planet, $cost);
 
             $currentProduction = $this->calculator->productionAt($definition, $currentLevel);
-            $nextProduction = $this->calculator->productionAt($definition, $currentLevel + 1);
+            $nextProduction = $this->calculator->productionAt($definition, $nextTargetLevel);
             $currentEnergy = $this->calculator->energyUseAt($definition, $currentLevel);
-            $nextEnergy = $this->calculator->energyUseAt($definition, $currentLevel + 1);
+            $nextEnergy = $this->calculator->energyUseAt($definition, $nextTargetLevel);
 
             $buildings[] = [
                 'definition' => $definition,

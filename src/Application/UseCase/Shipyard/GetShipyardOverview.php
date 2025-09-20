@@ -77,12 +77,14 @@ class GetShipyardOverview
             ];
         }
 
+        $queueLimitReached = count($queueJobs) >= 5;
+
         $categories = [];
         foreach ($this->catalog->groupedByCategory() as $category => $data) {
             $items = [];
             foreach ($data['items'] as $definition) {
                 $requirements = $this->checkRequirements($definition->getRequiresResearch(), $researchLevels, $catalogMap);
-                $canBuild = $shipyardLevel > 0 && $requirements['ok'];
+                $canBuild = $shipyardLevel > 0 && $requirements['ok'] && !$queueLimitReached;
 
                 $items[] = [
                     'definition' => $definition,
