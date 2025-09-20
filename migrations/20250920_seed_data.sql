@@ -75,7 +75,7 @@ JOIN (
     SELECT 'crystal_mine', 5 UNION ALL
     SELECT 'hydrogen_extractor', 3 UNION ALL
     SELECT 'solar_plant', 7 UNION ALL
-    SELECT 'fusion_reactor', 0 UNION ALL
+    SELECT 'fusion_reactor', 3 UNION ALL
     SELECT 'storage_depot', 3 UNION ALL
     SELECT 'research_lab', 2 UNION ALL
     SELECT 'shipyard', 2
