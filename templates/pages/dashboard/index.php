@@ -8,28 +8,7 @@
 /** @var int|null $selectedPlanetId */
 /** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
 $title = $title ?? 'Vue d’ensemble';
-if (!function_exists('format_duration')) {
-    function format_duration(int $seconds): string
-    {
-        $seconds = max(0, $seconds);
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-        $remainingSeconds = $seconds % 60;
-
-        $parts = [];
-        if ($hours > 0) {
-            $parts[] = sprintf('%d h', $hours);
-        }
-        if ($minutes > 0) {
-            $parts[] = sprintf('%d min', $minutes);
-        }
-        if (($hours === 0 && $minutes === 0) || $remainingSeconds > 0) {
-            $parts[] = sprintf('%d s', $remainingSeconds);
-        }
-
-        return implode(' ', $parts);
-    }
-}
+require_once __DIR__ . '/../../components/helpers.php';
 
 $empire = $dashboard['empire'] ?? [
     'points' => 0,
