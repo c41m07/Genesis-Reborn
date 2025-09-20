@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Domain\Entity\Planet;
 use App\Infrastructure\Http\Response;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -71,5 +72,15 @@ abstract class AbstractController
     protected function isCsrfTokenValid(string $id, ?string $token): bool
     {
         return $this->csrfTokenManager->isTokenValid($id, $token);
+    }
+
+    protected function formatResourceSnapshot(Planet $planet): array
+    {
+        return [
+            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
+            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
+            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
+            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
+        ];
     }
 }

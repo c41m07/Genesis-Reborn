@@ -117,12 +117,7 @@ class ColonyController extends AbstractController
         ];
         $activePlanetSummary = [
             'planet' => $planet,
-            'resources' => [
-                'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-            ],
+            'resources' => $this->formatResourceSnapshot($planet),
         ];
 
         return $this->render('colony/index.php', [
@@ -139,15 +134,5 @@ class ColonyController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
-    }
-
-    private function formatResourceSnapshot(\App\Domain\Entity\Planet $planet): array
-    {
-        return [
-            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-        ];
     }
 }

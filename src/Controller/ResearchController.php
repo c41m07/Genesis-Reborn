@@ -133,12 +133,7 @@ class ResearchController extends AbstractController
         $planet = $overview['planet'];
         $activePlanetSummary = [
             'planet' => $planet,
-            'resources' => [
-                'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-            ],
+            'resources' => $this->formatResourceSnapshot($planet),
         ];
 
         return $this->render('research/index.php', [
@@ -155,15 +150,5 @@ class ResearchController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
-    }
-
-    private function formatResourceSnapshot(\App\Domain\Entity\Planet $planet): array
-    {
-        return [
-            'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-            'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-            'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-            'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-        ];
     }
 }
