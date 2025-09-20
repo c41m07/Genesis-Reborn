@@ -10,6 +10,8 @@
 $title = $title ?? 'Vue d’ensemble';
 require_once __DIR__ . '/../../components/helpers.php';
 
+$spriteIcon = static fn (string $name): string => asset_url('assets/svg/sprite.svg#icon-' . $name, $baseUrl ?? '');
+
 $empire = $dashboard['empire'] ?? [
     'points' => 0,
     'buildingPoints' => 0,
@@ -168,7 +170,7 @@ ob_start();
                                 <li>
                                     <div class="planet-summary__resource-label">
                                         <svg class="icon icon-sm" aria-hidden="true">
-                                            <use href="/assets/svg/sprite.svg#icon-<?= htmlspecialchars($meta['icon'], ENT_QUOTES) ?>"></use>
+                                            <use href="<?= htmlspecialchars($spriteIcon($meta['icon']), ENT_QUOTES) ?>"></use>
                                         </svg>
                                         <span><?= htmlspecialchars($meta['label']) ?></span>
                                     </div>

@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 return static function (string $name, array $options = []): string {
     $label = $options['label'] ?? null;
     $classes = trim('icon ' . ($options['class'] ?? ''));
@@ -36,7 +38,8 @@ return static function (string $name, array $options = []): string {
     }
 
     $iconName = (string) $name;
-    $href = '/assets/svg/sprite.svg#icon-' . $iconName;
+    $baseUrl = $options['baseUrl'] ?? null;
+    $href = asset_url('assets/svg/sprite.svg#icon-' . $iconName, is_string($baseUrl) ? $baseUrl : null);
     $svg = sprintf('<svg%s><use href="%s"></use></svg>', $attributeString, htmlspecialchars($href, ENT_QUOTES));
 
     if ($label) {
