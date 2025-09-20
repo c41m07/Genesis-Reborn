@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Nova Empire') ?></title>
+    <title><?= htmlspecialchars($title ?? 'Genesis Reborn') ?></title>
     <link rel="preload" href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg" as="image" type="image/svg+xml">
     <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>/assets/css/tokens.css">
     <link rel="stylesheet" href="<?= htmlspecialchars($baseUrl) ?>/assets/css/app.css">
@@ -37,17 +37,44 @@ $resourceSummary = is_array($activePlanetSummary) ? ($activePlanetSummary['resou
 $resourceEndpoint = $baseUrl . '/api/resources';
 $resourcePlanetId = $currentPlanetId ?? 0;
 
-$menu = [
-    'dashboard' => ['label' => 'Tableau de bord', 'path' => '/dashboard', 'icon' => 'overview'],
-    'colony' => ['label' => 'Colonie', 'path' => '/colony', 'icon' => 'planet'],
-    'research' => ['label' => 'Recherche', 'path' => '/research', 'icon' => 'research'],
-    'shipyard' => ['label' => 'Chantier spatial', 'path' => '/shipyard', 'icon' => 'shipyard'],
-    'fleet' => ['label' => 'Flottes', 'path' => '/fleet', 'icon' => 'shipyard'],
-    'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
-    'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
-    'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
+$facilityStatuses = $facilityStatuses ?? [];
+$menuCategories = [
+    [
+        'label' => 'Empire',
+        'items' => [
+            'dashboard' => ['label' => 'Vue impériale', 'path' => '/dashboard', 'icon' => 'overview'],
+        ],
+    ],
+    [
+        'label' => 'Planètes',
+        'items' => [
+            'colony' => ['label' => 'Bâtiments', 'path' => '/colony', 'icon' => 'planet'],
+            'research' => ['label' => 'Labo de recherche', 'path' => '/research', 'icon' => 'research'],
+            'shipyard' => ['label' => 'Chantier spatial', 'path' => '/shipyard', 'icon' => 'shipyard'],
+        ],
+    ],
+    [
+        'label' => 'Gestion planétaire',
+        'items' => [
+            'fleet' => ['label' => 'Flotte', 'path' => '/fleet', 'icon' => 'shipyard'],
+        ],
+    ],
+    [
+        'label' => 'Autre',
+        'items' => [
+            'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
+            'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
+            'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
+        ],
+    ],
 ];
-$currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
+$menuLookup = [];
+foreach ($menuCategories as $category) {
+    foreach ($category['items'] as $key => $item) {
+        $menuLookup[$key] = $item;
+    }
+}
+$currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
 ?>
 <body class="app <?= $isAuthenticated ? 'app--secured' : 'app--guest' ?>">
 <div class="app-shell">
@@ -56,27 +83,42 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
             <div class="sidebar__inner">
                 <div class="sidebar__header">
                     <div class="sidebar__brand">
-                        <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/dashboard">Nova Empire</a>
-                        <span class="brand__tagline">Génésis Reborn</span>
+                        <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/dashboard">Genesis Reborn</a>
+                        <span class="brand__tagline">Nouvelle ère galactique</span>
                     </div>
                     <button class="sidebar__close" type="button" aria-label="Fermer la navigation" data-sidebar-close></button>
                 </div>
-                <nav class="sidebar__section" aria-label="Navigation principale">
-                    <p class="sidebar__title">Empire</p>
-                    <ul class="sidebar__nav">
-                        <?php foreach ($menu as $key => $item): ?>
-                            <?php $isCurrent = $activeSection === $key; ?>
-                            <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
-                                <a class="sidebar__link" href="<?= htmlspecialchars($baseUrl . $item['path']) ?>"<?= $isCurrent ? ' aria-current="page"' : '' ?>>
-                                    <svg class="icon icon-sm" aria-hidden="true">
-                                        <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
-                                    </svg>
-                                    <span><?= htmlspecialchars($item['label']) ?></span>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </nav>
+                <?php foreach ($menuCategories as $section): ?>
+                    <nav class="sidebar__section" aria-label="<?= htmlspecialchars($section['label']) ?>">
+                        <p class="sidebar__title"><?= htmlspecialchars($section['label']) ?></p>
+                        <ul class="sidebar__nav">
+                            <?php foreach ($section['items'] as $key => $item): ?>
+                                <?php $isCurrent = $activeSection === $key; ?>
+                                <?php
+                                $isLocked = false;
+                                if ($key === 'research' && array_key_exists('research_lab', $facilityStatuses)) {
+                                    $isLocked = !($facilityStatuses['research_lab'] ?? false);
+                                }
+                                if (in_array($key, ['shipyard', 'fleet'], true) && array_key_exists('shipyard', $facilityStatuses)) {
+                                    $isLocked = !($facilityStatuses['shipyard'] ?? false);
+                                }
+                                ?>
+                                <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
+                                    <a class="sidebar__link" href="<?= htmlspecialchars($baseUrl . $item['path']) ?>"<?= $isCurrent ? ' aria-current="page"' : '' ?>>
+                                        <svg class="icon icon-sm" aria-hidden="true">
+                                            <use href="<?= htmlspecialchars($baseUrl) ?>/assets/svg/sprite.svg#icon-<?= htmlspecialchars($item['icon']) ?>"></use>
+                                        </svg>
+                                        <span><?= htmlspecialchars($item['label']) ?></span>
+                                        <?php if ($isLocked): ?>
+                                            <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
+                                            <span class="visually-hidden"> (installation indisponible)</span>
+                                        <?php endif; ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </nav>
+                <?php endforeach; ?>
             </div>
         </aside>
         <div class="sidebar-overlay" data-sidebar-overlay></div>
@@ -145,7 +187,7 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
                 </div>
             <?php else: ?>
                 <div class="guest-branding">
-                    <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/">Nova Empire</a>
+                    <a class="brand" href="<?= htmlspecialchars($baseUrl) ?>/">Genesis Reborn</a>
                     <nav class="guest-nav" aria-label="Accès invité">
                         <a href="<?= htmlspecialchars($baseUrl) ?>/login">Connexion</a>
                         <a href="<?= htmlspecialchars($baseUrl) ?>/register">Inscription</a>
@@ -166,7 +208,7 @@ $currentSectionPath = $menu[$activeSection]['path'] ?? '/dashboard';
             <?= $content ?? '' ?>
         </main>
         <footer class="footer">
-            <small>&copy; <?= date('Y') ?> Nova Empire – Génésis Reborn</small>
+            <small>&copy; <?= date('Y') ?> Genesis Reborn – Nouvelle ère galactique</small>
         </footer>
     </div>
 </div>

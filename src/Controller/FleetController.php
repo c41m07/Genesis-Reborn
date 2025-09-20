@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Service\FleetNavigationService;
@@ -20,6 +21,7 @@ class FleetController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
+        private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly FleetRepositoryInterface $fleets,
         private readonly ShipCatalog $shipCatalog,
         private readonly ProcessShipBuildQueue $shipQueueProcessor,
@@ -66,6 +68,7 @@ class FleetController extends AbstractController
                 'currentUserId' => $userId,
                 'activeSection' => 'fleet',
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -84,6 +87,12 @@ class FleetController extends AbstractController
         }
 
         $this->shipQueueProcessor->process($selectedId);
+
+        $buildingLevels = $this->buildingStates->getLevels($selectedId);
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
 
         $fleet = $this->fleets->getFleet($selectedId);
         $fleetShips = [];
@@ -258,6 +267,7 @@ class FleetController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'fleet',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }

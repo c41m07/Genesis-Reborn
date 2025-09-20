@@ -103,6 +103,7 @@ class GetShipyardOverview
         return [
             'planet' => $planet,
             'shipyardLevel' => $shipyardLevel,
+            'buildingLevels' => $buildingLevels,
             'fleet' => $fleet,
             'fleetSummary' => $fleetView,
             'queue' => [

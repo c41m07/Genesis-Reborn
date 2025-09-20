@@ -6,7 +6,7 @@
 /** @var int|null $selectedPlanetId */
 /** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
 
-$title = $title ?? 'Recherche';
+$title = $title ?? 'Laboratoire de recherche';
 $icon = require __DIR__ . '/../components/_icon.php';
 $card = require __DIR__ . '/../components/_card.php';
 
@@ -44,24 +44,14 @@ ob_start();
 ?>
 <section class="page-header">
     <div>
-        <h1>Programme scientifique</h1>
+        <h1>Laboratoire de recherche</h1>
         <?php if ($overview): ?>
             <p class="page-header__subtitle">Développez les technologies clés pour soutenir votre expansion interstellaire.</p>
         <?php else: ?>
-            <p class="page-header__subtitle">Sélectionnez une planète pour accéder à ses laboratoires.</p>
+            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses laboratoires.</p>
         <?php endif; ?>
     </div>
     <div class="page-header__actions">
-        <?php if (!empty($planets)): ?>
-            <form class="planet-switcher" method="get" action="<?= htmlspecialchars($baseUrl) ?>/research">
-                <label class="planet-switcher__label" for="planet-selector-research">Planète</label>
-                <select class="planet-switcher__select" id="planet-selector-research" name="planet" data-auto-submit>
-                    <?php foreach ($planets as $planetOption): ?>
-                        <option value="<?= $planetOption->getId() ?>"<?= ($selectedPlanetId && $planetOption->getId() === $selectedPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        <?php endif; ?>
         <?php if ($overview): ?>
             <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/tech-tree?planet=<?= (int) $selectedPlanetId ?>">Voir l’arbre technologique</a>
         <?php endif; ?>
@@ -72,7 +62,7 @@ ob_start();
     <?= $card([
         'title' => 'Aucune recherche active',
         'body' => static function (): void {
-            echo '<p>Sélectionnez une planète pour planifier vos programmes scientifiques.</p>';
+            echo '<p>Sélectionnez une planète via le sélecteur supérieur pour planifier vos programmes scientifiques.</p>';
         },
     ]) ?>
 <?php else: ?>
@@ -116,67 +106,67 @@ ob_start();
         },
     ]) ?>
 
-    <div class="grid grid--stacked">
-        <?php foreach ($categories as $category): ?>
-            <?php $categoryImage = $category['image'] ?? null; ?>
-            <?= $card([
-                'title' => $category['label'],
-                'subtitle' => 'Technologies associées à ce domaine stratégique',
-                'illustration' => !empty($categoryImage) ? $assetBase . '/' . ltrim($categoryImage, '/') : null,
-                'body' => static function () use ($category, $baseUrl, $icon, $csrf_start, $selectedPlanetId): void {
-                    echo '<div class="research-list">';
-                    foreach ($category['items'] as $item) {
-                        $definition = $item['definition'];
-                        $canResearch = (bool) ($item['canResearch'] ?? false);
-                        $level = (int) ($item['level'] ?? 0);
-                        $maxLevel = (int) ($item['maxLevel'] ?? 0);
-                        $progress = (int) round(($item['progress'] ?? 0) * 100);
-                        echo '<article class="research-entry' . ($canResearch ? '' : ' is-locked') . '">';
-                        echo '<header class="research-entry__header">';
-                        echo '<div>';
-                        echo '<h3>' . htmlspecialchars($definition->getLabel()) . '</h3>';
-                        echo '<p class="research-entry__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
-                        echo '</div>';
-                        echo '<span class="research-entry__level">Niveau ' . $level . ' / ' . ($maxLevel > 0 ? $maxLevel : '∞') . '</span>';
-                        echo '</header>';
-                        echo '<div class="progress-bar"><span class="progress-bar__value" style="width: ' . $progress . '%"></span></div>';
-                        echo '<div class="research-entry__body">';
-                        echo '<div class="research-entry__costs">';
-                        echo '<h4>Prochaine amélioration</h4>';
-                        echo '<ul class="resource-list">';
-                        foreach ($item['nextCost'] as $resource => $amount) {
-                            echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . number_format((int) $amount) . '</span></li>';
-                        }
-                        echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $item['nextTime'])) . '</span></li>';
-                        echo '</ul>';
-                        echo '</div>';
-                        if (!($item['requirements']['ok'] ?? true)) {
-                            echo '<div class="research-entry__requirements">';
-                            echo '<h4>Pré-requis</h4>';
-                            echo '<ul>';
-                            foreach ($item['requirements']['missing'] as $missing) {
-                                echo '<li>' . htmlspecialchars($missing['label']) . ' (' . number_format((int) $missing['current']) . '/' . number_format((int) $missing['level']) . ')</li>';
+    <?php foreach ($categories as $category): ?>
+        <?php if (empty($category['items'])) { continue; } ?>
+        <section class="content-section">
+            <header class="content-section__header">
+                <h2><?= htmlspecialchars($category['label']) ?></h2>
+            </header>
+            <div class="card-grid card-grid--quad">
+                <?php foreach ($category['items'] as $item): ?>
+                    <?php
+                    $definition = $item['definition'];
+                    $canResearch = (bool) ($item['canResearch'] ?? false);
+                    $level = (int) ($item['level'] ?? 0);
+                    $maxLevel = (int) ($item['maxLevel'] ?? 0);
+                    $progress = (int) round(($item['progress'] ?? 0) * 100);
+                    $status = $canResearch ? '' : 'is-locked';
+                    ?>
+                    <?= $card([
+                        'title' => $definition->getLabel(),
+                        'badge' => 'Niveau ' . $level . ' / ' . ($maxLevel > 0 ? $maxLevel : '∞'),
+                        'status' => $status,
+                        'class' => 'tech-card',
+                        'body' => static function () use ($definition, $item, $progress, $level, $maxLevel, $baseUrl, $icon): void {
+                            echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
+                            echo '<div class="tech-card__progress">';
+                            echo '<div class="progress-bar"><span class="progress-bar__value" style="width: ' . $progress . '%"></span></div>';
+                            echo '<p class="tech-card__level">Niveau actuel ' . $level . ($maxLevel > 0 ? ' / ' . $maxLevel : '') . '</p>';
+                            echo '</div>';
+                            echo '<div class="tech-card__section">';
+                            echo '<h3>Prochaine amélioration</h3>';
+                            echo '<ul class="resource-list">';
+                            foreach ($item['nextCost'] as $resource => $amount) {
+                                echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . number_format((int) $amount) . '</span></li>';
                             }
+                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $item['nextTime'])) . '</span></li>';
                             echo '</ul>';
                             echo '</div>';
-                        }
-                        echo '</div>';
-                        echo '<footer class="research-entry__footer">';
-                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/research?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="research">';
-                        echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_start) . '">';
-                        echo '<input type="hidden" name="research" value="' . htmlspecialchars($definition->getKey()) . '">';
-                        $label = $canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';
-                        $disabled = $canResearch ? '' : ' disabled';
-                        echo '<button class="button button--primary" type="submit"' . $disabled . '>' . $label . '</button>';
-                        echo '</form>';
-                        echo '</footer>';
-                        echo '</article>';
-                    }
-                    echo '</div>';
-                },
-            ]) ?>
-        <?php endforeach; ?>
-    </div>
+                            if (!($item['requirements']['ok'] ?? true)) {
+                                echo '<div class="tech-card__section tech-card__requirements">';
+                                echo '<h3>Pré-requis</h3>';
+                                echo '<ul>';
+                                foreach ($item['requirements']['missing'] as $missing) {
+                                    echo '<li>' . htmlspecialchars($missing['label']) . ' (' . number_format((int) $missing['current']) . '/' . number_format((int) $missing['level']) . ')</li>';
+                                }
+                                echo '</ul>';
+                                echo '</div>';
+                            }
+                        },
+                        'footer' => static function () use ($baseUrl, $definition, $csrf_start, $selectedPlanetId, $canResearch): void {
+                            echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/research?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="research">';
+                            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_start) . '">';
+                            echo '<input type="hidden" name="research" value="' . htmlspecialchars($definition->getKey()) . '">';
+                            $label = $canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';
+                            $disabled = $canResearch ? '' : ' disabled';
+                            echo '<button class="button button--primary" type="submit"' . $disabled . '>' . $label . '</button>';
+                            echo '</form>';
+                        },
+                    ]) ?>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php
 $content = ob_get_clean();

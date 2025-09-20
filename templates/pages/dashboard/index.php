@@ -82,10 +82,6 @@ ob_start();
                 <span class="dashboard-banner__label">Planète active</span>
                 <strong class="dashboard-banner__value"><?= $activePlanet ? htmlspecialchars($activePlanet->getName()) : 'Aucune planète' ?></strong>
             </li>
-            <li>
-                <span class="dashboard-banner__label">Score impérial</span>
-                <strong class="dashboard-banner__value"><?= number_format($empire['points'] ?? 0) ?></strong>
-            </li>
         </ul>
     </div>
     <div class="dashboard-layout">
@@ -96,11 +92,6 @@ ob_start();
                     <p class="panel__subtitle">Synthèse des forces civiles, scientifiques et militaires.</p>
                 </header>
                 <div class="panel__body metrics metrics--compact">
-                    <div class="metric">
-                        <span class="metric__label">Score impérial</span>
-                        <strong class="metric__value"><?= number_format($empire['points'] ?? 0) ?></strong>
-                        <span class="metric__hint">Bâtiments + recherches + puissance militaire.</span>
-                    </div>
                     <div class="metric">
                         <span class="metric__label">Points d’infrastructure</span>
                         <strong class="metric__value"><?= number_format($empire['buildingPoints'] ?? 0) ?></strong>

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
@@ -25,6 +26,7 @@ class JournalController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
+        private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly BuildQueueRepositoryInterface $buildQueue,
         private readonly ResearchQueueRepositoryInterface $researchQueue,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
@@ -71,6 +73,7 @@ class JournalController extends AbstractController
                 'currentUserId' => $userId,
                 'activeSection' => 'journal',
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -95,6 +98,12 @@ class JournalController extends AbstractController
         $buildJobs = $this->buildQueue->getActiveQueue($selectedId);
         $researchJobs = $this->researchQueue->getActiveQueue($selectedId);
         $shipJobs = $this->shipQueue->getActiveQueue($selectedId);
+
+        $buildingLevels = $this->buildingStates->getLevels($selectedId);
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
 
         $events = array_merge(
             $this->mapBuildingEvents($buildJobs),
@@ -140,6 +149,7 @@ class JournalController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'journal',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 

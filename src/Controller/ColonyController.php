@@ -41,7 +41,7 @@ class ColonyController extends AbstractController
             $this->addFlash('info', 'Aucune planète disponible.');
 
             return $this->render('colony/index.php', [
-                'title' => 'Colonie',
+                'title' => 'Bâtiments',
                 'planets' => [],
                 'overview' => null,
                 'flashes' => $this->flashBag->consume(),
@@ -51,6 +51,7 @@ class ColonyController extends AbstractController
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
                 'csrf_logout' => $this->generateCsrfToken('logout'),
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -109,6 +110,11 @@ class ColonyController extends AbstractController
 
         $overview = $this->getOverview->execute($selectedId);
         $planet = $overview['planet'];
+        $levels = $overview['levels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($levels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($levels['shipyard'] ?? 0) > 0,
+        ];
         $activePlanetSummary = [
             'planet' => $planet,
             'resources' => [
@@ -120,7 +126,7 @@ class ColonyController extends AbstractController
         ];
 
         return $this->render('colony/index.php', [
-            'title' => 'Colonie',
+            'title' => 'Bâtiments',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
             'overview' => $overview,
@@ -131,6 +137,7 @@ class ColonyController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'colony',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 

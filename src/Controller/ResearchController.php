@@ -41,7 +41,7 @@ class ResearchController extends AbstractController
             $this->addFlash('info', 'Aucune planète disponible.');
 
             return $this->render('research/index.php', [
-                'title' => 'Recherche',
+                'title' => 'Laboratoire de recherche',
                 'planets' => [],
                 'overview' => null,
                 'flashes' => $this->flashBag->consume(),
@@ -51,6 +51,7 @@ class ResearchController extends AbstractController
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
                 'csrf_logout' => $this->generateCsrfToken('logout'),
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -109,6 +110,11 @@ class ResearchController extends AbstractController
 
         $overview = $this->getOverview->execute($selectedId);
         $planet = $overview['planet'];
+        $buildingLevels = $overview['buildingLevels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
         $activePlanetSummary = [
             'planet' => $planet,
             'resources' => [
@@ -120,7 +126,7 @@ class ResearchController extends AbstractController
         ];
 
         return $this->render('research/index.php', [
-            'title' => 'Recherche',
+            'title' => 'Laboratoire de recherche',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
             'overview' => $overview,
@@ -131,6 +137,7 @@ class ResearchController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'research',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 

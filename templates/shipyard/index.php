@@ -58,20 +58,10 @@ ob_start();
         <?php if ($overview): ?>
             <p class="page-header__subtitle">Organisez la production de vos vaisseaux et renforcez votre flotte orbitale.</p>
         <?php else: ?>
-            <p class="page-header__subtitle">Sélectionnez une planète pour accéder à ses hangars.</p>
+            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses hangars.</p>
         <?php endif; ?>
     </div>
     <div class="page-header__actions">
-        <?php if (!empty($planets)): ?>
-            <form class="planet-switcher" method="get" action="<?= htmlspecialchars($baseUrl) ?>/shipyard">
-                <label class="planet-switcher__label" for="planet-selector-shipyard">Planète</label>
-                <select class="planet-switcher__select" id="planet-selector-shipyard" name="planet" data-auto-submit>
-                    <?php foreach ($planets as $planetOption): ?>
-                        <option value="<?= $planetOption->getId() ?>"<?= ($selectedPlanetId && $planetOption->getId() === $selectedPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        <?php endif; ?>
         <?php if ($overview): ?>
             <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/fleet?planet=<?= (int) $selectedPlanetId ?>">Voir la flotte</a>
         <?php endif; ?>
@@ -89,8 +79,9 @@ ob_start();
     <?= $card([
         'title' => 'Commandes de vaisseaux',
         'subtitle' => 'Suivi des constructions orbitales',
-        'body' => static function () use ($queue): void {
+        'body' => static function () use ($queue, $shipyardLevel): void {
             $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
+            echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . number_format((int) $shipyardLevel) . '</span></p>';
             echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
@@ -114,96 +105,70 @@ ob_start();
         },
     ]) ?>
 
-    <?= $card([
-        'title' => 'Hangars de production',
-        'subtitle' => 'Niveau de chantier : ' . number_format((int) $shipyardLevel),
-        'body' => static function () use ($shipyardLevel, $fleetCount, $fleet, $fleetSummary): void {
-            echo '<div class="metrics metrics--compact">';
-            echo '<div class="metric"><span class="metric__label">Capacité du chantier</span><strong class="metric__value">Niveau ' . number_format((int) $shipyardLevel) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Unités stationnées</span><strong class="metric__value">' . number_format((int) $fleetCount) . '</strong></div>';
-            echo '</div>';
-            if ($fleetCount === 0) {
-                echo '<p class="empty-state">Aucun vaisseau n’est encore construit. Lancez la production pour constituer votre flotte.</p>';
-            } else {
-                echo '<ul class="fleet-list">';
-                $displayFleet = $fleetSummary !== [] ? $fleetSummary : array_map(static fn ($key, $quantity) => ['key' => $key, 'label' => $key, 'quantity' => $quantity], array_keys($fleet), $fleet);
-                foreach ($displayFleet as $shipEntry) {
-                    $label = $shipEntry['label'] ?? $shipEntry['key'] ?? '';
-                    $quantity = (int) ($shipEntry['quantity'] ?? 0);
-                    echo '<li><span class="fleet-list__name">' . htmlspecialchars($label) . '</span><span class="fleet-list__qty">× ' . number_format($quantity) . '</span></li>';
-                }
-                echo '</ul>';
-            }
-        },
-    ]) ?>
-
-    <div class="grid grid--stacked">
-        <?php foreach ($categories as $category): ?>
-            <?php $categoryImage = $category['image'] ?? null; ?>
-            <?= $card([
-                'title' => $category['label'],
-                'subtitle' => 'Modèles disponibles pour cette classe de vaisseaux',
-                'illustration' => !empty($categoryImage) ? $assetBase . '/' . ltrim($categoryImage, '/') : null,
-                'body' => static function () use ($category, $baseUrl, $icon, $csrf_shipyard, $selectedPlanetId): void {
-                    echo '<div class="shipyard-list">';
-                    foreach ($category['items'] as $item) {
-                        $definition = $item['definition'];
-                        $canBuild = (bool) ($item['canBuild'] ?? false);
-                        echo '<article class="ship-card' . ($canBuild ? '' : ' is-locked') . '">';
-                        echo '<header class="ship-card__header">';
-                        echo '<div>';
-                        echo '<h3>' . htmlspecialchars($definition->getLabel()) . '</h3>';
-                        echo '<p class="ship-card__role">' . htmlspecialchars($definition->getRole()) . '</p>';
-                        echo '</div>';
-                        if ($definition->getImage()) {
-                            $imageSrc = $assetBase . '/' . ltrim($definition->getImage(), '/');
-                            echo '<img class="ship-card__illustration" src="' . htmlspecialchars($imageSrc, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
-                        }
-                        echo '</header>';
-                        echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
-                        echo '<div class="ship-card__stats">';
-                        foreach ($definition->getStats() as $label => $value) {
-                            echo '<div class="mini-stat"><span class="mini-stat__label">' . htmlspecialchars(ucfirst((string) $label)) . '</span><strong class="mini-stat__value">' . number_format((int) $value) . '</strong></div>';
-                        }
-                        echo '</div>';
-                        echo '<div class="ship-card__content">';
-                        echo '<div class="ship-card__costs">';
-                        echo '<h4>Coût unitaire</h4>';
-                        echo '<ul class="resource-list">';
-                        foreach ($definition->getBaseCost() as $resource => $amount) {
-                            echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . number_format((int) $amount) . '</span></li>';
-                        }
-                        echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $definition->getBuildTime())) . '</span></li>';
-                        echo '</ul>';
-                        echo '</div>';
-                        if (!($item['requirements']['ok'] ?? true)) {
-                            echo '<div class="ship-card__requirements">';
-                            echo '<h4>Pré-requis</h4>';
-                            echo '<ul>';
-                            foreach ($item['requirements']['missing'] as $missing) {
-                                echo '<li>' . htmlspecialchars($missing['label']) . ' (' . number_format((int) ($missing['current'] ?? 0)) . '/' . number_format((int) $missing['level']) . ')</li>';
-                            }
-                            echo '</ul>';
-                            echo '</div>';
-                        }
-                        echo '</div>';
-                        echo '<footer class="ship-card__footer">';
-                        echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
-                        echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_shipyard) . '">';
-                        echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
-                        echo '<label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '></label>';
-                        $label = $canBuild ? 'Construire' : 'Pré-requis manquants';
-                        $disabled = $canBuild ? '' : ' disabled';
-                        echo '<button class="button button--primary" type="submit"' . $disabled . '>' . $label . '</button>';
-                        echo '</form>';
-                        echo '</footer>';
-                        echo '</article>';
-                    }
-                    echo '</div>';
-                },
-            ]) ?>
-        <?php endforeach; ?>
-    </div>
+    <?php foreach ($categories as $category): ?>
+        <?php if (empty($category['items'])) { continue; } ?>
+        <section class="content-section">
+            <header class="content-section__header">
+                <h2><?= htmlspecialchars($category['label']) ?></h2>
+            </header>
+            <div class="card-grid card-grid--quad">
+                <?php foreach ($category['items'] as $item): ?>
+                    <?php
+                    $definition = $item['definition'];
+                    $canBuild = (bool) ($item['canBuild'] ?? false);
+                    ?>
+                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>">
+                        <header class="ship-card__header">
+                            <div>
+                                <h3><?= htmlspecialchars($definition->getLabel()) ?></h3>
+                                <p class="ship-card__role"><?= htmlspecialchars($definition->getRole()) ?></p>
+                            </div>
+                            <?php if ($definition->getImage()): ?>
+                                <?php $imageSrc = $assetBase . '/' . ltrim($definition->getImage(), '/'); ?>
+                                <img class="ship-card__illustration" src="<?= htmlspecialchars($imageSrc, ENT_QUOTES) ?>" alt="" loading="lazy" decoding="async">
+                            <?php endif; ?>
+                        </header>
+                        <p class="ship-card__description"><?= htmlspecialchars($definition->getDescription()) ?></p>
+                        <div class="ship-card__stats">
+                            <?php foreach ($definition->getStats() as $label => $value): ?>
+                                <div class="mini-stat"><span class="mini-stat__label"><?= htmlspecialchars(ucfirst((string) $label)) ?></span><strong class="mini-stat__value"><?= number_format((int) $value) ?></strong></div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="ship-card__content">
+                            <div class="ship-card__costs">
+                                <h4>Coût unitaire</h4>
+                                <ul class="resource-list">
+                                    <?php foreach ($definition->getBaseCost() as $resource => $amount): ?>
+                                        <li><?= $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= number_format((int) $amount) ?></span></li>
+                                    <?php endforeach; ?>
+                                    <li><?= $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) ?><span><?= htmlspecialchars(format_duration((int) $definition->getBuildTime())) ?></span></li>
+                                </ul>
+                            </div>
+                            <?php if (!($item['requirements']['ok'] ?? true)): ?>
+                                <div class="ship-card__requirements">
+                                    <h4>Pré-requis</h4>
+                                    <ul>
+                                        <?php foreach ($item['requirements']['missing'] as $missing): ?>
+                                            <li><?= htmlspecialchars($missing['label']) ?> (<?= number_format((int) ($missing['current'] ?? 0)) ?>/<?= number_format((int) $missing['level']) ?>)</li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <footer class="ship-card__footer">
+                            <form method="post" action="<?= htmlspecialchars($baseUrl) ?>/shipyard?planet=<?= (int) $selectedPlanetId ?>" data-async="queue" data-queue-target="shipyard">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars((string) $csrf_shipyard) ?>">
+                                <input type="hidden" name="ship" value="<?= htmlspecialchars($definition->getKey()) ?>">
+                                <label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"<?= $canBuild ? '' : ' disabled' ?>></label>
+                                <?php $label = $canBuild ? 'Construire' : 'Pré-requis manquants'; ?>
+                                <button class="button button--primary" type="submit"<?= $canBuild ? '' : ' disabled' ?>><?= $label ?></button>
+                            </form>
+                        </footer>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endforeach; ?>
 <?php endif; ?>
 <?php
 $content = ob_get_clean();

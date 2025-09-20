@@ -17,18 +17,7 @@ ob_start();
         <h1>Journal de bord</h1>
         <p class="page-header__subtitle">Surveillez les activités majeures de la colonie et anticipez les échéances importantes.</p>
     </div>
-    <div class="page-header__actions">
-        <?php if (!empty($planets)): ?>
-            <form class="planet-switcher" method="get" action="<?= htmlspecialchars($baseUrl) ?>/journal">
-                <label class="planet-switcher__label" for="planet-selector-journal">Planète</label>
-                <select class="planet-switcher__select" id="planet-selector-journal" name="planet" data-auto-submit>
-                    <?php foreach ($planets as $planetOption): ?>
-                        <option value="<?= $planetOption->getId() ?>"<?= ($selectedPlanetId && $planetOption->getId() === $selectedPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </form>
-        <?php endif; ?>
-    </div>
+    <div class="page-header__actions"></div>
 </section>
 
 <?= $card([
