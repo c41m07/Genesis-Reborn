@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Shipyard\BuildShips;
 use App\Application\UseCase\Shipyard\GetShipyardOverview;
+use App\Domain\Entity\ShipDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -12,6 +13,8 @@ use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Security\CsrfTokenManager;
+use DateTimeInterface;
+use RuntimeException;
 
 class ShipyardController extends AbstractController
 {
@@ -113,12 +116,16 @@ class ShipyardController extends AbstractController
             if ($request->wantsJson()) {
                 $updated = $this->getOverview->execute($selectedId);
                 $planet = $updated['planet'];
+                $queue = $this->formatShipQueue($updated['queue'] ?? []);
+                $shipKey = (string) ($data['ship'] ?? '');
+                $shipEntry = $this->findShipEntry($updated['categories'] ?? [], $shipKey);
 
                 return $this->json([
                     'success' => $result['success'],
                     'message' => $result['message'] ?? ($result['success'] ? 'Production planifiée.' : 'Action impossible.'),
                     'resources' => $this->formatResourceSnapshot($planet),
-                    'queue' => $updated['queue'],
+                    'queue' => $queue,
+                    'ship' => $shipEntry ? $this->normalizeShipEntry($shipEntry) : null,
                     'planetId' => $selectedId,
                 ], $result['success'] ? 200 : 400);
             }
@@ -152,5 +159,91 @@ class ShipyardController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
+}
+
+    /**
+     * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     */
+    private function formatShipQueue(array $queue): array
+    {
+        $jobs = [];
+
+        foreach ($queue['jobs'] ?? [] as $job) {
+            $jobs[] = [
+                'ship' => (string) ($job['ship'] ?? ''),
+                'label' => (string) ($job['label'] ?? ''),
+                'quantity' => (int) ($job['quantity'] ?? 0),
+                'remaining' => (int) ($job['remaining'] ?? 0),
+                'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
+            ];
+        }
+
+        return [
+            'count' => count($jobs),
+            'jobs' => $jobs,
+        ];
+    }
+
+    /**
+     * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
+     */
+    private function findShipEntry(array $categories, string $key): ?array
+    {
+        if ($key === '') {
+            return null;
+        }
+
+        foreach ($categories as $category) {
+            foreach ($category['items'] ?? [] as $item) {
+                $definition = $item['definition'] ?? null;
+                if ($definition instanceof ShipDefinition && $definition->getKey() === $key) {
+                    return $item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{definition: ShipDefinition, requirements?: array<string, mixed>, canBuild?: bool} $entry
+     */
+    private function normalizeShipEntry(array $entry): array
+    {
+        $definition = $entry['definition'];
+        if (!$definition instanceof ShipDefinition) {
+            throw new RuntimeException('Définition de vaisseau introuvable.');
+        }
+
+        $requirements = $entry['requirements'] ?? ['ok' => true, 'missing' => []];
+        $missing = [];
+        foreach ($requirements['missing'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $missing[] = [
+                'type' => (string) ($item['type'] ?? ''),
+                'key' => (string) ($item['key'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'level' => (int) ($item['level'] ?? 0),
+                'current' => (int) ($item['current'] ?? 0),
+            ];
+        }
+
+        return [
+            'key' => $definition->getKey(),
+            'label' => $definition->getLabel(),
+            'canBuild' => (bool) ($entry['canBuild'] ?? false),
+            'requirements' => [
+                'ok' => (bool) ($requirements['ok'] ?? false),
+                'missing' => $missing,
+            ],
+        ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }

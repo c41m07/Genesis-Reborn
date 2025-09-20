@@ -103,7 +103,7 @@ ob_start();
                     $buildTime = (int) ($item['buildTime'] ?? $definition->getBuildTime());
                     $baseBuildTime = (int) ($item['baseBuildTime'] ?? $definition->getBuildTime());
                     ?>
-                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>">
+                    <article class="ship-card<?= $canBuild ? '' : ' is-locked' ?>" data-ship-card="<?= htmlspecialchars($definition->getKey()) ?>">
                         <header class="ship-card__header">
                             <div>
                                 <h3><?= htmlspecialchars($definition->getLabel()) ?></h3>

@@ -33,6 +33,264 @@ const formatSeconds = (value) => {
     return parts.join(' ');
 };
 
+const SPRITE_URL = new URL('../svg/sprite.svg', import.meta.url).toString();
+
+const RESOURCE_LABELS = {
+    metal: 'Métal',
+    crystal: 'Cristal',
+    hydrogen: 'Hydrogène',
+    energy: 'Énergie',
+    storage: 'Capacité',
+};
+
+const getResourceLabel = (key) => {
+    if (!key) {
+        return '';
+    }
+
+    return RESOURCE_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
+};
+
+const createIcon = (name) => `
+    <svg class="icon icon-sm" aria-hidden="true">
+        <use href="${SPRITE_URL}#icon-${escapeHtml(name)}"></use>
+    </svg>
+`.trim();
+
+const metricValueClass = (value) => {
+    if (value > 0) {
+        return 'metric-line__value metric-line__value--positive';
+    }
+    if (value < 0) {
+        return 'metric-line__value metric-line__value--negative';
+    }
+
+    return 'metric-line__value metric-line__value--neutral';
+};
+
+const renderCostList = (cost = {}, time = 0) => {
+    const items = [];
+
+    if (cost && typeof cost === 'object') {
+        Object.entries(cost).forEach(([resource, amount]) => {
+            items.push(`
+                <li>${createIcon(resource)}<span>${formatNumber(Number(amount) || 0)}</span></li>
+            `);
+        });
+    }
+
+    items.push(`
+        <li>${createIcon('time')}<span>${escapeHtml(formatSeconds(time))}</span></li>
+    `);
+
+    return `<ul class="resource-list">${items.join('')}</ul>`;
+};
+
+const renderStorageSection = (storage = {}) => {
+    const currentEntries = storage && typeof storage === 'object' && storage.current && typeof storage.current === 'object'
+        ? Object.entries(storage.current)
+        : [];
+    const nextEntries = storage && typeof storage === 'object' && storage.next && typeof storage.next === 'object'
+        ? Object.entries(storage.next)
+        : [];
+
+    if (currentEntries.length === 0 && nextEntries.length === 0) {
+        return '';
+    }
+
+    const renderList = (entries, className) => entries.map(([resource, value]) => {
+        const label = getResourceLabel(resource);
+
+        return `
+            <li class="metric-line">
+                <span class="metric-line__label">${escapeHtml(label)}</span>
+                <span class="${className}">${formatNumber(Number(value) || 0)}</span>
+            </li>
+        `;
+    }).join('');
+
+    const storageLabel = getResourceLabel('storage');
+
+    return `
+        <div class="metric-section">
+            <p class="metric-section__title">${escapeHtml(storageLabel)} actuelle</p>
+            <ul class="metric-section__list">${renderList(currentEntries, 'metric-line__value metric-line__value--neutral')}</ul>
+            <p class="metric-section__title">${escapeHtml(storageLabel)} prochain niveau</p>
+            <ul class="metric-section__list">${renderList(nextEntries, 'metric-line__value metric-line__value--positive')}</ul>
+        </div>
+    `;
+};
+
+const renderConsumptionSection = (consumption = {}) => {
+    if (!consumption || typeof consumption !== 'object') {
+        return '';
+    }
+
+    const lines = [];
+
+    Object.entries(consumption).forEach(([resource, values]) => {
+        if (!values || typeof values !== 'object') {
+            return;
+        }
+
+        const currentValue = Number(values.current ?? 0);
+        const nextValue = Number(values.next ?? 0);
+        if (currentValue === 0 && nextValue === 0) {
+            return;
+        }
+
+        const resourceLabel = getResourceLabel(resource);
+        const labelSuffix = resource === 'energy' ? '' : ` (${escapeHtml(resourceLabel)})`;
+        const unitSuffix = resource === 'energy'
+            ? ' énergie/h'
+            : ` ${resourceLabel.toLocaleLowerCase('fr-FR')}/h`;
+
+        const displayCurrent = currentValue > 0 ? -currentValue : currentValue;
+        const displayNext = nextValue > 0 ? -nextValue : nextValue;
+
+        lines.push(`
+            <p class="metric-line">
+                <span class="metric-line__label">Consommation actuelle${labelSuffix}</span>
+                <span class="${metricValueClass(displayCurrent)}">${escapeHtml(formatNumber(displayCurrent))}${escapeHtml(unitSuffix)}</span>
+            </p>
+        `);
+        lines.push(`
+            <p class="metric-line">
+                <span class="metric-line__label">Consommation prochain niveau${labelSuffix}</span>
+                <span class="${metricValueClass(displayNext)}">${escapeHtml(formatNumber(displayNext))}${escapeHtml(unitSuffix)}</span>
+            </p>
+        `);
+    });
+
+    return lines.join('');
+};
+
+const renderBuildingSections = (building = {}) => {
+    const costHtml = `
+        <div class="building-card__block">
+            <h3>Prochaine amélioration</h3>
+            ${renderCostList(building.cost ?? {}, building.time ?? 0)}
+        </div>
+    `;
+
+    const effectsParts = [];
+    const production = building.production ?? {};
+    const resourceKey = production.resource ?? '';
+    if (resourceKey && resourceKey !== 'storage') {
+        const unitSuffix = resourceKey === 'energy'
+            ? ' énergie/h'
+            : ` ${getResourceLabel(resourceKey).toLocaleLowerCase('fr-FR')}/h`;
+        const currentValue = Number(production.current ?? 0);
+        const nextValue = Number(production.next ?? 0);
+        const currentDisplay = currentValue > 0 ? `+${formatNumber(currentValue)}` : formatNumber(currentValue);
+        const nextDisplay = nextValue > 0 ? `+${formatNumber(nextValue)}` : formatNumber(nextValue);
+
+        effectsParts.push(`
+            <p class="metric-line">
+                <span class="metric-line__label">Production actuelle</span>
+                <span class="${metricValueClass(currentValue)}">${escapeHtml(currentDisplay)}${escapeHtml(unitSuffix)}</span>
+            </p>
+        `);
+        effectsParts.push(`
+            <p class="metric-line">
+                <span class="metric-line__label">Production prochain niveau</span>
+                <span class="${metricValueClass(nextValue)}">${escapeHtml(nextDisplay)}${escapeHtml(unitSuffix)}</span>
+            </p>
+        `);
+    }
+
+    const storageSection = renderStorageSection(building.storage ?? {});
+    if (storageSection) {
+        effectsParts.push(storageSection);
+    }
+
+    const consumptionSection = renderConsumptionSection(building.consumption ?? {});
+    if (consumptionSection) {
+        effectsParts.push(consumptionSection);
+    }
+
+    const effectsHtml = `
+        <div class="building-card__block">
+            <h3>Effets</h3>
+            ${effectsParts.join('')}
+        </div>
+    `;
+
+    const requirements = building.requirements ?? null;
+    const shouldRenderRequirements = requirements
+        && requirements.ok === false
+        && Array.isArray(requirements.missing)
+        && requirements.missing.length > 0;
+
+    const requirementsHtml = shouldRenderRequirements
+        ? `
+            <div class="building-card__block building-card__block--requirements">
+                <h3>Pré-requis</h3>
+                <ul class="building-card__requirements">
+                    ${requirements.missing.map((missing) => {
+                        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
+                        const current = formatNumber(Number(missing.current ?? 0));
+                        const required = formatNumber(Number(missing.level ?? 0));
+
+                        return `
+                            <li>
+                                <span class="building-card__requirement-name">${label}</span>
+                                <span class="building-card__requirement-progress">(${current}/${required})</span>
+                            </li>
+                        `;
+                    }).join('')}
+                </ul>
+            </div>
+        `
+        : '';
+
+    return `${costHtml}${effectsHtml}${requirementsHtml}`;
+};
+
+const renderResearchRequirements = (requirements = null) => {
+    if (!requirements || requirements.ok !== false || !Array.isArray(requirements.missing) || requirements.missing.length === 0) {
+        return '';
+    }
+
+    const items = requirements.missing.map((missing) => {
+        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
+        const current = formatNumber(Number(missing.current ?? 0));
+        const required = formatNumber(Number(missing.level ?? 0));
+
+        return `<li>${label} (${current}/${required})</li>`;
+    }).join('');
+
+    return `
+        <div class="tech-card__section tech-card__requirements">
+            <h3>Pré-requis</h3>
+            <ul>${items}</ul>
+        </div>
+    `;
+};
+
+const renderShipRequirements = (requirements = null) => {
+    if (!requirements || requirements.ok !== false || !Array.isArray(requirements.missing) || requirements.missing.length === 0) {
+        return '';
+    }
+
+    const items = requirements.missing.map((missing) => {
+        const label = escapeHtml(String(missing.label ?? missing.key ?? ''));
+        const current = formatNumber(Number(missing.current ?? 0));
+        const required = formatNumber(Number(missing.level ?? 0));
+
+        return `<li>${label} (${current}/${required})</li>`;
+    }).join('');
+
+    return `
+        <div class="ship-card__requirements">
+            <h4>Pré-requis</h4>
+            <ul>${items}</ul>
+        </div>
+    `;
+};
+
+const clampPercentage = (value) => Math.max(0, Math.min(100, value));
+
 const resourceTicker = {
     states: new Map(),
     intervalId: null,
@@ -229,6 +487,166 @@ const renderQueue = (queue, target) => {
     container.innerHTML = `<ul class="queue-list">${items}</ul>`;
 };
 
+const updateBuildingCard = (building) => {
+    if (!building || typeof building !== 'object') {
+        return;
+    }
+
+    const key = building.key;
+    if (!key) {
+        return;
+    }
+
+    const card = document.querySelector(`[data-building-card="${CSS.escape(key)}"]`);
+    if (!card) {
+        return;
+    }
+
+    card.classList.toggle('is-locked', !building.canUpgrade);
+
+    const subtitle = card.querySelector('.panel__subtitle');
+    if (subtitle) {
+        subtitle.textContent = `Niveau actuel ${formatNumber(Number(building.level ?? 0))}`;
+    }
+
+    const sections = card.querySelector('.building-card__sections');
+    if (sections) {
+        sections.innerHTML = renderBuildingSections(building);
+    }
+
+    const button = card.querySelector('form[data-async] button[type="submit"]');
+    if (button) {
+        const canUpgrade = Boolean(building.canUpgrade);
+        button.disabled = !canUpgrade;
+        button.textContent = canUpgrade ? 'Améliorer' : 'Conditions non remplies';
+    }
+};
+
+const updateResearchCard = (research) => {
+    if (!research || typeof research !== 'object') {
+        return;
+    }
+
+    const key = research.key;
+    if (!key) {
+        return;
+    }
+
+    const card = document.querySelector(`[data-research-card="${CSS.escape(key)}"]`);
+    if (!card) {
+        return;
+    }
+
+    const canResearch = Boolean(research.canResearch);
+    card.classList.toggle('is-locked', !canResearch);
+
+    const badge = card.querySelector('.panel__badge');
+    if (badge) {
+        const level = formatNumber(Number(research.level ?? 0));
+        const maxLevel = Number(research.maxLevel ?? 0);
+        const maxLabel = maxLevel > 0 ? formatNumber(maxLevel) : '∞';
+        badge.textContent = `Niveau ${level} / ${maxLabel}`;
+    }
+
+    const levelText = card.querySelector('.tech-card__level');
+    if (levelText) {
+        const level = formatNumber(Number(research.level ?? 0));
+        const maxLevel = Number(research.maxLevel ?? 0);
+        levelText.textContent = `Niveau actuel ${level}${maxLevel > 0 ? ` / ${formatNumber(maxLevel)}` : ''}`;
+    }
+
+    const progressBar = card.querySelector('.progress-bar__value');
+    if (progressBar instanceof HTMLElement) {
+        const rawProgress = Number(research.progress ?? 0);
+        const percentage = clampPercentage(Math.round(rawProgress * 100));
+        progressBar.style.width = `${percentage}%`;
+    }
+
+    const costSection = card.querySelector('.tech-card__section');
+    if (costSection) {
+        costSection.innerHTML = `<h3>Prochaine amélioration</h3>${renderCostList(research.nextCost ?? {}, research.nextTime ?? 0)}`;
+    }
+
+    const requirementsHtml = renderResearchRequirements(research.requirements ?? null);
+    const existingRequirements = card.querySelector('.tech-card__requirements');
+    if (requirementsHtml) {
+        if (existingRequirements) {
+            existingRequirements.outerHTML = requirementsHtml;
+        } else if (costSection) {
+            costSection.insertAdjacentHTML('afterend', requirementsHtml);
+        }
+    } else if (existingRequirements) {
+        existingRequirements.remove();
+    }
+
+    const button = card.querySelector('form[data-async] button[type="submit"]');
+    if (button) {
+        button.disabled = !canResearch;
+        button.textContent = canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';
+    }
+};
+
+const updateShipCard = (ship) => {
+    if (!ship || typeof ship !== 'object') {
+        return;
+    }
+
+    const key = ship.key;
+    if (!key) {
+        return;
+    }
+
+    const card = document.querySelector(`[data-ship-card="${CSS.escape(key)}"]`);
+    if (!card) {
+        return;
+    }
+
+    const canBuild = Boolean(ship.canBuild);
+    card.classList.toggle('is-locked', !canBuild);
+
+    const requirementsHtml = renderShipRequirements(ship.requirements ?? null);
+    const existingRequirements = card.querySelector('.ship-card__requirements');
+    const content = card.querySelector('.ship-card__content');
+    if (requirementsHtml) {
+        if (existingRequirements) {
+            existingRequirements.outerHTML = requirementsHtml;
+        } else if (content) {
+            content.insertAdjacentHTML('beforeend', requirementsHtml);
+        }
+    } else if (existingRequirements) {
+        existingRequirements.remove();
+    }
+
+    const quantityInput = card.querySelector('input[name="quantity"]');
+    if (quantityInput) {
+        quantityInput.disabled = !canBuild;
+    }
+
+    const button = card.querySelector('form[data-async] button[type="submit"]');
+    if (button) {
+        button.disabled = !canBuild;
+        button.textContent = canBuild ? 'Construire' : 'Pré-requis manquants';
+    }
+};
+
+const updateOverviewFromResponse = (data) => {
+    if (!data || typeof data !== 'object') {
+        return;
+    }
+
+    if (data.building && typeof data.building === 'object') {
+        updateBuildingCard(data.building);
+    }
+
+    if (data.research && typeof data.research === 'object') {
+        updateResearchCard(data.research);
+    }
+
+    if (data.ship && typeof data.ship === 'object') {
+        updateShipCard(data.ship);
+    }
+};
+
 const ensureFlashContainer = () => {
     let container = document.querySelector('.flashes');
     if (!container) {
@@ -296,6 +714,8 @@ const submitAsyncForm = async (form) => {
                 renderQueue(data.queue, form.dataset.queueTarget);
             }
 
+            updateOverviewFromResponse(data);
+
             return;
         }
 
@@ -306,6 +726,7 @@ const submitAsyncForm = async (form) => {
         if (form.dataset.queueTarget && data.queue) {
             renderQueue(data.queue, form.dataset.queueTarget);
         }
+        updateOverviewFromResponse(data);
         if (typeof data.planetId === 'number') {
             const topbar = document.querySelector('.topbar[data-resource-endpoint]');
             if (topbar) {
@@ -613,3 +1034,11 @@ const ready = () => {
 };
 
 document.addEventListener('DOMContentLoaded', ready, { once: true });
+
+export {
+    applyResourceSnapshot,
+    renderQueue,
+    updateBuildingCard,
+    updateResearchCard,
+    updateShipCard,
+};

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\UseCase\Building\GetBuildingsOverview;
 use App\Application\UseCase\Building\UpgradeBuilding;
+use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -12,6 +13,8 @@ use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Security\CsrfTokenManager;
+use DateTimeInterface;
+use RuntimeException;
 
 class ColonyController extends AbstractController
 {
@@ -89,12 +92,16 @@ class ColonyController extends AbstractController
             if ($request->wantsJson()) {
                 $overview = $this->getOverview->execute($selectedId);
                 $planet = $overview['planet'];
+                $queue = $this->formatBuildQueue($overview['queue'] ?? []);
+                $buildingKey = (string) ($data['building'] ?? '');
+                $buildingEntry = $this->findBuildingEntry($overview['buildings'] ?? [], $buildingKey);
 
                 return $this->json([
                     'success' => $result['success'],
                     'message' => $result['message'] ?? ($result['success'] ? 'Construction planifiée.' : 'Action impossible.'),
                     'resources' => $this->formatResourceSnapshot($planet),
-                    'queue' => $overview['queue'],
+                    'queue' => $queue,
+                    'building' => $buildingEntry ? $this->normalizeBuildingEntry($buildingEntry) : null,
                     'planetId' => $selectedId,
                 ], $result['success'] ? 200 : 400);
             }
@@ -134,5 +141,130 @@ class ColonyController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
+}
+
+    /**
+     * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     */
+    private function formatBuildQueue(array $queue): array
+    {
+        $jobs = [];
+
+        foreach ($queue['jobs'] ?? [] as $job) {
+            $jobs[] = [
+                'building' => (string) ($job['building'] ?? ''),
+                'label' => (string) ($job['label'] ?? ''),
+                'targetLevel' => (int) ($job['targetLevel'] ?? 0),
+                'remaining' => (int) ($job['remaining'] ?? 0),
+                'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
+            ];
+        }
+
+        return [
+            'count' => count($jobs),
+            'jobs' => $jobs,
+        ];
+    }
+
+    /**
+     * @param array<int, array{definition?: mixed}> $buildings
+     */
+    private function findBuildingEntry(array $buildings, string $key): ?array
+    {
+        if ($key === '') {
+            return null;
+        }
+
+        foreach ($buildings as $entry) {
+            $definition = $entry['definition'] ?? null;
+            if ($definition instanceof BuildingDefinition && $definition->getKey() === $key) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array{definition: BuildingDefinition, level?: int, canUpgrade?: bool, cost?: array<string, int>, time?: int, production?: array<string, mixed>, consumption?: array<string, array<string, int>>, storage?: array<string, array<string, int>>, requirements?: array<string, mixed>} $entry
+     */
+    private function normalizeBuildingEntry(array $entry): array
+    {
+        $definition = $entry['definition'];
+        if (!$definition instanceof BuildingDefinition) {
+            throw new RuntimeException('Définition de bâtiment introuvable.');
+        }
+
+        $consumption = [];
+        foreach ($entry['consumption'] ?? [] as $resource => $values) {
+            if (!is_array($values)) {
+                continue;
+            }
+
+            $consumption[$resource] = [
+                'current' => (int) ($values['current'] ?? 0),
+                'next' => (int) ($values['next'] ?? 0),
+                'delta' => (int) ($values['delta'] ?? 0),
+            ];
+        }
+
+        $storage = $entry['storage'] ?? [];
+        $normalizeStorage = static function (array $values): array {
+            $normalized = [];
+            foreach ($values as $resource => $value) {
+                $normalized[$resource] = (int) $value;
+            }
+
+            return $normalized;
+        };
+
+        $requirements = $entry['requirements'] ?? ['ok' => true, 'missing' => []];
+        $missing = [];
+        foreach ($requirements['missing'] ?? [] as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $missing[] = [
+                'type' => (string) ($item['type'] ?? ''),
+                'key' => (string) ($item['key'] ?? ''),
+                'label' => (string) ($item['label'] ?? ''),
+                'level' => (int) ($item['level'] ?? 0),
+                'current' => (int) ($item['current'] ?? 0),
+            ];
+        }
+
+        $production = $entry['production'] ?? [];
+
+        return [
+            'key' => $definition->getKey(),
+            'label' => $definition->getLabel(),
+            'image' => $definition->getImage(),
+            'level' => (int) ($entry['level'] ?? 0),
+            'canUpgrade' => (bool) ($entry['canUpgrade'] ?? false),
+            'cost' => array_map(static fn ($value) => (int) $value, $entry['cost'] ?? []),
+            'time' => (int) ($entry['time'] ?? 0),
+            'production' => [
+                'resource' => (string) ($production['resource'] ?? ''),
+                'current' => (int) ($production['current'] ?? 0),
+                'next' => (int) ($production['next'] ?? 0),
+                'delta' => (int) ($production['delta'] ?? 0),
+            ],
+            'consumption' => $consumption,
+            'storage' => [
+                'current' => $normalizeStorage($storage['current'] ?? []),
+                'next' => $normalizeStorage($storage['next'] ?? []),
+                'delta' => $normalizeStorage($storage['delta'] ?? []),
+            ],
+            'requirements' => [
+                'ok' => (bool) ($requirements['ok'] ?? false),
+                'missing' => $missing,
+            ],
+        ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }

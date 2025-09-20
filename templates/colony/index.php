@@ -142,6 +142,9 @@ ob_start();
                         'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                         'status' => $status,
                         'class' => 'building-card',
+                        'attributes' => [
+                            'data-building-card' => $definition->getKey(),
+                        ],
                         'body' => static function () use ($building, $production, $consumption, $requirements, $baseUrl,
                                 $resourceLabels, $icon): void {
                             $bonuses = $building['bonuses'] ?? [];
