@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="robot-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0" stop-color="#1f2740"/>
+      <stop offset="1" stop-color="#0b111f"/>
+    </linearGradient>
+    <linearGradient id="robot-core" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0" stop-color="#7cd0ff"/>
+      <stop offset="1" stop-color="#2a7bff"/>
+    </linearGradient>
+    <linearGradient id="robot-arm" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0" stop-color="#bcc7e6"/>
+      <stop offset="1" stop-color="#7082b7"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#robot-bg)"/>
+  <rect x="22" y="54" width="52" height="22" rx="8" fill="#0b1422" opacity="0.7"/>
+  <rect x="26" y="48" width="44" height="20" rx="6" fill="#1d2b46"/>
+  <path d="M32 30h32l10 18H22z" fill="url(#robot-arm)"/>
+  <rect x="36" y="24" width="24" height="10" rx="5" fill="#16223a"/>
+  <circle cx="48" cy="46" r="14" fill="url(#robot-core)"/>
+  <circle cx="48" cy="46" r="8" fill="#0b1422" opacity="0.5"/>
+  <circle cx="34" cy="60" r="5" fill="#9fe0ff" opacity="0.75"/>
+  <circle cx="62" cy="60" r="5" fill="#9fe0ff" opacity="0.75"/>
+  <path d="M40 40h4l-2-8z" fill="#89c6ff"/>
+  <path d="M52 40h4l-2-8z" fill="#89c6ff"/>
+</svg>

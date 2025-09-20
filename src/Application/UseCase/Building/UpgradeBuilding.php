@@ -41,14 +41,14 @@ class UpgradeBuilding
         }
 
         $existingJobs = $this->buildQueue->getActiveQueue($planetId);
-        $queuedOccurrences = 0;
+        $projectedLevels = $levels;
         foreach ($existingJobs as $job) {
-            if ($job->getBuildingKey() === $buildingKey) {
-                ++$queuedOccurrences;
-            }
+            $key = $job->getBuildingKey();
+            $projectedLevels[$key] = ($projectedLevels[$key] ?? 0) + 1;
         }
 
-        $targetLevel = $currentLevel + $queuedOccurrences + 1;
+        $baseLevelForUpgrade = $projectedLevels[$buildingKey] ?? $currentLevel;
+        $targetLevel = $baseLevelForUpgrade + 1;
 
         $researchLevels = $this->researchStates->getLevels($planetId);
         $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels);
@@ -63,7 +63,7 @@ class UpgradeBuilding
 
         $this->deductCost($planet, $cost);
 
-        $duration = $this->calculator->nextTime($definition, $targetLevel - 1);
+        $duration = $this->calculator->nextTime($definition, $targetLevel - 1, $projectedLevels);
         $this->buildQueue->enqueue($planetId, $buildingKey, $targetLevel, $duration);
         $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);

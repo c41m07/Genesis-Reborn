@@ -21,6 +21,7 @@ $resourceLabels = [
     'hydrogen' => 'Hydrogène',
     'energy' => 'Énergie',
     'storage' => 'Capacité',
+    'infrastructure' => 'Infrastructure',
 ];
 
 $assetBase = rtrim($baseUrl, '/');
@@ -33,6 +34,8 @@ $buildingTypeMap = [
     'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
     'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
     'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
+    'worker_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
+    'robot_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
 ];
 $groupOrder = [
     'production' => 0,
@@ -139,6 +142,7 @@ ob_start();
                         'class' => 'building-card',
                         'body' => static function () use ($building, $production, $consumption, $requirements, $baseUrl,
                                 $resourceLabels, $icon): void {
+                            $bonuses = $building['bonuses'] ?? [];
                             echo '<div class="building-card__sections">';
                             echo '<div class="building-card__block">';
                             echo '<h3>Prochaine amélioration</h3>';
@@ -157,7 +161,7 @@ ob_start();
                             echo '<h3>Effets</h3>';
                             $resourceKey = $production['resource'] ?? '';
                             $resourceLabel = $resourceLabels[$resourceKey] ?? ucfirst((string) $resourceKey);
-                            $hasProduction = $resourceKey !== 'storage';
+                            $hasProduction = !in_array($resourceKey, ['storage', 'infrastructure'], true);
                             if ($hasProduction) {
                                 $unitSuffix = $resourceKey === 'energy'
                                     ? ' énergie/h'
@@ -192,6 +196,26 @@ ob_start();
                                     echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--positive">' . number_format((int) $value) . '</span></li>';
                                 }
                                 echo '</ul>';
+                                echo '</div>';
+                            }
+
+                            if (!empty($bonuses['construction_speed'])) {
+                                $bonus = $bonuses['construction_speed'];
+                                $currentBonus = max(0.0, (float) ($bonus['current'] ?? 0.0));
+                                $nextBonus = max(0.0, (float) ($bonus['next'] ?? 0.0));
+                                $formatPercent = static function (float $value): string {
+                                    return number_format($value * 100, 1) . ' %';
+                                };
+                                $currentClass = $currentBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                $nextClass = $nextBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                echo '<div class="metric-section">';
+                                echo '<p class="metric-section__title">Accélération de construction</p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction actuelle</span><span class="' . $currentClass . '">-' . $formatPercent($currentBonus) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction prochain niveau</span><span class="' . $nextClass . '">-' . $formatPercent($nextBonus) . '</span></p>';
                                 echo '</div>';
                             }
 

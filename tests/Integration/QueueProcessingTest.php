@@ -60,7 +60,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator($catalog);
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $researchStates = new InMemoryResearchStateRepository([
@@ -207,7 +207,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator($catalog);
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $useCase->execute(1, 99, 'metal_mine');
@@ -252,7 +252,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator($catalog);
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         for ($i = 0; $i < 5; ++$i) {
@@ -294,7 +294,7 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'metal',
             ],
         ]);
-        $calculator = new BuildingCalculator();
+        $calculator = new BuildingCalculator($catalog);
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
 

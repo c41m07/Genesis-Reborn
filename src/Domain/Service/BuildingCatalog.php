@@ -32,7 +32,8 @@ class BuildingCatalog
                 $data['requires'] ?? [],
                 $data['image'] ?? null,
                 $data['storage'] ?? [],
-                $data['upkeep'] ?? []
+                $data['upkeep'] ?? [],
+                $data['construction_speed_bonus'] ?? []
             );
         }
     }
