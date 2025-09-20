@@ -7,6 +7,7 @@ class BuildingDefinition
     /** @param array<string, int> $baseCost */
     /** @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements */
     /** @param array<string, array{base: float, growth: float}> $storage */
+    /** @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep */
     public function __construct(
         private readonly string $key,
         private readonly string $label,
@@ -22,7 +23,8 @@ class BuildingDefinition
         private readonly string $affects,
         private readonly array $requirements = [],
         private readonly ?string $image = null,
-        private readonly array $storage = []
+        private readonly array $storage = [],
+        private readonly array $upkeep = []
     ) {
     }
 
@@ -104,5 +106,13 @@ class BuildingDefinition
     public function getStorageConfig(): array
     {
         return $this->storage;
+    }
+
+    /**
+     * @return array<string, array{base?: float, growth?: float, linear?: bool}>
+     */
+    public function getUpkeepConfig(): array
+    {
+        return $this->upkeep;
     }
 }

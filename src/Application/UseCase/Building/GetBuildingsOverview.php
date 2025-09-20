@@ -117,6 +117,28 @@ class GetBuildingsOverview
                 $storageDelta[$resource] = $value - ($currentStorage[$resource] ?? 0);
             }
 
+            $consumption = [];
+            if ($currentEnergy !== 0 || $nextEnergy !== 0) {
+                $consumption['energy'] = [
+                    'current' => $currentEnergy,
+                    'next' => $nextEnergy,
+                    'delta' => $nextEnergy - $currentEnergy,
+                ];
+            }
+
+            $currentUpkeep = $this->calculator->upkeepAt($definition, $currentLevel);
+            $nextUpkeep = $this->calculator->upkeepAt($definition, $nextTargetLevel);
+            $upkeepResources = array_unique(array_merge(array_keys($currentUpkeep), array_keys($nextUpkeep)));
+            foreach ($upkeepResources as $resource) {
+                $current = $currentUpkeep[$resource] ?? 0;
+                $next = $nextUpkeep[$resource] ?? 0;
+                $consumption[$resource] = [
+                    'current' => $current,
+                    'next' => $next,
+                    'delta' => $next - $current,
+                ];
+            }
+
             $buildings[] = [
                 'definition' => $definition,
                 'level' => $currentLevel,
@@ -130,11 +152,7 @@ class GetBuildingsOverview
                     'next' => $nextProduction,
                     'delta' => $nextProduction - $currentProduction,
                 ],
-                'energy' => [
-                    'current' => $currentEnergy,
-                    'next' => $nextEnergy,
-                    'delta' => $nextEnergy - $currentEnergy,
-                ],
+                'consumption' => $consumption,
                 'storage' => [
                     'current' => $currentStorage,
                     'next' => $nextStorage,

@@ -77,6 +77,9 @@ return [
                 'reactor_advanced' => 2,
             ],
         ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 30, 'growth' => 1.16],
+        ],
     ],
     'hydrogen_plant' => [
         'label' => 'Générateur d’hydrogène',

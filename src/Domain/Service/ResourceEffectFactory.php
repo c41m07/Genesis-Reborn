@@ -62,6 +62,25 @@ final class ResourceEffectFactory
                 }
             }
 
+            if (!empty($data['upkeep']) && is_array($data['upkeep'])) {
+                foreach ($data['upkeep'] as $resourceKey => $upkeepConfig) {
+                    if (!is_array($upkeepConfig)) {
+                        continue;
+                    }
+
+                    $consumption = [
+                        'base' => (float) ($upkeepConfig['base'] ?? 0),
+                        'growth' => (float) ($upkeepConfig['growth'] ?? 1),
+                    ];
+
+                    if (!empty($upkeepConfig['linear'])) {
+                        $consumption['linear'] = true;
+                    }
+
+                    $effect['consumes'][$resourceKey] = $consumption;
+                }
+            }
+
             if ($effect !== []) {
                 $effects[$key] = $effect;
             }

@@ -664,6 +664,14 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
         return $this->planets[$id] ?? null;
     }
 
+    public function findByCoordinates(int $galaxy, int $system): array
+    {
+        return array_values(array_filter(
+            $this->planets,
+            static fn (Planet $planet): bool => $planet->getGalaxy() === $galaxy && $planet->getSystem() === $system
+        ));
+    }
+
     public function createHomeworld(int $userId): Planet
     {
         throw new \RuntimeException('Not implemented');

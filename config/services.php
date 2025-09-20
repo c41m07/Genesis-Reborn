@@ -259,6 +259,7 @@ return function (Container $container): void {
     $container->set(GalaxyController::class, fn (Container $c) => new GalaxyController(
         $c->get(PlanetRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(UserRepositoryInterface::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

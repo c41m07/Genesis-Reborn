@@ -11,6 +11,9 @@ interface PlanetRepositoryInterface
 
     public function find(int $id): ?Planet;
 
+    /** @return Planet[] */
+    public function findByCoordinates(int $galaxy, int $system): array;
+
     public function createHomeworld(int $userId): Planet;
 
     public function update(Planet $planet): void;

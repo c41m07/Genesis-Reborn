@@ -31,7 +31,8 @@ class BuildingCatalog
                 $data['affects'],
                 $data['requires'] ?? [],
                 $data['image'] ?? null,
-                $data['storage'] ?? []
+                $data['storage'] ?? [],
+                $data['upkeep'] ?? []
             );
         }
     }

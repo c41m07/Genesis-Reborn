@@ -147,7 +147,7 @@ ob_start();
                     <?php $definition = $building['definition']; ?>
                     <?php
                     $production = $building['production'];
-                    $energy = $building['energy'];
+                    $consumption = $building['consumption'] ?? [];
                     $requirements = $building['requirements'];
                     $canUpgrade = (bool) ($building['canUpgrade'] ?? false);
                     $status = $canUpgrade ? '' : 'is-locked';
@@ -216,33 +216,52 @@ ob_start();
                                 echo '</div>';
                             }
 
-                            $energyCurrent = (int) ($energy['current'] ?? 0);
-                            $energyNext = (int) ($energy['next'] ?? 0);
-                            if ($energyCurrent !== 0 || $energyNext !== 0) {
-                                $displayCurrentEnergy = $energyCurrent > 0 ? -$energyCurrent : $energyCurrent;
-                                $displayNextEnergy = $energyNext > 0 ? -$energyNext : $energyNext;
-                                $currentEnergyClass = $displayCurrentEnergy < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--positive';
-                                $nextEnergyClass = $displayNextEnergy < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--positive';
-                                $currentEnergyDisplay = $displayCurrentEnergy > 0 ? '+' . number_format($displayCurrentEnergy) : number_format($displayCurrentEnergy);
-                                $nextEnergyDisplay = $displayNextEnergy > 0 ? '+' . number_format($displayNextEnergy) : number_format($displayNextEnergy);
-                                echo '<p class="metric-line"><span class="metric-line__label">Consommation actuelle</span><span class="' . $currentEnergyClass . '">' . $currentEnergyDisplay . ' énergie/h</span></p>';
-                                echo '<p class="metric-line"><span class="metric-line__label">Consommation prochain niveau</span><span class="' . $nextEnergyClass . '">' . $nextEnergyDisplay . ' énergie/h</span></p>';
+                            foreach ($consumption as $resource => $values) {
+                                $currentConsumption = (int) ($values['current'] ?? 0);
+                                $nextConsumption = (int) ($values['next'] ?? 0);
+                                if ($currentConsumption === 0 && $nextConsumption === 0) {
+                                    continue;
+                                }
+
+                                $resourceLabel = $resourceLabels[$resource] ?? ucfirst((string) $resource);
+                                $unitSuffix = $resource === 'energy'
+                                    ? ' énergie/h'
+                                    : ' ' . strtolower($resourceLabel) . '/h';
+
+                                $displayCurrent = $currentConsumption > 0 ? -$currentConsumption : $currentConsumption;
+                                $displayNext = $nextConsumption > 0 ? -$nextConsumption : $nextConsumption;
+
+                                $currentClass = $displayCurrent < 0
+                                    ? 'metric-line__value metric-line__value--negative'
+                                    : ($displayCurrent > 0 ? 'metric-line__value metric-line__value--positive' : 'metric-line__value metric-line__value--neutral');
+                                $nextClass = $displayNext < 0
+                                    ? 'metric-line__value metric-line__value--negative'
+                                    : ($displayNext > 0 ? 'metric-line__value metric-line__value--positive' : 'metric-line__value metric-line__value--neutral');
+
+                                $labelCurrent = 'Consommation actuelle';
+                                $labelNext = 'Consommation prochain niveau';
+                                if ($resource !== 'energy') {
+                                    $labelCurrent .= ' (' . htmlspecialchars($resourceLabel) . ')';
+                                    $labelNext .= ' (' . htmlspecialchars($resourceLabel) . ')';
+                                }
+
+                                $currentDisplay = number_format($displayCurrent);
+                                $nextDisplay = number_format($displayNext);
+
+                                echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelCurrent) . '</span><span class="' . $currentClass . '">' . htmlspecialchars($currentDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelNext) . '</span><span class="' . $nextClass . '">' . htmlspecialchars($nextDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';
                             }
                             echo '</div>';
 
                             if (!($requirements['ok'] ?? true)) {
                                 echo '<div class="building-card__block building-card__block--requirements">';
                                 echo '<h3>Pré-requis</h3>';
-                                echo '<ul class="requirement-badges">';
+                                echo '<ul class="building-card__requirements">';
                                 foreach ($requirements['missing'] as $missing) {
-                                    $type = htmlspecialchars((string) ($missing['type'] ?? ''));
                                     $label = htmlspecialchars((string) ($missing['label'] ?? $missing['key'] ?? ''));
                                     $current = number_format((int) ($missing['current'] ?? 0));
                                     $required = number_format((int) ($missing['level'] ?? 0));
-                                    echo '<li><span class="requirement-badge requirement-badge--' . $type . '">';
-                                    echo '<span class="requirement-badge__title">' . $label . '</span>';
-                                    echo '<span class="requirement-badge__progress">' . $current . '/' . $required . '</span>';
-                                    echo '</span></li>';
+                                    echo '<li><span class="building-card__requirement-name">' . $label . '</span><span class="building-card__requirement-progress">(' . $current . '/' . $required . ')</span></li>';
                                 }
                                 echo '</ul>';
                                 echo '</div>';

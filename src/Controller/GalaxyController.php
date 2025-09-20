@@ -5,13 +5,13 @@ namespace App\Controller;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\UserRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
-use DateInterval;
 use DateTimeImmutable;
 
 class GalaxyController extends AbstractController
@@ -19,6 +19,7 @@ class GalaxyController extends AbstractController
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
+        private readonly UserRepositoryInterface $users,
         ViewRenderer $renderer,
         SessionInterface $session,
         FlashBag $flashBag,
@@ -35,27 +36,43 @@ class GalaxyController extends AbstractController
             return $this->redirect($this->baseUrl . '/login');
         }
 
-        $planets = $this->planets->findByUser($userId);
-        if ($planets === []) {
+        $viewOptions = [
+            'all' => 'Toutes les positions',
+            'colonizable' => 'Colonisables',
+            'inactive' => 'Planètes inactives',
+        ];
+
+        $ownedPlanets = $this->planets->findByUser($userId);
+        $query = $request->getQueryParams();
+
+        if ($ownedPlanets === []) {
+            $galaxy = max(1, (int) ($query['galaxy'] ?? 1));
+            $system = max(1, (int) ($query['system'] ?? 1));
+            $viewMode = $this->sanitizeViewMode($query['view'] ?? 'all', $viewOptions);
+            $searchTerm = trim((string) ($query['q'] ?? ''));
+
+            $systemPlanets = $this->planets->findByCoordinates($galaxy, $system);
+            $owners = $this->hydrateOwners($systemPlanets);
+            $slots = $this->buildSlots($systemPlanets, $owners, $galaxy, $system, $userId, $viewMode, $searchTerm);
+            $summary = $this->buildSummary($slots, $galaxy, $system);
+            $players = $this->buildPlayerSummaries($slots);
+
             $this->addFlash('info', 'Aucune planète disponible.');
 
             return $this->render('galaxy/index.php', [
                 'title' => 'Carte galaxie',
                 'planets' => [],
                 'selectedPlanetId' => null,
-                'map' => [],
+                'slots' => $slots,
+                'summary' => $summary,
+                'players' => $players,
                 'filters' => [
-                    'status' => 'all',
-                    'query' => '',
+                    'galaxy' => $galaxy,
+                    'system' => $system,
+                    'view' => $viewMode,
+                    'query' => $searchTerm,
+                    'options' => $viewOptions,
                 ],
-                'summary' => [
-                    'totals' => ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0],
-                    'activeCount' => 0,
-                    'inactiveCount' => 0,
-                    'strongCount' => 0,
-                ],
-                'suggestions' => [],
-                'comparisons' => [],
                 'flashes' => $this->flashBag->consume(),
                 'baseUrl' => $this->baseUrl,
                 'csrf_logout' => $this->generateCsrfToken('logout'),
@@ -66,83 +83,20 @@ class GalaxyController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
-        $selectedPlanet = $this->findPlanet($planets, $selectedId) ?? $planets[0];
+        $selectedId = (int) ($query['planet'] ?? $ownedPlanets[0]->getId());
+        $selectedPlanet = $this->findPlanet($ownedPlanets, $selectedId) ?? $ownedPlanets[0];
         $selectedId = $selectedPlanet->getId();
 
-        $queryParams = $request->getQueryParams();
-        $statusFilter = strtolower(trim((string) ($queryParams['status'] ?? 'all')));
-        $searchTerm = trim((string) ($queryParams['q'] ?? ''));
+        $galaxy = max(1, (int) ($query['galaxy'] ?? $selectedPlanet->getGalaxy()));
+        $system = max(1, (int) ($query['system'] ?? $selectedPlanet->getSystem()));
+        $viewMode = $this->sanitizeViewMode($query['view'] ?? 'all', $viewOptions);
+        $searchTerm = trim((string) ($query['q'] ?? ''));
 
-        $now = new DateTimeImmutable();
-        $mapEntries = [];
-        $totals = ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
-        $activeCount = 0;
-        $inactiveCount = 0;
-        $strongCount = 0;
-
-        foreach ($planets as $planet) {
-            $production = [
-                'metal' => $planet->getMetalPerHour(),
-                'crystal' => $planet->getCrystalPerHour(),
-                'hydrogen' => $planet->getHydrogenPerHour(),
-                'energy' => $planet->getEnergyPerHour(),
-            ];
-            $totals['metal'] += $production['metal'];
-            $totals['crystal'] += $production['crystal'];
-            $totals['hydrogen'] += $production['hydrogen'];
-            $totals['energy'] += $production['energy'];
-
-            $activity = $this->classifyActivity($planet->getLastResourceTick(), $now);
-            $strength = $this->classifyStrength($production);
-
-            if ($activity['key'] === 'active') {
-                ++$activeCount;
-            }
-            if ($activity['key'] === 'inactive') {
-                ++$inactiveCount;
-            }
-            if ($strength['key'] === 'strong') {
-                ++$strongCount;
-            }
-
-            $mapEntries[] = [
-                'planet' => $planet,
-                'coordinates' => $planet->getCoordinates(),
-                'coordinateString' => sprintf('%d:%d:%d', $planet->getGalaxy(), $planet->getSystem(), $planet->getPosition()),
-                'production' => $production,
-                'totalProduction' => $production['metal'] + $production['crystal'] + $production['hydrogen'],
-                'activity' => $activity,
-                'strength' => $strength,
-                'lastActivity' => $planet->getLastResourceTick(),
-            ];
-        }
-
-        $filteredMap = array_filter($mapEntries, static function (array $entry) use ($statusFilter, $searchTerm): bool {
-            if ($statusFilter !== '' && $statusFilter !== 'all') {
-                $statusKey = $entry['activity']['key'] ?? '';
-                $strengthKey = $entry['strength']['key'] ?? '';
-                $statusMatch = $statusFilter === $statusKey
-                    || ($statusFilter === 'strong' && $strengthKey === 'strong');
-                if (!$statusMatch) {
-                    return false;
-                }
-            }
-
-            if ($searchTerm !== '') {
-                $needle = mb_strtolower($searchTerm);
-                $nameMatch = str_contains(mb_strtolower($entry['planet']->getName()), $needle);
-                $coordMatch = str_contains(mb_strtolower($entry['coordinateString']), $needle);
-                if (!$nameMatch && !$coordMatch) {
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        $suggestions = $this->generateColonizationSuggestions($planets, $now);
-        $comparisons = $this->buildAllianceComparisons($mapEntries);
+        $systemPlanets = $this->planets->findByCoordinates($galaxy, $system);
+        $owners = $this->hydrateOwners($systemPlanets);
+        $slots = $this->buildSlots($systemPlanets, $owners, $galaxy, $system, $userId, $viewMode, $searchTerm);
+        $summary = $this->buildSummary($slots, $galaxy, $system);
+        $players = $this->buildPlayerSummaries($slots);
 
         $levels = $this->buildingStates->getLevels($selectedId);
         $facilityStatuses = [
@@ -150,33 +104,31 @@ class GalaxyController extends AbstractController
             'shipyard' => ($levels['shipyard'] ?? 0) > 0,
         ];
 
+        $planet = $selectedPlanet;
         $activePlanetSummary = [
-            'planet' => $selectedPlanet,
+            'planet' => $planet,
             'resources' => [
-                'metal' => ['value' => $selectedPlanet->getMetal(), 'perHour' => $selectedPlanet->getMetalPerHour()],
-                'crystal' => ['value' => $selectedPlanet->getCrystal(), 'perHour' => $selectedPlanet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $selectedPlanet->getHydrogen(), 'perHour' => $selectedPlanet->getHydrogenPerHour()],
-                'energy' => ['value' => $selectedPlanet->getEnergy(), 'perHour' => $selectedPlanet->getEnergyPerHour()],
+                'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
+                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
+                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
+                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
             ],
         ];
 
         return $this->render('galaxy/index.php', [
             'title' => 'Carte galaxie',
-            'planets' => $planets,
+            'planets' => $ownedPlanets,
             'selectedPlanetId' => $selectedId,
-            'map' => array_values($filteredMap),
+            'slots' => $slots,
+            'summary' => $summary,
+            'players' => $players,
             'filters' => [
-                'status' => $statusFilter !== '' ? $statusFilter : 'all',
+                'galaxy' => $galaxy,
+                'system' => $system,
+                'view' => $viewMode,
                 'query' => $searchTerm,
+                'options' => $viewOptions,
             ],
-            'summary' => [
-                'totals' => $totals,
-                'activeCount' => $activeCount,
-                'inactiveCount' => $inactiveCount,
-                'strongCount' => $strongCount,
-            ],
-            'suggestions' => $suggestions,
-            'comparisons' => $comparisons,
             'flashes' => $this->flashBag->consume(),
             'baseUrl' => $this->baseUrl,
             'csrf_logout' => $this->generateCsrfToken('logout'),
@@ -199,6 +151,252 @@ class GalaxyController extends AbstractController
         }
 
         return null;
+    }
+
+    /**
+     * @param Planet[] $planets
+     * @return array<int, array{id: int, name: string}>
+     */
+    private function hydrateOwners(array $planets): array
+    {
+        $ownerIds = [];
+        foreach ($planets as $planet) {
+            $ownerIds[$planet->getUserId()] = true;
+        }
+
+        $owners = [];
+        foreach (array_keys($ownerIds) as $ownerId) {
+            $user = $this->users->find($ownerId);
+            $owners[$ownerId] = [
+                'id' => $ownerId,
+                'name' => $user ? $user->getUsername() : 'Commandant #' . $ownerId,
+            ];
+        }
+
+        return $owners;
+    }
+
+    /**
+     * @param Planet[] $systemPlanets
+     * @param array<int, array{id: int, name: string}> $owners
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildSlots(
+        array $systemPlanets,
+        array $owners,
+        int $galaxy,
+        int $system,
+        int $userId,
+        string $viewMode,
+        string $searchTerm
+    ): array {
+        $now = new DateTimeImmutable();
+        $positionMap = [];
+        foreach ($systemPlanets as $planet) {
+            $positionMap[$planet->getPosition()] = $planet;
+        }
+
+        $needle = mb_strtolower($searchTerm);
+        $slots = [];
+        for ($position = 1; $position <= 15; ++$position) {
+            $planet = $positionMap[$position] ?? null;
+            $coordinates = sprintf('%d:%d:%d', $galaxy, $system, $position);
+
+            $slot = [
+                'position' => $position,
+                'coordinates' => $coordinates,
+                'planet' => $planet,
+                'owner' => null,
+                'activity' => null,
+                'strength' => null,
+                'production' => ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0],
+                'lastActivity' => null,
+                'isPlayer' => false,
+                'isEmpty' => $planet === null,
+            ];
+
+            if ($planet) {
+                $production = [
+                    'metal' => $planet->getMetalPerHour(),
+                    'crystal' => $planet->getCrystalPerHour(),
+                    'hydrogen' => $planet->getHydrogenPerHour(),
+                    'energy' => $planet->getEnergyPerHour(),
+                ];
+                $activity = $this->classifyActivity($planet->getLastResourceTick(), $now);
+                $strength = $this->classifyStrength($production);
+                $owner = $owners[$planet->getUserId()] ?? [
+                    'id' => $planet->getUserId(),
+                    'name' => 'Commandant #' . $planet->getUserId(),
+                ];
+
+                $slot['owner'] = $owner;
+                $slot['activity'] = $activity;
+                $slot['strength'] = $strength;
+                $slot['production'] = $production;
+                $slot['lastActivity'] = $planet->getLastResourceTick();
+                $slot['isPlayer'] = $planet->getUserId() === $userId;
+            }
+
+            $matchesFilter = match ($viewMode) {
+                'colonizable' => $slot['isEmpty'],
+                'inactive' => !$slot['isEmpty'] && ($slot['activity']['key'] ?? '') === 'inactive',
+                default => true,
+            };
+
+            $matchesSearch = true;
+            if ($searchTerm !== '') {
+                $matchesSearch = false;
+                $haystacks = [$coordinates];
+                if ($planet) {
+                    $haystacks[] = $planet->getName();
+                }
+                if (!empty($slot['owner']['name'])) {
+                    $haystacks[] = $slot['owner']['name'];
+                }
+
+                foreach ($haystacks as $value) {
+                    if (str_contains(mb_strtolower((string) $value), $needle)) {
+                        $matchesSearch = true;
+                        break;
+                    }
+                }
+            }
+
+            $slot['visible'] = $matchesFilter && $matchesSearch;
+            $slot['highlight'] = $matchesSearch && $searchTerm !== '' && $slot['visible'];
+            $slot['statusKey'] = $slot['isEmpty'] ? 'empty' : ($slot['activity']['key'] ?? 'unknown');
+
+            $slots[] = $slot;
+        }
+
+        return $slots;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $slots
+     * @return array<string, mixed>
+     */
+    private function buildSummary(array $slots, int $galaxy, int $system): array
+    {
+        $summary = [
+            'galaxy' => $galaxy,
+            'system' => $system,
+            'occupied' => 0,
+            'empty' => 0,
+            'activity' => [
+                'active' => 0,
+                'calm' => 0,
+                'idle' => 0,
+                'inactive' => 0,
+            ],
+            'strong' => 0,
+            'visibleCount' => 0,
+        ];
+
+        foreach ($slots as $slot) {
+            if (!empty($slot['visible'])) {
+                ++$summary['visibleCount'];
+            }
+
+            if (!empty($slot['isEmpty'])) {
+                ++$summary['empty'];
+                continue;
+            }
+
+            ++$summary['occupied'];
+
+            $activityKey = $slot['activity']['key'] ?? null;
+            if ($activityKey !== null && isset($summary['activity'][$activityKey])) {
+                ++$summary['activity'][$activityKey];
+            }
+
+            if (($slot['strength']['key'] ?? '') === 'strong') {
+                ++$summary['strong'];
+            }
+        }
+
+        return $summary;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $slots
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildPlayerSummaries(array $slots): array
+    {
+        $players = [];
+
+        foreach ($slots as $slot) {
+            if (!empty($slot['isEmpty']) || empty($slot['owner'])) {
+                continue;
+            }
+
+            $ownerId = (int) ($slot['owner']['id'] ?? 0);
+            if (!isset($players[$ownerId])) {
+                $players[$ownerId] = [
+                    'id' => $ownerId,
+                    'name' => (string) ($slot['owner']['name'] ?? ''),
+                    'planets' => 0,
+                    'inactive' => 0,
+                    'strong' => 0,
+                    'production' => 0,
+                    'lastActivity' => null,
+                ];
+            }
+
+            ++$players[$ownerId]['planets'];
+            if (($slot['activity']['key'] ?? '') === 'inactive') {
+                ++$players[$ownerId]['inactive'];
+            }
+            if (($slot['strength']['key'] ?? '') === 'strong') {
+                ++$players[$ownerId]['strong'];
+            }
+
+            $players[$ownerId]['production'] += max(0, (int) ($slot['production']['metal'] ?? 0))
+                + max(0, (int) ($slot['production']['crystal'] ?? 0))
+                + max(0, (int) ($slot['production']['hydrogen'] ?? 0));
+
+            $lastActivity = $slot['lastActivity'] ?? null;
+            if ($lastActivity instanceof DateTimeImmutable) {
+                $stored = $players[$ownerId]['lastActivity'];
+                if (!$stored instanceof DateTimeImmutable || $lastActivity > $stored) {
+                    $players[$ownerId]['lastActivity'] = $lastActivity;
+                }
+            }
+        }
+
+        foreach ($players as &$player) {
+            $player['status'] = $this->resolvePlayerStatus(
+                $player['planets'],
+                $player['inactive'],
+                $player['strong']
+            );
+        }
+        unset($player);
+
+        usort($players, static fn (array $a, array $b): int => $b['production'] <=> $a['production']);
+
+        return array_values($players);
+    }
+
+    private function resolvePlayerStatus(int $planets, int $inactive, int $strong): array
+    {
+        if ($planets > 0 && $inactive >= $planets) {
+            return ['key' => 'inactive', 'label' => 'Inactif', 'tone' => 'negative'];
+        }
+
+        if ($strong > 0) {
+            return ['key' => 'strong', 'label' => 'Puissant', 'tone' => 'positive'];
+        }
+
+        return ['key' => 'active', 'label' => 'Actif', 'tone' => 'neutral'];
+    }
+
+    private function sanitizeViewMode(string $value, array $options): string
+    {
+        $value = strtolower(trim($value));
+
+        return array_key_exists($value, $options) ? $value : 'all';
     }
 
     /**
@@ -227,7 +425,7 @@ class GalaxyController extends AbstractController
      */
     private function classifyStrength(array $production): array
     {
-        $score = $production['metal'] + $production['crystal'] + $production['hydrogen'];
+        $score = max(0, $production['metal']) + max(0, $production['crystal']) + max(0, $production['hydrogen']);
         if ($score >= 45000) {
             return ['key' => 'strong', 'label' => 'Puissante'];
         }
@@ -236,63 +434,5 @@ class GalaxyController extends AbstractController
         }
 
         return ['key' => 'developing', 'label' => 'Émergente'];
-    }
-
-    /**
-     * @param Planet[] $planets
-     * @return array<int, array{coordinates: string, distance: int, potential: int}>
-     */
-    private function generateColonizationSuggestions(array $planets, DateTimeImmutable $now): array
-    {
-        if ($planets === []) {
-            return [];
-        }
-
-        $reference = $planets[0];
-        $baseSystem = $reference->getSystem();
-        $baseGalaxy = $reference->getGalaxy();
-        $basePosition = $reference->getPosition();
-
-        $suggestions = [];
-        for ($i = 1; $i <= 3; ++$i) {
-            $system = max(1, $baseSystem + ($i * 2));
-            $position = (($basePosition + ($i * 3) - 1) % 15) + 1;
-            $distance = (int) abs($system - $baseSystem) * 12 + abs($position - $basePosition);
-            $potential = max(40, 95 - ($i * 8));
-
-            $arrival = $now->add(new DateInterval('PT' . max(1, $distance * 18) . 'M'));
-
-            $suggestions[] = [
-                'coordinates' => sprintf('%d:%d:%d', $baseGalaxy, $system, $position),
-                'distance' => $distance,
-                'potential' => $potential,
-                'arrival' => $arrival,
-            ];
-        }
-
-        return $suggestions;
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $mapEntries
-     * @return array<int, array{name: string, score: int, trend: int}>
-     */
-    private function buildAllianceComparisons(array $mapEntries): array
-    {
-        if ($mapEntries === []) {
-            return [];
-        }
-
-        $empireScore = 0;
-        foreach ($mapEntries as $entry) {
-            $empireScore += (int) ($entry['totalProduction'] ?? 0);
-        }
-        $empireScore = max(1, $empireScore);
-
-        return [
-            ['name' => 'Votre empire', 'score' => $empireScore, 'trend' => 0],
-            ['name' => 'Coalition Nova', 'score' => (int) round($empireScore * 1.18), 'trend' => 8],
-            ['name' => 'Légion Umbra', 'score' => (int) round($empireScore * 0.92), 'trend' => -4],
-        ];
     }
 }

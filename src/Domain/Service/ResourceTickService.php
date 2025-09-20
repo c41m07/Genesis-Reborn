@@ -96,6 +96,18 @@ class ResourceTickService
                     }
                 }
 
+                if (isset($effect['consumes']) && is_array($effect['consumes'])) {
+                    foreach ($effect['consumes'] as $resourceKey => $config) {
+                        $amount = $this->valueForLevel($config, $level);
+                        if ($resourceKey === 'energy') {
+                            $energyConsumption += $amount;
+                            continue;
+                        }
+
+                        $productionRaw[$resourceKey] = ($productionRaw[$resourceKey] ?? 0.0) - $amount;
+                    }
+                }
+
                 if (isset($effect['energy']) && is_array($effect['energy'])) {
                     $energyConfig = $effect['energy'];
 

@@ -38,6 +38,23 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
         return $row ? $this->hydrate($row) : null;
     }
 
+    /** @return Planet[] */
+    public function findByCoordinates(int $galaxy, int $system): array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE galaxy = :galaxy AND `system` = :system ORDER BY position ASC');
+        $stmt->execute([
+            'galaxy' => $galaxy,
+            'system' => $system,
+        ]);
+
+        $planets = [];
+        while ($row = $stmt->fetch()) {
+            $planets[] = $this->hydrate($row);
+        }
+
+        return $planets;
+    }
+
     public function createHomeworld(int $userId): Planet
     {
         $this->pdo->beginTransaction();
