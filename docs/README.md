@@ -93,6 +93,11 @@ tests (PHPUnit)
 - **Sprite d’icônes** (`public/assets/svg/sprite.svg`) via `<use href="/assets/svg/sprite.svg#icon-...">`.
 - **Pipeline icônes** : ajouter des SVG dans `public/assets/svg/icons/` puis exécuter `npm run svgo:build`.
 
+### Comportement du ticker de ressources
+- Le snapshot de ressources embarque désormais la capacité maximale pour chaque type, exposée dans le layout et via l’API.
+- Le ticker JavaScript conserve cette capacité, borne les valeurs à 0 et affiche l’information sous la forme `actuel / capacité`.
+- Lorsque la réserve atteint 0 avec un débit horaire négatif, le composant applique `resource-meter--warning` afin de signaler visuellement l’épuisement.
+
 ---
 
 ## Sessions & sécurité

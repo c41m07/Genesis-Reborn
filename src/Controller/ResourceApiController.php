@@ -159,12 +159,7 @@ class ResourceApiController extends AbstractController
         return $this->json([
             'success' => true,
             'planetId' => $planetId,
-            'resources' => [
-                'metal' => ['value' => $planet->getMetal(), 'perHour' => $planet->getMetalPerHour()],
-                'crystal' => ['value' => $planet->getCrystal(), 'perHour' => $planet->getCrystalPerHour()],
-                'hydrogen' => ['value' => $planet->getHydrogen(), 'perHour' => $planet->getHydrogenPerHour()],
-                'energy' => ['value' => $planet->getEnergy(), 'perHour' => $planet->getEnergyPerHour()],
-            ],
+            'resources' => $this->formatResourceSnapshot($planet),
         ]);
     }
 }
