@@ -30,6 +30,7 @@ $buildingTypeMap = [
     'hydrogen_plant' => ['group' => 'production', 'label' => 'Production'],
     'solar_plant' => ['group' => 'energy', 'label' => 'Énergie'],
     'fusion_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
+    'antimatter_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
     'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
     'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
     'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],

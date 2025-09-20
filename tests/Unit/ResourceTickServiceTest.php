@@ -45,6 +45,14 @@ class ResourceTickServiceTest extends TestCase
                     'hydrogen' => ['base' => 30, 'growth' => 1.16],
                 ],
             ],
+            'antimatter_reactor' => [
+                'energy' => [
+                    'production' => ['base' => 800, 'growth' => 1.2],
+                ],
+                'consumes' => [
+                    'hydrogen' => ['base' => 60, 'growth' => 1.2],
+                ],
+            ],
             'storage_depot' => [
                 'storage' => [
                     'metal' => ['base' => 5000, 'growth' => 1.5],
@@ -80,6 +88,7 @@ class ResourceTickServiceTest extends TestCase
                     'crystal_mine' => 3,
                     'solar_plant' => 4,
                     'fusion_reactor' => 2,
+                    'antimatter_reactor' => 1,
                     'storage_depot' => 2,
                 ],
             ],
@@ -115,12 +124,12 @@ class ResourceTickServiceTest extends TestCase
 
         $rawMetalPerHour = 30 * pow(1.15, 4);
         $rawCrystalPerHour = 20 * pow(1.14, 2);
-        $energyProduction = (40 * pow(1.13, 3)) + (320 * pow(1.18, 1));
+        $energyProduction = (40 * pow(1.13, 3)) + (320 * pow(1.18, 1)) + (800 * pow(1.2, 0));
         $energyConsumption = (10 * pow(1.08, 4) * 5) + (12 * pow(1.08, 2) * 3);
         $energyRatio = max(0.0, min(1.0, $energyProduction / $energyConsumption));
         $expectedMetalPerHour = $rawMetalPerHour * $energyRatio;
         $expectedCrystalPerHour = $rawCrystalPerHour * $energyRatio;
-        $hydrogenConsumptionPerHour = 30 * pow(1.16, 1) * $energyRatio;
+        $hydrogenConsumptionPerHour = (30 * pow(1.16, 1) + 60 * pow(1.2, 0)) * $energyRatio;
 
         $expectedMetalAfter = (int) floor(1000 + $expectedMetalPerHour * 2 + 0.000001);
         $expectedCrystalAfter = (int) floor(500 + $expectedCrystalPerHour * 2 + 0.000001);
@@ -129,6 +138,7 @@ class ResourceTickServiceTest extends TestCase
         self::assertEqualsWithDelta($expectedMetalAfter, $planetOne['resources']['metal'], 1.0);
         self::assertEqualsWithDelta($expectedCrystalAfter, $planetOne['resources']['crystal'], 1.0);
         self::assertEqualsWithDelta($expectedHydrogenAfter, $planetOne['resources']['hydrogen'], 1.0);
+        self::assertEqualsWithDelta($energyProduction, $planetOne['energy']['production'], 0.5);
         self::assertSame(17500, $planetOne['capacities']['metal']);
         self::assertSame(130, $planetOne['capacities']['energy']);
         self::assertSame(130, $planetOne['resources']['energy']);
