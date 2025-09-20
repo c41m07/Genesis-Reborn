@@ -43,7 +43,7 @@ class ColonyController extends AbstractController
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('colony/index.php', [
+            return $this->render('pages/colony/index.php', [
                 'title' => 'Bâtiments',
                 'planets' => [],
                 'overview' => null,
@@ -127,7 +127,7 @@ class ColonyController extends AbstractController
             'resources' => $this->formatResourceSnapshot($planet),
         ];
 
-        return $this->render('colony/index.php', [
+        return $this->render('pages/colony/index.php', [
             'title' => 'Bâtiments',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
@@ -141,10 +141,12 @@ class ColonyController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
-}
+    }
 
     /**
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     *
+     * Je transforme ici la file brute pour que la vue soit facile à lire.
      */
     private function formatBuildQueue(array $queue): array
     {
@@ -168,6 +170,8 @@ class ColonyController extends AbstractController
 
     /**
      * @param array<int, array{definition?: mixed}> $buildings
+     *
+     * Ce petit helper me permet de retrouver le bâtiment ciblé par sa clé.
      */
     private function findBuildingEntry(array $buildings, string $key): ?array
     {
@@ -187,6 +191,8 @@ class ColonyController extends AbstractController
 
     /**
      * @param array{definition: BuildingDefinition, level?: int, canUpgrade?: bool, cost?: array<string, int>, time?: int, production?: array<string, mixed>, consumption?: array<string, array<string, int>>, storage?: array<string, array<string, int>>, requirements?: array<string, mixed>} $entry
+     *
+     * Je normalise les infos du bâtiment pour que le front puisse les exploiter tranquille.
      */
     private function normalizeBuildingEntry(array $entry): array
     {

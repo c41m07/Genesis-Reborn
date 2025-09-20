@@ -1,21 +1,21 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array $fleetOverview */
-/** @var array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speed: int, category: string, role: string, image: ?string, fuelRate: int}> $availableShips */
-/** @var array $catalogCategories */
-/** @var array<string, int> $submittedComposition */
-/** @var array{galaxy: int, system: int, position: int} $submittedDestination */
-/** @var array|null $planResult */
-/** @var array<int, string> $planErrors */
-/** @var string $baseUrl */
-/** @var string|null $csrf_plan */
-/** @var int|null $selectedPlanetId */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Liste des planètes disponibles. */
+/** @var array $fleetOverview Données agrégées de la flotte. */
+/** @var array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speed: int, category: string, role: string, image: ?string, fuelRate: int}> $availableShips Inventaire des vaisseaux prêts. */
+/** @var array $catalogCategories Catégories du catalogue de vaisseaux. */
+/** @var array<string, int> $submittedComposition Composition saisie dans le formulaire. */
+/** @var array{galaxy: int, system: int, position: int} $submittedDestination Cible choisie par le joueur. */
+/** @var array|null $planResult Résultat éventuel du calcul de trajet. */
+/** @var array<int, string> $planErrors Liste des erreurs rencontrées. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var string|null $csrf_plan Jeton CSRF du planificateur. */
+/** @var int|null $selectedPlanetId Identifiant de la planète active. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé pour l’entête de page. */
 
 $title = $title ?? 'Flotte';
-$icon = require __DIR__ . '/../components/_icon.php';
-$card = require __DIR__ . '/../components/_card.php';
-require_once __DIR__ . '/../components/helpers.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 
 $fleetShips = $fleetOverview['ships'] ?? [];
 $totalShips = $fleetOverview['totalShips'] ?? 0;
@@ -148,4 +148,4 @@ ob_start();
 </div>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

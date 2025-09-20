@@ -43,7 +43,7 @@ class ResearchController extends AbstractController
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('research/index.php', [
+            return $this->render('pages/research/index.php', [
                 'title' => 'Laboratoire de recherche',
                 'planets' => [],
                 'overview' => null,
@@ -143,7 +143,7 @@ class ResearchController extends AbstractController
             'resources' => $this->formatResourceSnapshot($planet),
         ];
 
-        return $this->render('research/index.php', [
+        return $this->render('pages/research/index.php', [
             'title' => 'Laboratoire de recherche',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
@@ -157,10 +157,12 @@ class ResearchController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
-}
+    }
 
     /**
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     *
+     * Je prépare les jobs pour que le front affiche la file correctement.
      */
     private function formatResearchQueue(array $queue): array
     {
@@ -184,6 +186,8 @@ class ResearchController extends AbstractController
 
     /**
      * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
+     *
+     * Ce helper me sert à retrouver la fiche recherche demandée.
      */
     private function findResearchEntry(array $categories, string $key): ?array
     {
@@ -205,6 +209,8 @@ class ResearchController extends AbstractController
 
     /**
      * @param array{definition: ResearchDefinition, level?: int, maxLevel?: int, progress?: float, nextCost?: array<string, int>, nextTime?: int, requirements?: array<string, mixed>, canResearch?: bool} $entry
+     *
+     * Je nettoie la structure pour la réponse JSON lorsque l’action réussit.
      */
     private function normalizeResearchEntry(array $entry): array
     {

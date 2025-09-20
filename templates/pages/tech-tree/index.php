@@ -1,8 +1,8 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array $tree */
-/** @var string $baseUrl */
-/** @var int|null $selectedPlanetId */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Liste des planètes. */
+/** @var array $tree Données de l’arbre technologique. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var int|null $selectedPlanetId Identifiant de la planète choisie. */
 $title = $title ?? 'Arbre technologique';
 $categories = $tree['categories'] ?? [];
 $nodes = [];

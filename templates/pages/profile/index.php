@@ -1,15 +1,15 @@
 <?php
-/** @var array{email: string, username: string} $account */
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array $dashboard */
-/** @var string $baseUrl */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array{email: string, username: string} $account Infos de mon profil. */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Liste de mes planètes. */
+/** @var array $dashboard Données consolidées du tableau de bord. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de la planète affichée. */
 
 $title = $title ?? 'Profil commandant';
-$icon = require __DIR__ . '/../components/_icon.php';
-$resourceBar = require __DIR__ . '/../components/_resource_bar.php';
-$card = require __DIR__ . '/../components/_card.php';
-require_once __DIR__ . '/../components/helpers.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$resourceBar = require __DIR__ . '/../../components/_resource_bar.php';
+$card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 $planets = $planets ?? [];
 
 $dashboard = $dashboard ?? [];
@@ -169,4 +169,4 @@ ob_start();
 <?php endif; ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

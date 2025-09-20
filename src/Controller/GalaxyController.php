@@ -59,7 +59,7 @@ class GalaxyController extends AbstractController
 
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('galaxy/index.php', [
+            return $this->render('pages/galaxy/index.php', [
                 'title' => 'Carte galaxie',
                 'planets' => [],
                 'selectedPlanetId' => null,
@@ -115,7 +115,7 @@ class GalaxyController extends AbstractController
             ],
         ];
 
-        return $this->render('galaxy/index.php', [
+        return $this->render('pages/galaxy/index.php', [
             'title' => 'Carte galaxie',
             'planets' => $ownedPlanets,
             'selectedPlanetId' => $selectedId,
@@ -141,6 +141,8 @@ class GalaxyController extends AbstractController
 
     /**
      * @param Planet[] $planets
+     *
+     * Je balaie la liste pour retrouver la planète demandée.
      */
     private function findPlanet(array $planets, int $planetId): ?Planet
     {
@@ -156,6 +158,8 @@ class GalaxyController extends AbstractController
     /**
      * @param Planet[] $planets
      * @return array<int, array{id: int, name: string}>
+     *
+     * Ici je prépare un petit index des propriétaires pour l’affichage.
      */
     private function hydrateOwners(array $planets): array
     {
@@ -180,6 +184,8 @@ class GalaxyController extends AbstractController
      * @param Planet[] $systemPlanets
      * @param array<int, array{id: int, name: string}> $owners
      * @return array<int, array<string, mixed>>
+     *
+     * Je construis les 15 cases du système avec toutes les infos utiles.
      */
     private function buildSlots(
         array $systemPlanets,

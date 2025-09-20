@@ -1,16 +1,16 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array<int, array<string, mixed>> $slots */
-/** @var array<string, mixed> $summary */
-/** @var array<int, array<string, mixed>> $players */
-/** @var array<string, mixed> $filters */
-/** @var string $baseUrl */
-/** @var int|null $selectedPlanetId */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Planètes contrôlées par le joueur. */
+/** @var array<int, array<string, mixed>> $slots Cases construites pour la vue galaxie. */
+/** @var array<string, mixed> $summary Synthèse des informations du système. */
+/** @var array<int, array<string, mixed>> $players Classement des propriétaires. */
+/** @var array<string, mixed> $filters Filtres utilisés dans le formulaire. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var int|null $selectedPlanetId Identifiant de la planète mise en avant. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de la planète affichée. */
 
 $title = $title ?? 'Carte galaxie';
-$card = require __DIR__ . '/../components/_card.php';
-require_once __DIR__ . '/../components/helpers.php';
+$card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 
 $spriteIcon = static fn (string $name): string => asset_url('assets/svg/sprite.svg#icon-' . $name, $baseUrl ?? '');
 
@@ -212,4 +212,4 @@ ob_start();
 ]) ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

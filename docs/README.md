@@ -52,7 +52,10 @@
   /Domain (Entity, Service, ValueObjects)
   /Application (UseCase, Services Process*)
   /Infrastructure (HTTP, DB, Container, Security)
-/templates (layouts + pages)
+/templates
+  /layouts (base.php)
+  /components (*.php)
+  /pages (auth, colony, dashboard, fleet, galaxy, journal, profile, research, shipyard, tech-tree)
 tests (PHPUnit)
 ```
 

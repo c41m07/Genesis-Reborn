@@ -63,7 +63,7 @@ class ProfileController extends AbstractController
             ];
         }
 
-        return $this->render('profile/index.php', [
+        return $this->render('pages/profile/index.php', [
             'title' => 'Profil commandant',
             'account' => [
                 'email' => $user->getEmail(),
