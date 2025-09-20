@@ -1,15 +1,15 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array|null $overview */
-/** @var string $baseUrl */
-/** @var string|null $csrf_shipyard */
-/** @var int|null $selectedPlanetId */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Planètes gérées par le joueur. */
+/** @var array|null $overview Détails du chantier actif. */
+/** @var string $baseUrl URL de base pour les actions. */
+/** @var string|null $csrf_shipyard Jeton CSRF pour la production. */
+/** @var int|null $selectedPlanetId Identifiant de la planète ciblée. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de la planète sélectionnée. */
 
 $title = $title ?? 'Chantier spatial';
-$icon = require __DIR__ . '/../components/_icon.php';
-$card = require __DIR__ . '/../components/_card.php';
-require_once __DIR__ . '/../components/helpers.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
@@ -158,4 +158,4 @@ ob_start();
 <?php endif; ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

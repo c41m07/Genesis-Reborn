@@ -1,14 +1,14 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array<int, array{type: string, icon: string, title: string, description: string, endsAt: \DateTimeImmutable, remaining: int}> $events */
-/** @var array{buildQueue: int, researchQueue: int, shipQueue: int, nextEvent: ?array} $insights */
-/** @var string $baseUrl */
-/** @var int|null $selectedPlanetId */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Planètes accessibles pour la sélection. */
+/** @var array<int, array{type: string, icon: string, title: string, description: string, endsAt: \DateTimeImmutable, remaining: int}> $events Evénements structurés pour l’affichage. */
+/** @var array{buildQueue: int, researchQueue: int, shipQueue: int, nextEvent: ?array} $insights Compteurs synthétiques affichés dans la vue. */
+/** @var string $baseUrl URL de base pour générer les liens. */
+/** @var int|null $selectedPlanetId Identifiant de la planète suivie. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de la planète affichée. */
 
 $title = $title ?? 'Journal de bord';
-$icon = require __DIR__ . '/../components/_icon.php';
-$card = require __DIR__ . '/../components/_card.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$card = require __DIR__ . '/../../components/_card.php';
 
 ob_start();
 ?>
@@ -63,4 +63,4 @@ ob_start();
 ]) ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

@@ -1,16 +1,16 @@
 <?php
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array|null $overview */
-/** @var string $baseUrl */
-/** @var string|null $csrf_start */
-/** @var int|null $selectedPlanetId */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Planètes du joueur. */
+/** @var array|null $overview Détails du laboratoire actif. */
+/** @var string $baseUrl URL de base pour générer les liens. */
+/** @var string|null $csrf_start Jeton CSRF pour lancer une recherche. */
+/** @var int|null $selectedPlanetId Identifiant de la planète affichée. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de ressources utilisé par le layout. */
 
 $title = $title ?? 'Laboratoire de recherche';
-$icon = require __DIR__ . '/../components/_icon.php';
-$card = require __DIR__ . '/../components/_card.php';
-$requirementsPanel = require __DIR__ . '/../components/_requirements.php';
-require_once __DIR__ . '/../components/helpers.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$card = require __DIR__ . '/../../components/_card.php';
+$requirementsPanel = require __DIR__ . '/../../components/_requirements.php';
+require_once __DIR__ . '/../../components/helpers.php';
 
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
@@ -166,4 +166,4 @@ ob_start();
 <?php endif; ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

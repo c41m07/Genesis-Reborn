@@ -56,7 +56,7 @@ class JournalController extends AbstractController
         if ($planets === []) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('journal/index.php', [
+            return $this->render('pages/journal/index.php', [
                 'title' => 'Journal de bord',
                 'planets' => [],
                 'selectedPlanetId' => null,
@@ -132,7 +132,7 @@ class JournalController extends AbstractController
             ],
         ];
 
-        return $this->render('journal/index.php', [
+        return $this->render('pages/journal/index.php', [
             'title' => 'Journal de bord',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
@@ -156,6 +156,8 @@ class JournalController extends AbstractController
     /**
      * @param array<int, \App\Domain\Entity\BuildJob> $jobs
      * @return array<int, array<string, mixed>>
+     *
+     * Je transforme la file des constructions pour alimenter le journal.
      */
     private function mapBuildingEvents(array $jobs): array
     {
@@ -166,7 +168,7 @@ class JournalController extends AbstractController
                 $definition = $this->buildingCatalog->get($job->getBuildingKey());
                 $label = $definition->getLabel();
             } catch (InvalidArgumentException $exception) {
-                // unknown building: keep key as label.
+                // Ici je garde la clé brute si jamais la définition a disparu.
             }
 
             $events[] = $this->createEvent(
@@ -183,6 +185,8 @@ class JournalController extends AbstractController
     /**
      * @param array<int, \App\Domain\Entity\ResearchJob> $jobs
      * @return array<int, array<string, mixed>>
+     *
+     * Pareil ici, mais pour les recherches en cours.
      */
     private function mapResearchEvents(array $jobs): array
     {
@@ -193,7 +197,7 @@ class JournalController extends AbstractController
                 $definition = $this->researchCatalog->get($job->getResearchKey());
                 $label = $definition->getLabel();
             } catch (InvalidArgumentException $exception) {
-                // keep fallback label
+                // Ici aussi je garde la clé si le catalogue n’a pas la fiche.
             }
 
             $events[] = $this->createEvent(
@@ -210,6 +214,8 @@ class JournalController extends AbstractController
     /**
      * @param array<int, \App\Domain\Entity\ShipBuildJob> $jobs
      * @return array<int, array<string, mixed>>
+     *
+     * Même logique pour les chantiers navals afin d’avoir un suivi complet.
      */
     private function mapShipEvents(array $jobs): array
     {
@@ -220,7 +226,7 @@ class JournalController extends AbstractController
                 $definition = $this->shipCatalog->get($job->getShipKey());
                 $label = $definition->getLabel();
             } catch (InvalidArgumentException $exception) {
-                // keep fallback label
+                // Si je n’ai pas la définition, je conserve le nom technique pour debug.
             }
 
             $events[] = $this->createEvent(
@@ -236,6 +242,8 @@ class JournalController extends AbstractController
 
     /**
      * @return array{type: string, icon: string, title: string, description: string, endsAt: DateTimeImmutable, remaining: int}
+     *
+     * Je centralise ici le formatage d’un événement affiché dans l’UI.
      */
     private function createEvent(string $type, string $title, string $description, DateTimeImmutable $endsAt): array
     {

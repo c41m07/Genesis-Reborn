@@ -43,7 +43,7 @@ class ShipyardController extends AbstractController
         if (!$planets) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('shipyard/index.php', [
+            return $this->render('pages/shipyard/index.php', [
                 'title' => 'Chantier spatial',
                 'planets' => [],
                 'overview' => null,
@@ -145,7 +145,7 @@ class ShipyardController extends AbstractController
             'resources' => $this->formatResourceSnapshot($planet),
         ];
 
-        return $this->render('shipyard/index.php', [
+        return $this->render('pages/shipyard/index.php', [
             'title' => 'Chantier spatial',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
@@ -159,10 +159,12 @@ class ShipyardController extends AbstractController
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
         ]);
-}
+    }
 
     /**
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
+     *
+     * Je mets la file de production au propre pour les réponses JSON.
      */
     private function formatShipQueue(array $queue): array
     {
@@ -186,6 +188,8 @@ class ShipyardController extends AbstractController
 
     /**
      * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
+     *
+     * Ce helper me retrouve une entrée de vaisseau dans le catalogue préparé.
      */
     private function findShipEntry(array $categories, string $key): ?array
     {
@@ -207,6 +211,8 @@ class ShipyardController extends AbstractController
 
     /**
      * @param array{definition: ShipDefinition, requirements?: array<string, mixed>, canBuild?: bool} $entry
+     *
+     * Je renvoie un format simplifié pour le front après une création.
      */
     private function normalizeShipEntry(array $entry): array
     {

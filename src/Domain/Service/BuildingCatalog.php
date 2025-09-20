@@ -35,7 +35,6 @@ class BuildingCatalog
                 $data['storage'] ?? [],
                 $data['upkeep'] ?? [],
                 $data['construction_speed_bonus'] ?? []
-
             );
         }
     }

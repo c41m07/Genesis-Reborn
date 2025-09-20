@@ -29,7 +29,6 @@ class BuildingDefinition
         private readonly array $storage = [],
         private readonly array $upkeep = [],
         private readonly array $constructionSpeedBonus = []
-
     ) {
     }
 

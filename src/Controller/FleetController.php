@@ -46,7 +46,7 @@ class FleetController extends AbstractController
         if ($planets === []) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('fleet/index.php', [
+            return $this->render('pages/fleet/index.php', [
                 'title' => 'Flotte',
                 'planets' => [],
                 'selectedPlanetId' => null,
@@ -111,7 +111,7 @@ class FleetController extends AbstractController
             try {
                 $definition = $this->shipCatalog->get($shipKey);
             } catch (InvalidArgumentException $exception) {
-                // Unknown ship in the catalogue – skip fancy data but keep counts.
+                // Je note ici que le vaisseau est inconnu, du coup je garde juste les infos minimales.
             }
 
             $label = $definition ? $definition->getLabel() : $shipKey;
@@ -158,6 +158,7 @@ class FleetController extends AbstractController
         usort($availableShips, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
 
         $origin = $selectedPlanet->getCoordinates();
+        // Je prépare la destination par défaut avec les coordonnées actuelles.
         $submittedDestination = [
             'galaxy' => $origin['galaxy'],
             'system' => $origin['system'],
@@ -172,6 +173,7 @@ class FleetController extends AbstractController
             if (!$this->isCsrfTokenValid('fleet_plan_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $planErrors[] = 'Session expirée, veuillez recharger la page.';
             } else {
+                // Je récupère les coordonnées visées dans le formulaire.
                 $destination = [
                     'galaxy' => max(1, (int) ($data['destination_galaxy'] ?? $origin['galaxy'])),
                     'system' => max(1, (int) ($data['destination_system'] ?? $origin['system'])),
@@ -244,7 +246,7 @@ class FleetController extends AbstractController
             ],
         ];
 
-        return $this->render('fleet/index.php', [
+        return $this->render('pages/fleet/index.php', [
             'title' => 'Flotte',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
