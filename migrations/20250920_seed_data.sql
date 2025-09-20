@@ -11,6 +11,7 @@ VALUES
 -- Building definitions
 INSERT INTO buildings (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_production_metal, base_production_crystal, base_production_hydrogen, base_storage, base_energy_production, base_energy_consumption, unlock_requirements, created_at, updated_at)
 VALUES
+
     ('metal_mine', 'Mine de métal', 'Mine automatisée dédiée à l''extraction du métal brut.', 'production', 60, 15, 0, 0, 1.600, 100, 0, 0, 0, 0, 10, NULL, NOW(), NOW()),
     ('crystal_mine', 'Mine de cristal', 'Extrayez du cristal pur pour vos technologies avancées.', 'production', 48, 24, 0, 0, 1.600, 0, 50, 0, 0, 0, 15, NULL, NOW(), NOW()),
     ('solar_plant', 'Centrale solaire', 'Capte la lumière stellaire pour alimenter la colonie.', 'energy', 120, 60, 0, 0, 1.600, 0, 0, 0, 0, 100, 0, NULL, NOW(), NOW()),
@@ -19,6 +20,7 @@ VALUES
     ('storage_depot', 'Entrepôt planétaire', 'Augmente la capacité de stockage globale des ressources.', 'storage', 1000, 400, 0, 0, 1.600, 0, 0, 0, 50000, 0, 0, '{"buildings":{"metal_mine":4,"crystal_mine":3},"technologies":{"logistics":2}}', NOW(), NOW()),
     ('research_lab', 'Laboratoire Helios', 'Centre scientifique pour développer de nouvelles technologies.', 'research', 200, 320, 80, 0, 1.650, 0, 0, 0, 0, 0, 22, '{"buildings":{"solar_plant":1,"crystal_mine":1}}', NOW(), NOW()),
     ('shipyard', 'Chantier spatial Asterion', 'Infrastructures lourdes pour construire les vaisseaux.', 'shipyard', 420, 260, 120, 0, 1.700, 0, 0, 0, 0, 0, 35, '{"buildings":{"research_lab":1},"technologies":{"engineering_heavy":1}}', NOW(), NOW());
+
 
 -- Technology definitions
 INSERT INTO technologies (`key`, name, description, category, base_cost_metal, base_cost_crystal, base_cost_hydrogen, base_energy_cost, cost_multiplier, base_duration_seconds, unlock_requirements, created_at, updated_at)
