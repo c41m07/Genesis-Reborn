@@ -28,13 +28,13 @@ return static function (array $resources, array $options = []): string {
         $hint = $data['hint'] ?? null;
         $trend = $data['trend'] ?? null;
 
-        $valueDisplay = number_format((float) $value);
+        $valueDisplay = format_number((float) $value);
         $rateDisplay = '';
         $rateClass = '';
         if ($showRates && $perHour !== null) {
             $rate = (float) $perHour;
             $ratePrefix = ($key !== 'energy' && $rate > 0) ? '+' : '';
-            $rateDisplay = $ratePrefix . number_format($rate) . '/h';
+            $rateDisplay = $ratePrefix . format_number($rate) . '/h';
             $rateClass = $rate >= 0 ? 'is-positive' : 'is-negative';
         }
 

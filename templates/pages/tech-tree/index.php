@@ -153,7 +153,7 @@ ob_start();
                                         <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
                                             <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
                                             <?php if (isset($item['level'])): ?>
-                                                <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
+                                                <span class="tech-node-link__level">Niveau <?= format_number((int) $item['level']) ?></span>
                                             <?php endif; ?>
                                         </button>
                                     </li>
@@ -177,7 +177,7 @@ ob_start();
                                                     <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
                                                         <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
                                                         <?php if (isset($item['level'])): ?>
-                                                            <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
+                                                            <span class="tech-node-link__level">Niveau <?= format_number((int) $item['level']) ?></span>
                                                         <?php endif; ?>
                                                     </button>
                                                 </li>

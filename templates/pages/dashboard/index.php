@@ -65,7 +65,7 @@ ob_start();
             </li>
             <li>
                 <span class="dashboard-banner__label">Score impérial</span>
-                <strong class="dashboard-banner__value"><?= number_format($empire['points'] ?? 0) ?></strong>
+                <strong class="dashboard-banner__value"><?= format_number($empire['points'] ?? 0) ?></strong>
             </li>
         </ul>
     </div>
@@ -79,17 +79,17 @@ ob_start();
                 <div class="panel__body metrics metrics--compact">
                     <div class="metric">
                         <span class="metric__label">Points d’infrastructure</span>
-                        <strong class="metric__value"><?= number_format($empire['buildingPoints'] ?? 0) ?></strong>
+                        <strong class="metric__value"><?= format_number($empire['buildingPoints'] ?? 0) ?></strong>
                         <span class="metric__hint">Total des niveaux de bâtiments développés.</span>
                     </div>
                     <div class="metric">
                         <span class="metric__label">Points scientifiques</span>
-                        <strong class="metric__value"><?= number_format($empire['sciencePoints'] ?? 0) ?></strong>
+                        <strong class="metric__value"><?= format_number($empire['sciencePoints'] ?? 0) ?></strong>
                         <span class="metric__hint">Somme des niveaux de recherches actives.</span>
                     </div>
                     <div class="metric">
                         <span class="metric__label">Puissance militaire</span>
-                        <strong class="metric__value"><?= number_format($empire['militaryPoints'] ?? ($empire['militaryPower'] ?? 0)) ?></strong>
+                        <strong class="metric__value"><?= format_number($empire['militaryPoints'] ?? ($empire['militaryPower'] ?? 0)) ?></strong>
                         <span class="metric__hint">Valeur combinée d’attaque et de défense de la flotte.</span>
                     </div>
                 </div>
@@ -106,11 +106,11 @@ ob_start();
                         <?php if (($queues['buildings']['count'] ?? 0) === 0 || !$buildJob): ?>
                             <p class="production-card__empty">Aucune amélioration planifiée.</p>
                         <?php else: ?>
-                            <p class="production-card__title"><?= htmlspecialchars($buildJob['label'] ?? $buildJob['building']) ?> • niveau <?= number_format($buildJob['targetLevel']) ?></p>
+                            <p class="production-card__title"><?= htmlspecialchars($buildJob['label'] ?? $buildJob['building']) ?> • niveau <?= format_number($buildJob['targetLevel']) ?></p>
                             <p class="production-card__time">Termine dans <?= htmlspecialchars(format_duration((int) $buildJob['remaining'])) ?></p>
                         <?php endif; ?>
                         <footer class="production-card__footer">
-                            <span><?= number_format($queues['buildings']['count'] ?? 0) ?> amélioration(s) en attente</span>
+                            <span><?= format_number($queues['buildings']['count'] ?? 0) ?> amélioration(s) en attente</span>
                             <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">Ouvrir la colonie</a>
                         </footer>
                     </div>
@@ -120,11 +120,11 @@ ob_start();
                         <?php if (($queues['research']['count'] ?? 0) === 0 || !$researchJob): ?>
                             <p class="production-card__empty">Aucune étude active pour le moment.</p>
                         <?php else: ?>
-                            <p class="production-card__title"><?= htmlspecialchars($researchJob['label'] ?? $researchJob['research']) ?> • niveau <?= number_format($researchJob['targetLevel'] ?? 0) ?></p>
+                            <p class="production-card__title"><?= htmlspecialchars($researchJob['label'] ?? $researchJob['research']) ?> • niveau <?= format_number($researchJob['targetLevel'] ?? 0) ?></p>
                             <p class="production-card__time">Termine dans <?= htmlspecialchars(format_duration((int) $researchJob['remaining'])) ?></p>
                         <?php endif; ?>
                         <footer class="production-card__footer">
-                            <span><?= number_format($queues['research']['count'] ?? 0) ?> programme(s) planifié(s)</span>
+                            <span><?= format_number($queues['research']['count'] ?? 0) ?> programme(s) planifié(s)</span>
                             <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Accéder au laboratoire</a>
                         </footer>
                     </div>
@@ -134,11 +134,11 @@ ob_start();
                         <?php if (($queues['shipyard']['count'] ?? 0) === 0 || !$shipJob): ?>
                             <p class="production-card__empty">Aucune commande de vaisseau en file.</p>
                         <?php else: ?>
-                            <p class="production-card__title"><?= htmlspecialchars($shipJob['label'] ?? $shipJob['ship']) ?> × <?= number_format($shipJob['quantity'] ?? 0) ?></p>
+                            <p class="production-card__title"><?= htmlspecialchars($shipJob['label'] ?? $shipJob['ship']) ?> × <?= format_number($shipJob['quantity'] ?? 0) ?></p>
                             <p class="production-card__time">Livraison dans <?= htmlspecialchars(format_duration((int) $shipJob['remaining'])) ?></p>
                         <?php endif; ?>
                         <footer class="production-card__footer">
-                            <span><?= number_format($queues['shipyard']['count'] ?? 0) ?> commande(s) actives</span>
+                            <span><?= format_number($queues['shipyard']['count'] ?? 0) ?> commande(s) actives</span>
                             <a class="link-button" href="<?= htmlspecialchars($baseUrl) ?>/shipyard?planet=<?= $selectedPlanetId ?>">Accéder au chantier</a>
                         </footer>
                     </div>
@@ -175,8 +175,8 @@ ob_start();
                                         <span><?= htmlspecialchars($meta['label']) ?></span>
                                     </div>
                                     <div class="planet-summary__resource-values">
-                                        <strong><?= number_format($currentValue) ?></strong>
-                                        <span><?= $ratePrefix . number_format($perHour) ?><?= $key === 'energy' ? '' : '/h' ?></span>
+                                        <strong><?= format_number($currentValue) ?></strong>
+                                        <span><?= $ratePrefix . format_number($perHour) ?><?= $key === 'energy' ? '' : '/h' ?></span>
                                     </div>
                                 </li>
                             <?php endforeach; ?>

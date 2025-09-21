@@ -81,15 +81,15 @@ ob_start();
             $robotFactoryBonus
         ): void {
             $emptyMessage = 'Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.';
-            $limitValue = $queueLimit > 0 ? number_format($queueLimit) : '—';
+            $limitValue = $queueLimit > 0 ? format_number($queueLimit) : '—';
             $workerLabel = $workerFactoryLevel > 0
-                ? 'Niveau ' . number_format($workerFactoryLevel)
+                ? 'Niveau ' . format_number($workerFactoryLevel)
                 : 'Non construit';
             $workerClass = $workerFactoryLevel > 0
                 ? 'metric-line__value metric-line__value--positive'
                 : 'metric-line__value metric-line__value--neutral';
             $robotLabel = $robotFactoryLevel > 0
-                ? 'Niveau ' . number_format($robotFactoryLevel)
+                ? 'Niveau ' . format_number($robotFactoryLevel)
                 : 'Non construit';
             $robotClass = $robotFactoryLevel > 0
                 ? 'metric-line__value metric-line__value--positive'
@@ -103,7 +103,7 @@ ob_start();
 
             echo '<div class="queue-card" data-queue-wrapper="buildings" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
             echo '<p class="metric-line"><span class="metric-line__label">Améliorations en file</span>';
-            echo '<span class="metric-line__value"><span data-queue-count>' . number_format($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
+            echo '<span class="metric-line__value"><span data-queue-count>' . format_number($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
             echo '<p class="metric-line"><span class="metric-line__label">Complexe d’ouvriers</span><span class="' . $workerClass . '" data-building-level="worker_factory">' . htmlspecialchars($workerLabel) . '</span></p>';
             if ($workerFactoryBonus > 0.0) {
                 $workerBonusDisplay = $formatPercent($workerFactoryBonus);
@@ -122,7 +122,7 @@ ob_start();
                 foreach ($queue['jobs'] as $job) {
                     $label = $job['label'] ?? $job['building'] ?? '';
                     echo '<li class="queue-list__item">';
-                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . format_number((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
                     echo '<div class="queue-list__timing">';
                     echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
                     if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
@@ -157,7 +157,7 @@ ob_start();
                     ?>
                     <?= $card([
                         'title' => $definition->getLabel(),
-                        'subtitle' => 'Niveau actuel ' . number_format((int) $building['level']),
+                        'subtitle' => 'Niveau actuel ' . format_number((int) $building['level']),
                         'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                         'status' => $status,
                         'class' => 'building-card',
@@ -182,7 +182,7 @@ ob_start();
                             foreach ($building['cost'] as $resource => $amount) {
                                 echo '<li>';
                                 echo $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
-                                echo '<span>' . number_format((int) $amount) . '</span>';
+                                echo '<span>' . format_number((int) $amount) . '</span>';
                                 echo '</li>';
                             }
                             echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $building['time'])) . '</span></li>';
@@ -203,8 +203,8 @@ ob_start();
                                     : ' ' . strtolower($resourceLabel) . '/h';
                                 $currentValue = (int) ($production['current'] ?? 0);
                                 $nextValue = (int) ($production['next'] ?? 0);
-                                $currentDisplay = $currentValue > 0 ? '+' . number_format($currentValue) : number_format($currentValue);
-                                $nextDisplay = $nextValue > 0 ? '+' . number_format($nextValue) : number_format($nextValue);
+                                $currentDisplay = $currentValue > 0 ? '+' . format_number($currentValue) : format_number($currentValue);
+                                $nextDisplay = $nextValue > 0 ? '+' . format_number($nextValue) : format_number($nextValue);
                                 $currentClass = $currentValue > 0 ? 'metric-line__value metric-line__value--positive' : ($currentValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
                                 $nextClass = $nextValue > 0 ? 'metric-line__value metric-line__value--positive' : ($nextValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
                                 if ($currentValue !== 0 || $nextValue !== 0) {
@@ -223,14 +223,14 @@ ob_start();
                                 echo '<ul class="metric-section__list">';
                                 foreach ($storageCurrent as $resource => $value) {
                                     $label = $resourceLabels[$resource] ?? ucfirst((string) $resource);
-                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--neutral">' . number_format((int) $value) . '</span></li>';
+                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--neutral">' . format_number((int) $value) . '</span></li>';
                                 }
                                 echo '</ul>';
                                 echo '<p class="metric-section__title">' . htmlspecialchars($storageLabel) . ' prochain niveau</p>';
                                 echo '<ul class="metric-section__list">';
                                 foreach ($storageNext as $resource => $value) {
                                     $label = $resourceLabels[$resource] ?? ucfirst((string) $resource);
-                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--positive">' . number_format((int) $value) . '</span></li>';
+                                    echo '<li class="metric-line"><span class="metric-line__label">' . htmlspecialchars($label) . '</span><span class="metric-line__value metric-line__value--positive">' . format_number((int) $value) . '</span></li>';
                                 }
                                 echo '</ul>';
                                 echo '</div>';
@@ -316,8 +316,8 @@ ob_start();
                                     $labelNext .= ' (' . htmlspecialchars($resourceLabel) . ')';
                                 }
 
-                                $currentDisplay = number_format($displayCurrent);
-                                $nextDisplay = number_format($displayNext);
+                                $currentDisplay = format_number($displayCurrent);
+                                $nextDisplay = format_number($displayNext);
 
                                 echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelCurrent) . '</span><span class="' . $currentClass . '">' . htmlspecialchars($currentDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';
                                 echo '<p class="metric-line"><span class="metric-line__label">' . htmlspecialchars($labelNext) . '</span><span class="' . $nextClass . '">' . htmlspecialchars($nextDisplay) . htmlspecialchars($unitSuffix) . '</span></p>';

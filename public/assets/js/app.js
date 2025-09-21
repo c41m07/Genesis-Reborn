@@ -6,12 +6,37 @@ const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => 
     "'": '&#039;',
 }[char] || char));
 
-const numberFormatter = new Intl.NumberFormat('fr-FR');
+const integerNumberFormatter = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+const decimalNumberFormatter = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const formatNumber = (value) => {
     const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
+    if (!Number.isFinite(numericValue)) {
+        return integerNumberFormatter.format(0);
+    }
 
-    return numberFormatter.format(Number.isFinite(numericValue) ? numericValue : 0);
+    const absValue = Math.abs(numericValue);
+    const suffixes = [
+        { limit: 1_000_000_000, suffix: 'b' },
+        { limit: 1_000_000, suffix: 'm' },
+        { limit: 1_000, suffix: 'k' },
+    ];
+
+    for (const { limit, suffix } of suffixes) {
+        if (absValue >= limit) {
+            const scaled = Math.trunc((absValue / limit) * 100 + 1e-9) / 100;
+            const signedScaled = numericValue < 0 ? -scaled : scaled;
+            const hasFraction = Math.abs(signedScaled - Math.round(signedScaled)) > 1e-9;
+            const formatter = hasFraction ? decimalNumberFormatter : integerNumberFormatter;
+
+            return `${formatter.format(signedScaled)}${suffix}`;
+        }
+    }
+
+    const hasFraction = Math.abs(numericValue - Math.round(numericValue)) > 1e-9;
+    const formatter = hasFraction ? decimalNumberFormatter : integerNumberFormatter;
+
+    return formatter.format(numericValue);
 };
 
 const formatSeconds = (value) => {

@@ -83,12 +83,12 @@ ob_start();
     'title' => 'Synthèse du système',
     'body' => static function () use ($summary): void {
         echo '<div class="metrics metrics--compact">';
-        echo '<div class="metric"><span class="metric__label">Positions occupées</span><strong class="metric__value">' . number_format((int) ($summary['occupied'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Positions libres</span><strong class="metric__value">' . number_format((int) ($summary['empty'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . number_format((int) ($summary['activity']['active'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Colonies inactives</span><strong class="metric__value">' . number_format((int) ($summary['activity']['inactive'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Colonies puissantes</span><strong class="metric__value">' . number_format((int) ($summary['strong'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Résultats correspondants</span><strong class="metric__value">' . number_format((int) ($summary['visibleCount'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Positions occupées</span><strong class="metric__value">' . format_number((int) ($summary['occupied'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Positions libres</span><strong class="metric__value">' . format_number((int) ($summary['empty'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . format_number((int) ($summary['activity']['active'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Colonies inactives</span><strong class="metric__value">' . format_number((int) ($summary['activity']['inactive'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Colonies puissantes</span><strong class="metric__value">' . format_number((int) ($summary['strong'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Résultats correspondants</span><strong class="metric__value">' . format_number((int) ($summary['visibleCount'] ?? 0)) . '</strong></div>';
         echo '</div>';
     },
 ]) ?>
@@ -125,7 +125,7 @@ ob_start();
 
             echo '<li class="' . $classString . '">';
             echo '<header class="galaxy-slot__header">';
-            echo '<span class="galaxy-slot__position">#' . number_format((int) ($slot['position'] ?? 0)) . '</span>';
+            echo '<span class="galaxy-slot__position">#' . format_number((int) ($slot['position'] ?? 0)) . '</span>';
             echo '<span class="galaxy-slot__coordinates">' . htmlspecialchars((string) ($slot['coordinates'] ?? '')) . '</span>';
             echo '</header>';
             echo '<div class="galaxy-slot__content">';
@@ -162,7 +162,7 @@ ob_start();
                 foreach ($resources as $key => $label) {
                     $value = (int) ($slot['production'][$key] ?? 0);
                     $prefix = $key === 'energy' ? '' : ($value >= 0 ? '+' : '');
-                    echo '<div><dt>' . htmlspecialchars($label) . '</dt><dd>' . $prefix . number_format($value) . '/h</dd></div>';
+                    echo '<div><dt>' . htmlspecialchars($label) . '</dt><dd>' . $prefix . format_number($value) . '/h</dd></div>';
                 }
                 echo '</dl>';
 
@@ -198,9 +198,9 @@ ob_start();
             echo '<span class="status-pill status-pill--' . $tone . '">' . htmlspecialchars((string) ($status['label'] ?? 'Actif')) . '</span>';
             echo '</div>';
             echo '<div class="galaxy-players__details">';
-            echo '<span>' . number_format((int) ($player['planets'] ?? 0)) . ' planètes</span>';
-            echo '<span>' . number_format((int) ($player['production'] ?? 0)) . ' production totale</span>';
-            echo '<span>' . number_format((int) ($player['inactive'] ?? 0)) . ' inactives</span>';
+            echo '<span>' . format_number((int) ($player['planets'] ?? 0)) . ' planètes</span>';
+            echo '<span>' . format_number((int) ($player['production'] ?? 0)) . ' production totale</span>';
+            echo '<span>' . format_number((int) ($player['inactive'] ?? 0)) . ' inactives</span>';
             echo '</div>';
             if (!empty($player['lastActivity']) && $player['lastActivity'] instanceof DateTimeImmutable) {
                 echo '<p class="galaxy-players__activity">Dernière activité ' . htmlspecialchars(format_relative_time($player['lastActivity'], $now)) . '</p>';
