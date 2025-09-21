@@ -105,7 +105,7 @@ const metricValueClass = (value) => {
     return 'metric-line__value metric-line__value--neutral';
 };
 
-const renderCostList = (cost = {}, time = 0) => {
+const renderCostList = (cost = {}, time = 0, baseTime = null) => {
     const items = [];
 
     if (cost && typeof cost === 'object') {
@@ -116,8 +116,23 @@ const renderCostList = (cost = {}, time = 0) => {
         });
     }
 
+    const numericTime = Number(time ?? 0);
+    const normalizedTime = Number.isFinite(numericTime) ? Math.max(0, Math.floor(numericTime)) : 0;
+    let normalizedBaseTime = normalizedTime;
+    if (baseTime !== null && baseTime !== undefined) {
+        const numericBaseTime = Number(baseTime);
+        if (Number.isFinite(numericBaseTime)) {
+            normalizedBaseTime = Math.max(0, Math.floor(numericBaseTime));
+        }
+    }
+
+    const timeLabel = escapeHtml(formatSeconds(normalizedTime));
+    const baseLabel = normalizedBaseTime !== normalizedTime
+        ? ` <small>(base ${escapeHtml(formatSeconds(normalizedBaseTime))})</small>`
+        : '';
+
     items.push(`
-        <li>${createIcon('time')}<span>${escapeHtml(formatSeconds(time))}</span></li>
+        <li>${createIcon('time')}<span>${timeLabel}${baseLabel}</span></li>
     `);
 
     return `<ul class="resource-list">${items.join('')}</ul>`;
@@ -269,7 +284,7 @@ const renderBuildingSections = (building = {}) => {
     const costHtml = `
         <div class="building-card__block">
             <h3>Prochaine amélioration</h3>
-            ${renderCostList(building.cost ?? {}, building.time ?? 0)}
+            ${renderCostList(building.cost ?? {}, building.time ?? 0, building.baseTime ?? null)}
         </div>
     `;
 
@@ -713,7 +728,11 @@ const updateResearchCard = (research) => {
 
     const costSection = card.querySelector('.tech-card__section');
     if (costSection) {
-        costSection.innerHTML = `<h3>Prochaine amélioration</h3>${renderCostList(research.nextCost ?? {}, research.nextTime ?? 0)}`;
+        costSection.innerHTML = `<h3>Prochaine amélioration</h3>${renderCostList(
+            research.nextCost ?? {},
+            research.nextTime ?? 0,
+            research.nextBaseTime ?? null,
+        )}`;
     }
 
     const requirementsHtml = renderResearchRequirements(research.requirements ?? null);
