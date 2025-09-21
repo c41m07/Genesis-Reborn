@@ -134,23 +134,6 @@ npm run svgo:build
 
 ---
 
-## Roadmap & évolutions multi
-1. Fiabiliser ticks (production/recherche/chantier).
-2. Classements globaux & API publique.
-3. Commerce inter-joueurs.
-4. PvP basique (attaques, événements bilatéraux).
-5. Alliances et diplomatie.
-6. Scalabilité : workers/cron, shard des queues, observabilité.
-
----
-
-## Bugs connus & TODO
-- **Files d’attente** :
-    - Construction & recherches doivent être **séquentielles** (5 max).
-    - Les niveaux doivent s’enchaîner correctement (mine lvl1 → lvl2).
-
----
-
 ## Qualité & tests
 - **Tests unitaires** via PHPUnit (sessions, calculs bâtiments).
 - **Analyse statique** : `composer stan` (PHPStan).
