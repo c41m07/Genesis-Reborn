@@ -3,6 +3,10 @@
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Battle\DTO\AttackingFleetDTO;
+use App\Domain\Battle\DTO\DefendingFleetDTO;
+use App\Domain\Battle\DTO\FleetBattleResultDTO;
+use App\Domain\Battle\DTO\FleetBattleRoundDTO;
 use App\Application\UseCase\Auth\LoginUser;
 use App\Application\UseCase\Auth\LogoutUser;
 use App\Application\UseCase\Auth\RegisterUser;
@@ -38,11 +42,13 @@ use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\CostService;
 use App\Domain\Service\FleetNavigationService;
+use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
+use App\Infrastructure\Config\BalanceConfigLoader;
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Database\ConnectionFactory;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -134,6 +140,44 @@ return function (Container $container): void {
         $config = require __DIR__ . '/game/ships.php';
 
         return new ShipCatalog($config);
+    });
+
+    $container->set(BalanceConfigLoader::class, function () {
+        return new BalanceConfigLoader(__DIR__ . '/balance/balance.yml');
+    });
+
+    $container->set(FleetResolutionService::class, fn (Container $c) => new FleetResolutionService(
+        $c->get(ShipCatalog::class),
+        $c->get(BalanceConfigLoader::class)
+    ));
+
+    $container->set(FleetBattleRoundDTO::class, static fn () => static fn (
+        int $round,
+        array $attackerLosses,
+        array $defenderLosses,
+        array $attackerRemaining,
+        array $defenderRemaining
+    ): FleetBattleRoundDTO {
+        return new FleetBattleRoundDTO($round, $attackerLosses, $defenderLosses, $attackerRemaining, $defenderRemaining);
+    });
+
+    $container->set(FleetBattleResultDTO::class, static fn () => static fn (
+        string $winner,
+        array $attackerRemaining,
+        array $defenderRemaining,
+        array $rounds,
+        bool $attackerRetreated,
+        bool $defenderRetreated
+    ): FleetBattleResultDTO {
+        return new FleetBattleResultDTO($winner, $attackerRemaining, $defenderRemaining, $rounds, $attackerRetreated, $defenderRetreated);
+    });
+
+    $container->set(AttackingFleetDTO::class, static fn () => static fn (array $composition, array $modifiers = []): AttackingFleetDTO {
+        return new AttackingFleetDTO($composition, $modifiers);
+    });
+
+    $container->set(DefendingFleetDTO::class, static fn () => static fn (array $composition, array $modifiers = []): DefendingFleetDTO {
+        return new DefendingFleetDTO($composition, $modifiers);
     });
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
