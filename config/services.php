@@ -332,8 +332,6 @@ return function (Container $container): void {
         $c->get(GetBuildingsOverview::class),
         $c->get(UpgradeBuilding::class),
         $c->get(ProcessBuildQueue::class),
-        $c->get(BuildingCatalog::class),
-        $c->get(BuildingCalculator::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -342,9 +340,9 @@ return function (Container $container): void {
     ));
 
     $container->set(ResearchController::class, fn (Container $c) => new ResearchController(
+        $c->get(PlanetRepositoryInterface::class),
         $c->get(GetResearchOverview::class),
         $c->get(StartResearch::class),
-        $c->get(GetTechTree::class),
         $c->get(ProcessResearchQueue::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
@@ -354,6 +352,7 @@ return function (Container $container): void {
     ));
 
     $container->set(ShipyardController::class, fn (Container $c) => new ShipyardController(
+        $c->get(PlanetRepositoryInterface::class),
         $c->get(GetShipyardOverview::class),
         $c->get(BuildShips::class),
         $c->get(ProcessShipBuildQueue::class),
