@@ -6,10 +6,14 @@
 
 ## ✅ Fonctionnalités déjà en jeu
 - **Gestion des comptes** : inscription, connexion sécurisée et sessions encapsulées dans le framework maison.
-- **Colonies & bâtiments** : construction avec files d'attente, calcul des coûts et gestion de l'énergie.
+- **Bâtiments** : construction avec files d'attente, calcul des coûts et gestion de l'énergie.
 - **Recherches** : catalogue structuré avec prérequis et progression par planète.
-- **Chantier spatial & flottes** : production de vaisseaux, planification de missions, calcul du carburant et résolutions PvE.
-- **Journal & tableau de bord** : synthèse de progression, historique d'événements et ticker de ressources côté client.
+- **Chantier spatial** : production de vaisseaux.
+- **Journal & tableau de bord** : synthèse de progression ( systeme de points ) , historique d'événements (premiére 
+  version)
+- **Ressources** : stockage et mise à jour de ressources, production de ressources.
+- **Carte galactique** : carte galactique avec navigation possible ( premiére version)
+- **Arbre Techno**: arbre de prérequis pour les recherches, batiments et vaisseaux.
 
 ---
 
@@ -17,6 +21,7 @@
 - **Génération planétaire unique** : rendre chaque planète distincte via ses coordonnées (x, y), sa taille, sa température et leurs impacts sur la production.
 - **Système de colonisation** : capture et administration de nouvelles planètes avec limitations de slots et conditions.
 - **Logistique intra-joueur** : transport de ressources entre planètes d'un même empire avec files de convois et temps de trajet.
+- **Incorporation du PvE** : Rajouter des missions d'exploration, de récolte et de combat contre des IA.
 
 ---
 
