@@ -1,0 +1,61 @@
+combat:
+  rounds: 6
+  min_losses_ratio: 0.02
+  retreat_threshold:
+    attacker: 0.15
+    defender: 0.2
+  stat_multipliers:
+    attack: 1.0
+    hull_per_defense: 12.5
+    base_hull: 25.0
+  attack_multipliers:
+    attacker: 1.0
+    defender: 1.0
+  default_damage_modifier: 1.0
+target_priorities:
+  fighter:
+    - interceptor
+    - bomber
+    - fighter
+  bomber:
+    - station
+    - dreadnought
+    - battleship
+    - cruiser
+  frigate:
+    - fighter
+    - bomber
+    - gunship
+  default:
+    - fighter
+    - interceptor
+    - bomber
+    - heavy_fighter
+    - corvette
+    - gunship
+    - frigate
+    - destroyer
+    - light_cruiser
+    - heavy_cruiser
+    - battlecruiser
+    - battleship
+    - dreadnought
+    - carrier
+    - titan
+    - station
+damage_modifiers:
+  fighter:
+    default: 1.1
+    frigate: 0.85
+    bomber: 1.2
+  bomber:
+    default: 1.0
+    station: 1.25
+    battleship: 1.15
+  frigate:
+    default: 1.0
+    fighter: 1.4
+    bomber: 1.15
+  station:
+    default: 0.8
+  default: 1.0
