@@ -494,11 +494,46 @@ const bootstrapResourceTicker = () => {
     applyResourceSnapshot(snapshot);
 };
 
+const updateQueueMetrics = (queue, container) => {
+    if (!container) {
+        return;
+    }
+
+    const wrapper = container.closest('[data-queue-wrapper]');
+    if (!wrapper) {
+        return;
+    }
+
+    const countElement = wrapper.querySelector('[data-queue-count]');
+    const limitElement = wrapper.querySelector('[data-queue-limit]');
+    const rawCount = typeof queue?.count === 'number'
+        ? queue.count
+        : (Array.isArray(queue?.jobs) ? queue.jobs.length : Number(container.dataset.queueCount ?? 0));
+    const normalizedCount = Number.isFinite(rawCount) ? Math.max(0, Math.floor(rawCount)) : 0;
+    const rawLimit = typeof queue?.limit === 'number'
+        ? queue.limit
+        : Number(wrapper.dataset.queueLimit ?? container.dataset.queueLimit ?? 0);
+    const normalizedLimit = Number.isFinite(rawLimit) ? Math.max(0, Math.floor(rawLimit)) : 0;
+
+    wrapper.dataset.queueLimit = String(normalizedLimit);
+    container.dataset.queueLimit = String(normalizedLimit);
+
+    if (countElement) {
+        countElement.textContent = formatNumber(normalizedCount);
+    }
+
+    if (limitElement) {
+        limitElement.textContent = normalizedLimit > 0 ? formatNumber(normalizedLimit) : '—';
+    }
+};
+
 const renderQueue = (queue, target) => {
     const container = document.querySelector(`[data-queue="${CSS.escape(target)}"]`);
     if (!container) {
         return;
     }
+
+    updateQueueMetrics(queue, container);
 
     const emptyMessage = container.dataset.empty || 'Aucune action en cours.';
     if (!queue || !Array.isArray(queue.jobs) || queue.jobs.length === 0) {
@@ -542,6 +577,37 @@ const renderQueue = (queue, target) => {
     container.innerHTML = `<ul class="queue-list">${items}</ul>`;
 };
 
+const updateBuildingLevelDisplays = (building) => {
+    if (!building || typeof building !== 'object') {
+        return;
+    }
+
+    const key = building.key;
+    if (!key) {
+        return;
+    }
+
+    const level = Number.isFinite(building.level) ? Number(building.level) : Number(building.level ?? 0);
+    const normalizedLevel = Number.isFinite(level) ? Math.max(0, Math.floor(level)) : 0;
+    const label = normalizedLevel > 0
+        ? `Niveau ${formatNumber(normalizedLevel)}`
+        : 'Non construit';
+    const modifierClass = normalizedLevel > 0
+        ? 'metric-line__value--positive'
+        : 'metric-line__value--neutral';
+
+    const elements = document.querySelectorAll(`[data-building-level="${CSS.escape(key)}"]`);
+    elements.forEach((element) => {
+        if (!(element instanceof HTMLElement)) {
+            return;
+        }
+
+        element.textContent = label;
+        element.classList.remove('metric-line__value--positive', 'metric-line__value--neutral', 'metric-line__value--negative');
+        element.classList.add('metric-line__value', modifierClass);
+    });
+};
+
 const updateBuildingCard = (building) => {
     if (!building || typeof building !== 'object') {
         return;
@@ -576,6 +642,8 @@ const updateBuildingCard = (building) => {
         button.disabled = !canUpgrade;
         button.textContent = canUpgrade ? 'Améliorer' : 'Conditions non remplies';
     }
+
+    updateBuildingLevelDisplays(building);
 };
 
 const updateResearchCard = (research) => {

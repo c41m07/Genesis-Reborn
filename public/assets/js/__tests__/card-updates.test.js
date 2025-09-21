@@ -28,6 +28,10 @@ beforeEach(() => {
 
 test('updateBuildingCard refreshes level, costs and requirements', () => {
     document.body.innerHTML = `
+        <p class="metric-line">
+            <span class="metric-line__label">Statut</span>
+            <span class="metric-line__value metric-line__value--neutral" data-building-level="metal_mine">Non construit</span>
+        </p>
         <article class="panel building-card" data-building-card="metal_mine">
             <header class="panel__header">
                 <div class="panel__heading">
@@ -93,6 +97,11 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
     const button = card?.querySelector('button[type="submit"]');
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Conditions non remplies');
+
+    const levelDisplay = document.querySelector('[data-building-level="metal_mine"]');
+    assert.equal(levelDisplay?.textContent, 'Niveau 3');
+    assert(levelDisplay?.classList.contains('metric-line__value--positive'));
+    assert(!levelDisplay?.classList.contains('metric-line__value--neutral'));
 });
 
 test('updateResearchCard syncs progress, costs and availability', () => {
