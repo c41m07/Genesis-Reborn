@@ -15,6 +15,30 @@ use RuntimeException;
 
 class GetBuildingsOverview
 {
+    /** @var array<string, array{label: string, order: int, image: string|null}> */
+    private const CATEGORY_METADATA = [
+        'production' => ['label' => 'Production', 'order' => 0, 'image' => null],
+        'energy' => ['label' => 'Énergie', 'order' => 1, 'image' => null],
+        'science' => ['label' => 'Recherche', 'order' => 2, 'image' => null],
+        'military' => ['label' => 'Militaire', 'order' => 3, 'image' => null],
+        'infrastructure' => ['label' => 'Infrastructure', 'order' => 9, 'image' => null],
+    ];
+
+    /** @var array<string, string> */
+    private const BUILDING_CATEGORY_MAP = [
+        'metal_mine' => 'production',
+        'crystal_mine' => 'production',
+        'hydrogen_plant' => 'production',
+        'solar_plant' => 'energy',
+        'fusion_reactor' => 'energy',
+        'antimatter_reactor' => 'energy',
+        'research_lab' => 'science',
+        'shipyard' => 'military',
+        'storage_depot' => 'infrastructure',
+        'worker_factory' => 'infrastructure',
+        'robot_factory' => 'infrastructure',
+    ];
+
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
@@ -31,7 +55,7 @@ class GetBuildingsOverview
      * @return array{
      *     planet: \App\Domain\Entity\Planet,
      *     levels: array<string, int>,
-     *     queue: array{count: int, jobs: array<int, array{building: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
+     *     queue: array{count: int, limit: int, jobs: array<int, array{building: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
      *     buildings: array<int, array{
      *         definition: \App\Domain\Entity\BuildingDefinition,
      *         level: int,
@@ -41,8 +65,10 @@ class GetBuildingsOverview
      *         requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>},
      *         production: array{resource: string, current: int, next: int, delta: int},
      *         energy: array{current: int, next: int, delta: int},
-     *         storage: array{current: array<string, int>, next: array<string, int>, delta: array<string, int>}
-     *     }>
+     *         storage: array{current: array<string, int>, next: array<string, int>, delta: array<string, int>},
+     *         bonuses: array<string, mixed>
+     *     }>,
+     *     categories: array<int, array{key: string, label: string, image: string|null, items: array<int, array<string, mixed>>}>
      * }
      */
     public function execute(int $planetId): array
@@ -176,14 +202,36 @@ class GetBuildingsOverview
             ];
         }
 
+        $categories = [];
+        foreach ($buildings as $entry) {
+            $definition = $entry['definition'];
+            $categoryKey = self::BUILDING_CATEGORY_MAP[$definition->getKey()] ?? 'infrastructure';
+            $metadata = self::CATEGORY_METADATA[$categoryKey] ?? self::CATEGORY_METADATA['infrastructure'];
+
+            if (!isset($categories[$categoryKey])) {
+                $categories[$categoryKey] = [
+                    'key' => $categoryKey,
+                    'label' => $metadata['label'],
+                    'image' => $metadata['image'],
+                    'order' => $metadata['order'],
+                    'items' => [],
+                ];
+            }
+
+            $categories[$categoryKey]['items'][] = $entry;
+        }
+        uasort($categories, static fn (array $a, array $b): int => $a['order'] <=> $b['order']);
+
         return [
             'planet' => $planet,
             'levels' => $levels,
             'queue' => [
                 'count' => count($queueView),
+                'limit' => 5,
                 'jobs' => $queueView,
             ],
             'buildings' => $buildings,
+            'categories' => array_values($categories),
         ];
     }
 

@@ -9,7 +9,8 @@
 $title = $title ?? 'Bâtiments';
 $planet = $overview['planet'] ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
-$buildings = $overview['buildings'] ?? [];
+$levels = $overview['levels'] ?? [];
+$categories = $overview['categories'] ?? [];
 
 $icon = require __DIR__ . '/../../components/_icon.php';
 $card = require __DIR__ . '/../../components/_card.php';
@@ -26,45 +27,10 @@ $resourceLabels = [
 ];
 
 $assetBase = rtrim($baseUrl, '/');
-$buildingTypeMap = [
-    'metal_mine' => ['group' => 'production', 'label' => 'Production'],
-    'crystal_mine' => ['group' => 'production', 'label' => 'Production'],
-    'hydrogen_plant' => ['group' => 'production', 'label' => 'Production'],
-    'solar_plant' => ['group' => 'energy', 'label' => 'Énergie'],
-    'fusion_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
-    'antimatter_reactor' => ['group' => 'energy', 'label' => 'Énergie'],
-    'research_lab' => ['group' => 'science', 'label' => 'Recherche'],
-    'shipyard' => ['group' => 'military', 'label' => 'Militaire'],
-    'storage_depot' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
-    'worker_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
-    'robot_factory' => ['group' => 'infrastructure', 'label' => 'Infrastructure'],
-];
-$groupOrder = [
-    'production' => 0,
-    'energy' => 1,
-    'science' => 2,
-    'military' => 3,
-    'infrastructure' => 9,
-];
-$buildingGroups = [];
-if ($overview !== null) {
-    foreach ($buildings as $entry) {
-        $definition = $entry['definition'];
-        $key = $definition->getKey();
-        $map = $buildingTypeMap[$key] ?? ['group' => 'infrastructure', 'label' => 'Infrastructure'];
-        $groupKey = $map['group'];
-        $label = $map['label'];
-        if (!isset($buildingGroups[$groupKey])) {
-            $buildingGroups[$groupKey] = [
-                'label' => $label,
-                'order' => $groupOrder[$groupKey] ?? 9,
-                'items' => [],
-            ];
-        }
-        $buildingGroups[$groupKey]['items'][] = $entry;
-    }
-    uasort($buildingGroups, static fn (array $a, array $b): int => $a['order'] <=> $b['order']);
-}
+$queueCount = (int) ($queue['count'] ?? 0);
+$queueLimit = (int) ($queue['limit'] ?? 5);
+$researchLabLevel = (int) ($levels['research_lab'] ?? 0);
+$shipyardLevel = (int) ($levels['shipyard'] ?? 0);
 
 ob_start();
 ?>
@@ -95,9 +61,28 @@ ob_start();
     <?= $card([
         'title' => 'File de construction',
         'subtitle' => 'Suivi des améliorations en cours',
-        'body' => static function () use ($queue): void {
+        'body' => static function () use ($queue, $queueCount, $queueLimit, $researchLabLevel, $shipyardLevel): void {
             $emptyMessage = 'Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.';
-            echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
+            $limitValue = $queueLimit > 0 ? number_format($queueLimit) : '—';
+            $labLabel = $researchLabLevel > 0
+                ? 'Niveau ' . number_format($researchLabLevel)
+                : 'Non construit';
+            $labClass = $researchLabLevel > 0
+                ? 'metric-line__value metric-line__value--positive'
+                : 'metric-line__value metric-line__value--neutral';
+            $shipyardLabel = $shipyardLevel > 0
+                ? 'Niveau ' . number_format($shipyardLevel)
+                : 'Non construit';
+            $shipyardClass = $shipyardLevel > 0
+                ? 'metric-line__value metric-line__value--positive'
+                : 'metric-line__value metric-line__value--neutral';
+
+            echo '<div class="queue-card" data-queue-wrapper="buildings" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
+            echo '<p class="metric-line"><span class="metric-line__label">Améliorations en file</span>';
+            echo '<span class="metric-line__value"><span data-queue-count>' . number_format($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Laboratoire de recherche</span><span class="' . $labClass . '" data-building-level="research_lab">' . htmlspecialchars($labLabel) . '</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Chantier spatial</span><span class="' . $shipyardClass . '" data-building-level="shipyard">' . htmlspecialchars($shipyardLabel) . '</span></p>';
+            echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
             } else {
@@ -117,16 +102,18 @@ ob_start();
                 echo '</ul>';
             }
             echo '</div>';
+            echo '</div>';
         },
     ]) ?>
 
-    <?php foreach ($buildingGroups as $group): ?>
+    <?php foreach ($categories as $category): ?>
+        <?php if (empty($category['items'])) { continue; } ?>
         <section class="content-section">
             <header class="content-section__header">
-                <h2><?= htmlspecialchars($group['label']) ?></h2>
+                <h2><?= htmlspecialchars($category['label']) ?></h2>
             </header>
             <div class="card-grid card-grid--quad">
-                <?php foreach ($group['items'] as $building): ?>
+                <?php foreach ($category['items'] as $building): ?>
                     <?php $definition = $building['definition']; ?>
                     <?php
                     $production = $building['production'];
