@@ -185,7 +185,7 @@ class GalaxyController extends AbstractController
      * @param array<int, array{id: int, name: string}> $owners
      * @return array<int, array<string, mixed>>
      *
-     * Je construis les 15 cases du système avec toutes les infos utiles.
+     * Je construis les 16 cases du système avec toutes les infos utiles.
      */
     private function buildSlots(
         array $systemPlanets,
@@ -204,7 +204,7 @@ class GalaxyController extends AbstractController
 
         $needle = mb_strtolower($searchTerm);
         $slots = [];
-        for ($position = 1; $position <= 15; ++$position) {
+        for ($position = 1; $position <= 16; ++$position) {
             $planet = $positionMap[$position] ?? null;
             $coordinates = sprintf('%d:%d:%d', $galaxy, $system, $position);
 
