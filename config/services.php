@@ -141,7 +141,7 @@ return function (Container $container): void {
         $c->get(BalanceConfigLoader::class)
     ));
 
-    $container->set(FleetBattleRoundDTO::class, static fn () => static fn (
+    $container->set(FleetBattleRoundDTO::class, static fn () => static function (
         int $round,
         array $attackerLosses,
         array $defenderLosses,
@@ -151,7 +151,7 @@ return function (Container $container): void {
         return new FleetBattleRoundDTO($round, $attackerLosses, $defenderLosses, $attackerRemaining, $defenderRemaining);
     });
 
-    $container->set(FleetBattleResultDTO::class, static fn () => static fn (
+    $container->set(FleetBattleResultDTO::class, static fn () => static function (
         string $winner,
         array $attackerRemaining,
         array $defenderRemaining,
@@ -162,11 +162,11 @@ return function (Container $container): void {
         return new FleetBattleResultDTO($winner, $attackerRemaining, $defenderRemaining, $rounds, $attackerRetreated, $defenderRetreated);
     });
 
-    $container->set(AttackingFleetDTO::class, static fn () => static fn (array $composition, array $modifiers = []): AttackingFleetDTO {
+    $container->set(AttackingFleetDTO::class, static fn () => static function (array $composition, array $modifiers = []): AttackingFleetDTO {
         return new AttackingFleetDTO($composition, $modifiers);
     });
 
-    $container->set(DefendingFleetDTO::class, static fn () => static fn (array $composition, array $modifiers = []): DefendingFleetDTO {
+    $container->set(DefendingFleetDTO::class, static fn () => static function (array $composition, array $modifiers = []): DefendingFleetDTO {
         return new DefendingFleetDTO($composition, $modifiers);
     });
 
