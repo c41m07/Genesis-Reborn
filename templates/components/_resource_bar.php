@@ -3,7 +3,7 @@
 require_once __DIR__ . '/helpers.php';
 
 /**
- * @param array<string, array{label: string, value: int|float, perHour?: int|float, hint?: string, trend?: string}> $resources
+ * @param array<string, array{label: string, value: int|float, perHour?: int|float, capacity?: int|float|null, hint?: string, trend?: string}> $resources
  * @param array{baseUrl?: string, class?: string, showRates?: bool} $options
  */
 return static function (array $resources, array $options = []): string {
@@ -25,6 +25,7 @@ return static function (array $resources, array $options = []): string {
         $label = $data['label'] ?? ucfirst((string) $key);
         $value = (float) ($data['value'] ?? 0);
         $perHour = $data['perHour'] ?? null;
+        $capacity = $data['capacity'] ?? null;
         $hint = $data['hint'] ?? null;
         $trend = $data['trend'] ?? null;
 
@@ -48,6 +49,13 @@ return static function (array $resources, array $options = []): string {
             htmlspecialchars($iconHref, ENT_QUOTES)
         );
 
+        $capacityMarkup = '';
+        if ($capacity !== null) {
+            $numericCapacity = is_numeric($capacity) ? (float) $capacity : 0.0;
+            $capacityDisplay = $numericCapacity > 0 ? '/' . format_number($numericCapacity) : '/—';
+            $capacityMarkup = sprintf('<span class="resource-meter__capacity">%s</span>', htmlspecialchars($capacityDisplay, ENT_QUOTES));
+        }
+
         $hintMarkup = '';
         if ($hint) {
             $hintMarkup = sprintf('<span class="resource-meter__hint">%s</span>', htmlspecialchars((string) $hint, ENT_QUOTES));
@@ -66,6 +74,7 @@ return static function (array $resources, array $options = []): string {
         $items .= '<span class="resource-meter__value">' . htmlspecialchars($valueDisplay, ENT_QUOTES) . '</span>';
         $items .= $rateMarkup;
         $items .= '</div>';
+        $items .= $capacityMarkup;
         $items .= $hintMarkup;
         $items .= '</div>';
         $items .= '</div>';
