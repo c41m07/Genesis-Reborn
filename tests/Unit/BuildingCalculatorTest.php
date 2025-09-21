@@ -59,6 +59,34 @@ class BuildingCalculatorTest extends TestCase
                 'affects' => 'infrastructure',
                 'construction_speed_bonus' => ['per_level' => 0.1, 'max' => 0.75],
             ],
+            'research_lab' => [
+                'label' => 'Laboratoire expérimental',
+                'base_cost' => ['metal' => 200, 'crystal' => 320],
+                'growth_cost' => 1.6,
+                'base_time' => 40,
+                'growth_time' => 1.5,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 20,
+                'energy_use_growth' => 1.2,
+                'energy_use_linear' => true,
+                'affects' => 'energy',
+                'research_speed_bonus' => ['base' => 0.02, 'linear' => true, 'max' => 0.6],
+            ],
+            'shipyard' => [
+                'label' => 'Chantier orbital',
+                'base_cost' => ['metal' => 400, 'crystal' => 200],
+                'growth_cost' => 1.65,
+                'base_time' => 45,
+                'growth_time' => 1.4,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 30,
+                'energy_use_growth' => 1.2,
+                'energy_use_linear' => true,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.5],
+            ],
         ];
 
         $this->catalog = new BuildingCatalog($config);
@@ -105,6 +133,7 @@ class BuildingCalculatorTest extends TestCase
             null,
             [],
             [],
+            [],
             ['hydrogen' => ['base' => 30, 'growth' => 1.16]]
         );
 
@@ -122,6 +151,24 @@ class BuildingCalculatorTest extends TestCase
         self::assertSame(0.0, $this->calculator->constructionSpeedBonusAt($worker, 0));
         self::assertEqualsWithDelta(0.05, $this->calculator->constructionSpeedBonusAt($worker, 1), 0.0001);
         self::assertEqualsWithDelta(0.10, $this->calculator->constructionSpeedBonusAt($worker, 2), 0.0001);
+    }
+
+    public function testResearchSpeedBonusIsComputed(): void
+    {
+        $lab = $this->catalog->get('research_lab');
+
+        self::assertSame(0.0, $this->calculator->researchSpeedBonusAt($lab, 0));
+        self::assertEqualsWithDelta(0.02, $this->calculator->researchSpeedBonusAt($lab, 1), 0.0001);
+        self::assertEqualsWithDelta(0.04, $this->calculator->researchSpeedBonusAt($lab, 2), 0.0001);
+    }
+
+    public function testShipBuildSpeedBonusIsComputed(): void
+    {
+        $shipyard = $this->catalog->get('shipyard');
+
+        self::assertSame(0.0, $this->calculator->shipBuildSpeedBonus($shipyard, 0));
+        self::assertEqualsWithDelta(0.01, $this->calculator->shipBuildSpeedBonus($shipyard, 1), 0.0001);
+        self::assertEqualsWithDelta(0.02, $this->calculator->shipBuildSpeedBonus($shipyard, 2), 0.0001);
     }
 
     public function testNextTimeAppliesConstructionSpeedReductions(): void

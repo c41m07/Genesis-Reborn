@@ -162,6 +162,9 @@ ob_start();
                             $resourceKey = $production['resource'] ?? '';
                             $resourceLabel = $resourceLabels[$resourceKey] ?? ucfirst((string) $resourceKey);
                             $hasProduction = !in_array($resourceKey, ['storage', 'infrastructure'], true);
+                            $formatPercent = static function (float $value): string {
+                                return number_format($value * 100, 1) . ' %';
+                            };
                             if ($hasProduction) {
                                 $unitSuffix = $resourceKey === 'energy'
                                     ? ' énergie/h'
@@ -172,8 +175,10 @@ ob_start();
                                 $nextDisplay = $nextValue > 0 ? '+' . number_format($nextValue) : number_format($nextValue);
                                 $currentClass = $currentValue > 0 ? 'metric-line__value metric-line__value--positive' : ($currentValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
                                 $nextClass = $nextValue > 0 ? 'metric-line__value metric-line__value--positive' : ($nextValue < 0 ? 'metric-line__value metric-line__value--negative' : 'metric-line__value metric-line__value--neutral');
-                                echo '<p class="metric-line"><span class="metric-line__label">Production actuelle</span><span class="' . $currentClass . '">' . $currentDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
-                                echo '<p class="metric-line"><span class="metric-line__label">Production prochain niveau</span><span class="' . $nextClass . '">' . $nextDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
+                                if ($currentValue !== 0 || $nextValue !== 0) {
+                                    echo '<p class="metric-line"><span class="metric-line__label">Production actuelle</span><span class="' . $currentClass . '">' . $currentDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
+                                    echo '<p class="metric-line"><span class="metric-line__label">Production prochain niveau</span><span class="' . $nextClass . '">' . $nextDisplay . htmlspecialchars($unitSuffix) . '</span></p>';
+                                }
                             }
 
                             $storage = $building['storage'] ?? [];
@@ -203,9 +208,6 @@ ob_start();
                                 $bonus = $bonuses['construction_speed'];
                                 $currentBonus = max(0.0, (float) ($bonus['current'] ?? 0.0));
                                 $nextBonus = max(0.0, (float) ($bonus['next'] ?? 0.0));
-                                $formatPercent = static function (float $value): string {
-                                    return number_format($value * 100, 1) . ' %';
-                                };
                                 $currentClass = $currentBonus > 0.0
                                     ? 'metric-line__value metric-line__value--positive'
                                     : 'metric-line__value metric-line__value--neutral';
@@ -214,6 +216,40 @@ ob_start();
                                     : 'metric-line__value metric-line__value--neutral';
                                 echo '<div class="metric-section">';
                                 echo '<p class="metric-section__title">Accélération de construction</p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction actuelle</span><span class="' . $currentClass . '">-' . $formatPercent($currentBonus) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction prochain niveau</span><span class="' . $nextClass . '">-' . $formatPercent($nextBonus) . '</span></p>';
+                                echo '</div>';
+                            }
+
+                            if (!empty($bonuses['research_speed'])) {
+                                $bonus = $bonuses['research_speed'];
+                                $currentBonus = max(0.0, (float) ($bonus['current'] ?? 0.0));
+                                $nextBonus = max(0.0, (float) ($bonus['next'] ?? 0.0));
+                                $currentClass = $currentBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                $nextClass = $nextBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                echo '<div class="metric-section">';
+                                echo '<p class="metric-section__title">Accélération de recherche</p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction actuelle</span><span class="' . $currentClass . '">-' . $formatPercent($currentBonus) . '</span></p>';
+                                echo '<p class="metric-line"><span class="metric-line__label">Réduction prochain niveau</span><span class="' . $nextClass . '">-' . $formatPercent($nextBonus) . '</span></p>';
+                                echo '</div>';
+                            }
+
+                            if (!empty($bonuses['ship_build_speed'])) {
+                                $bonus = $bonuses['ship_build_speed'];
+                                $currentBonus = max(0.0, (float) ($bonus['current'] ?? 0.0));
+                                $nextBonus = max(0.0, (float) ($bonus['next'] ?? 0.0));
+                                $currentClass = $currentBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                $nextClass = $nextBonus > 0.0
+                                    ? 'metric-line__value metric-line__value--positive'
+                                    : 'metric-line__value metric-line__value--neutral';
+                                echo '<div class="metric-section">';
+                                echo '<p class="metric-section__title">Accélération du chantier spatial</p>';
                                 echo '<p class="metric-line"><span class="metric-line__label">Réduction actuelle</span><span class="' . $currentClass . '">-' . $formatPercent($currentBonus) . '</span></p>';
                                 echo '<p class="metric-line"><span class="metric-line__label">Réduction prochain niveau</span><span class="' . $nextClass . '">-' . $formatPercent($nextBonus) . '</span></p>';
                                 echo '</div>';

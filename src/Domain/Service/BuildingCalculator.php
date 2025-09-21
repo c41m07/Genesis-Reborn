@@ -248,7 +248,21 @@ class BuildingCalculator
             return 0.0;
         }
 
-        return $this->calculateConstructionBonus($config, $level);
+        return $this->calculateCappedBonus($config, $level);
+    }
+
+    public function researchSpeedBonusAt(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getResearchSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        return $this->calculateCappedBonus($config, $level);
     }
 
     /**
@@ -282,7 +296,7 @@ class BuildingCalculator
     /**
      * @param array<string, mixed> $config
      */
-    private function calculateConstructionBonus(array $config, int $level): float
+    private function calculateCappedBonus(array $config, int $level): float
     {
         $level = max(0, $level);
         if ($level === 0) {
