@@ -46,6 +46,7 @@ class GetTechTree
         $researchLevels = $this->researchStates->getLevels($planetId);
         $buildingLevels = $this->buildingStates->getLevels($planetId);
 
+
         $buildingCategoryLabels = [
             'production' => 'Production',
             'energy' => 'Énergie',
@@ -71,7 +72,6 @@ class GetTechTree
         foreach (array_keys($buildingCategoryLabels) as $categoryKey) {
             $buildingsByCategory[$categoryKey] = [];
         }
-
         foreach ($this->buildingCatalog->all() as $definition) {
             $requirements = [];
             $definitionRequirements = $definition->getRequirements();
@@ -128,6 +128,7 @@ class GetTechTree
                 'items' => $items,
             ];
         }
+
 
         $shipCategories = [];
         foreach ($this->shipCatalog->groupedByCategory() as $category => $data) {
