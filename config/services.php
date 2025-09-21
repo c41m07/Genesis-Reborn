@@ -329,19 +329,21 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
-    $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(ProcessBuildQueue::class),
-        $c->get(ProcessResearchQueue::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(ResourceTickService::class),
-        $c->get(ViewRenderer::class),
-        $c->get(SessionInterface::class),
-        $c->get(FlashBag::class),
-        $c->get(CsrfTokenManager::class),
-        $c->getParameter('app.base_url')
-    ));
+    $container->set(ResourceApiController::class, static function (Container $c): ResourceApiController {
+        return new ResourceApiController(
+            planets: $c->get(PlanetRepositoryInterface::class),
+            buildQueue: $c->get(ProcessBuildQueue::class),
+            researchQueue: $c->get(ProcessResearchQueue::class),
+            shipQueue: $c->get(ProcessShipBuildQueue::class),
+            buildingStates: $c->get(BuildingStateRepositoryInterface::class),
+            resourceTickService: $c->get(ResourceTickService::class),
+            renderer: $c->get(ViewRenderer::class),
+            session: $c->get(SessionInterface::class),
+            flashBag: $c->get(FlashBag::class),
+            csrfTokenManager: $c->get(CsrfTokenManager::class),
+            baseUrl: $c->getParameter('app.base_url'),
+        );
+    });
 
     $container->set(FleetController::class, static function (Container $c): FleetController {
         return new FleetController(
