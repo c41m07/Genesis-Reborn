@@ -134,6 +134,21 @@ npm run svgo:build
 
 ---
 
+## Roadmap & évolutions multi
+- Consulter [`docs/ROADMAP.md`](./ROADMAP.md) pour suivre la progression détaillée par piliers : Solo, Multijoueur, Avancés et Bonus.
+- Aujourd'hui jouable : gestion des colonies, recherche technologique, production navale, missions et résolutions PvE, journal d'événements et ticker de ressources.
+- Priorités court terme : rendre les planètes uniques par coordonnées, ouvrir la colonisation et permettre le transport logistique entre mondes d'un même joueur.
+- Chantiers multijoueurs programmés : combats PvP, classement, échanges inter-joueurs et messagerie in-game.
+
+---
+
+## Bugs connus & TODO
+- Génération procédurale des planètes encore simplifiée : les coordonnées et caractéristiques n'impactent pas la production.
+- Colonisation multi-planètes et transferts de ressources en transit encore à implémenter côté backend et interface.
+- Mode multijoueur en conception : synchronisation temps réel, combats PvP et messagerie nécessitent une couche réseau dédiée.
+
+---
+
 ## Qualité & tests
 - **Tests unitaires** via PHPUnit (sessions, calculs bâtiments).
 - **Analyse statique** : `composer stan` (PHPStan).
