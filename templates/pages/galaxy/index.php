@@ -152,23 +152,6 @@ ob_start();
                 }
                 echo '</div>';
 
-                echo '<dl class="galaxy-slot__stats">';
-                $resources = [
-                    'metal' => 'Métal',
-                    'crystal' => 'Cristal',
-                    'hydrogen' => 'Hydrogène',
-                    'energy' => 'Énergie',
-                ];
-                foreach ($resources as $key => $label) {
-                    $value = (int) ($slot['production'][$key] ?? 0);
-                    $prefix = $key === 'energy' ? '' : ($value >= 0 ? '+' : '');
-                    echo '<div><dt>' . htmlspecialchars($label) . '</dt><dd>' . $prefix . format_number($value) . '/h</dd></div>';
-                }
-                echo '</dl>';
-
-                if (!empty($slot['lastActivity']) && $slot['lastActivity'] instanceof DateTimeImmutable) {
-                    echo '<p class="galaxy-slot__activity">Dernière activité ' . htmlspecialchars(format_relative_time($slot['lastActivity'], $now)) . '</p>';
-                }
             }
 
             echo '</div>';
