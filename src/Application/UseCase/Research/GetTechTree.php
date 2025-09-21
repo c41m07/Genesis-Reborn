@@ -46,32 +46,7 @@ class GetTechTree
         $researchLevels = $this->researchStates->getLevels($planetId);
         $buildingLevels = $this->buildingStates->getLevels($planetId);
 
-        $buildingCategoryLabels = [
-            'production' => 'Production',
-            'energy' => 'Énergie',
-            'research' => 'Recherche',
-            'military' => 'Militaire',
-            'infrastructure' => 'Infrastructure',
-        ];
-        $buildingCategoryMap = [
-            'metal_mine' => 'production',
-            'crystal_mine' => 'production',
-            'hydrogen_plant' => 'production',
-            'solar_plant' => 'energy',
-            'fusion_reactor' => 'energy',
-            'antimatter_reactor' => 'energy',
-            'research_lab' => 'research',
-            'shipyard' => 'military',
-            'storage_depot' => 'infrastructure',
-            'worker_factory' => 'infrastructure',
-            'robot_factory' => 'infrastructure',
-        ];
-
-        $buildingsByCategory = [];
-        foreach (array_keys($buildingCategoryLabels) as $categoryKey) {
-            $buildingsByCategory[$categoryKey] = [];
-        }
-
+        $buildingItems = [];
         foreach ($this->buildingCatalog->all() as $definition) {
             $requirements = [];
             $definitionRequirements = $definition->getRequirements();
@@ -100,7 +75,7 @@ class GetTechTree
                 ];
             }
 
-            $item = [
+            $buildingItems[] = [
                 'type' => 'building',
                 'key' => $definition->getKey(),
                 'label' => $definition->getLabel(),
@@ -108,26 +83,13 @@ class GetTechTree
                 'image' => $definition->getImage(),
                 'requires' => $requirements,
             ];
-
-            $categoryKey = $buildingCategoryMap[$definition->getKey()] ?? 'infrastructure';
-            $buildingsByCategory[$categoryKey][] = $item;
         }
-
-        $buildingCategories = [];
-        foreach ($buildingCategoryLabels as $categoryKey => $label) {
-            $items = $buildingsByCategory[$categoryKey] ?? [];
-            if ($items === []) {
-                continue;
-            }
-
-            usort($items, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
-
-            $buildingCategories[] = [
-                'key' => 'buildings-' . $categoryKey,
-                'label' => $label,
-                'items' => $items,
-            ];
-        }
+        usort($buildingItems, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
+        $buildingCategories = [[
+            'key' => 'buildings',
+            'label' => 'Bâtiments',
+            'items' => $buildingItems,
+        ]];
 
         $shipCategories = [];
         foreach ($this->shipCatalog->groupedByCategory() as $category => $data) {
