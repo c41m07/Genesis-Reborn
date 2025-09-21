@@ -1108,30 +1108,6 @@ main.workspace__content {
     color: var(--color-text);
 }
 
-.galaxy-slot__stats {
-    margin: 0;
-    display: grid;
-    gap: var(--space-1);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    font-size: var(--font-size-sm);
-}
-
-.galaxy-slot__stats dt {
-    color: var(--color-muted);
-}
-
-.galaxy-slot__stats dd {
-    margin: 0;
-    color: var(--color-text);
-    font-variant-numeric: tabular-nums;
-}
-
-.galaxy-slot__activity {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-muted);
-}
-
 .galaxy-slot__empty {
     margin: 0;
     font-size: var(--font-size-sm);
