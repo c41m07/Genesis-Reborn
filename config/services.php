@@ -364,6 +364,12 @@ return function (Container $container): void {
     ));
 
     $container->set(FleetController::class, fn (Container $c) => new FleetController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(FleetNavigationService::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -372,6 +378,17 @@ return function (Container $container): void {
     ));
 
     $container->set(JournalController::class, fn (Container $c) => new JournalController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(ResearchCatalog::class),
+        $c->get(ShipCatalog::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -380,6 +397,8 @@ return function (Container $container): void {
     ));
 
     $container->set(ProfileController::class, fn (Container $c) => new ProfileController(
+        $c->get(UserRepositoryInterface::class),
+        $c->get(GetDashboard::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -394,6 +413,7 @@ return function (Container $container): void {
     ));
 
     $container->set(TechTreeController::class, fn (Container $c) => new TechTreeController(
+        $c->get(PlanetRepositoryInterface::class),
         $c->get(GetTechTree::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
