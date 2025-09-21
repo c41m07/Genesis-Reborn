@@ -1726,6 +1726,95 @@ main.workspace__content {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.tech-section--group .tech-section__groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: var(--space-3) var(--space-3) var(--space-4);
+}
+
+.tech-section--group > .tech-section__list + .tech-section__groups {
+    margin-top: var(--space-2);
+}
+
+.tech-section__list--nested {
+    padding: var(--space-3);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tech-subsection {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+}
+
+.tech-subsection__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 0.55rem var(--space-3);
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-muted);
+    transition: color var(--transition-base), background var(--transition-base);
+}
+
+.tech-subsection__summary::-webkit-details-marker {
+    display: none;
+}
+
+.tech-subsection__summary:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.tech-subsection__summary:hover {
+    color: var(--text-primary);
+}
+
+.tech-subsection[open] .tech-subsection__summary {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tech-subsection__title {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.tech-subsection__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-muted);
+    transition: transform var(--transition-base), color var(--transition-base), background var(--transition-base);
+}
+
+.tech-subsection__icon::before {
+    content: '›';
+    font-size: 0.75rem;
+    transform: translateX(1px);
+}
+
+.tech-subsection__summary:hover .tech-subsection__icon {
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--text-primary);
+}
+
+.tech-subsection[open] .tech-subsection__icon {
+    transform: rotate(90deg);
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--text-primary);
+}
+
 .tech-node-link {
     width: 100%;
     display: flex;

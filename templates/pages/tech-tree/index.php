@@ -36,6 +36,78 @@ foreach ($categories as $category) {
         }
     }
 }
+$groupedCategories = [
+    'buildings' => [
+        'key' => 'buildings',
+        'label' => 'Bâtiments',
+        'items' => [],
+        'categories' => [],
+    ],
+    'ships' => [
+        'key' => 'ships',
+        'label' => 'Vaisseaux',
+        'items' => [],
+        'categories' => [],
+    ],
+    'research' => [
+        'key' => 'research',
+        'label' => 'Recherches',
+        'items' => [],
+        'categories' => [],
+    ],
+];
+foreach ($categories as $category) {
+    $categoryKey = (string) ($category['key'] ?? '');
+    $categoryLabel = (string) ($category['label'] ?? $categoryKey);
+    $categoryItems = $category['items'] ?? [];
+
+    if ($categoryKey === 'buildings') {
+        if ($categoryLabel !== '') {
+            $groupedCategories['buildings']['label'] = $categoryLabel;
+        }
+        foreach ($categoryItems as $item) {
+            $groupedCategories['buildings']['items'][] = [
+                'categoryKey' => $categoryKey,
+                'item' => $item,
+            ];
+        }
+        continue;
+    }
+
+    $groupKey = 'other';
+    if (str_starts_with($categoryKey, 'ship-')) {
+        $groupKey = 'ships';
+    } elseif (str_starts_with($categoryKey, 'research-')) {
+        $groupKey = 'research';
+    }
+
+    if (!isset($groupedCategories[$groupKey])) {
+        $groupedCategories[$groupKey] = [
+            'key' => $groupKey,
+            'label' => $groupKey === 'other' ? 'Autres' : $categoryLabel,
+            'items' => [],
+            'categories' => [],
+        ];
+    } elseif ($groupKey === 'other' && $groupedCategories[$groupKey]['label'] === 'Autres' && $categoryLabel !== '') {
+        $groupedCategories[$groupKey]['label'] = $categoryLabel;
+    }
+
+    $groupedCategories[$groupKey]['categories'][] = [
+        'key' => $categoryKey,
+        'label' => $categoryLabel,
+        'items' => array_map(
+            static fn (array $item) => [
+                'categoryKey' => $categoryKey,
+                'item' => $item,
+            ],
+            $categoryItems
+        ),
+    ];
+}
+$groupedCategories = array_filter(
+    $groupedCategories,
+    static fn (array $group): bool => !empty($group['items']) || !empty($group['categories'])
+);
 $nodesJson = json_encode($nodes, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
 $nodesJson = $nodesJson !== false ? $nodesJson : '{}';
 ob_start();
@@ -62,26 +134,59 @@ ob_start();
     <section class="tech-tree" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
         <div class="tech-tree__layout">
             <aside class="tech-tree__sidebar">
-                <?php foreach ($categories as $category): ?>
-                    <details class="tech-section">
+                <?php foreach ($groupedCategories as $group): ?>
+                    <?php if (empty($group['items']) && empty($group['categories'])): ?>
+                        <?php continue; ?>
+                    <?php endif; ?>
+                    <details class="tech-section tech-section--group">
                         <summary class="tech-section__summary">
-                            <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($category['label']) ?></span>
+                            <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($group['label']) ?></span>
                             <span class="tech-section__icon" aria-hidden="true"></span>
                         </summary>
-                        <ul class="tech-section__list">
-                            <?php foreach ($category['items'] as $item): ?>
-                                <?php $nodeId = $category['key'] . ':' . $item['key']; ?>
-                                <?php $state = getTechState($item['requires'] ?? []); ?>
-                                <li>
-                                    <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
-                                        <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
-                                        <?php if (isset($item['level'])): ?>
-                                            <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
-                                        <?php endif; ?>
-                                    </button>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <?php if (!empty($group['items'])): ?>
+                            <ul class="tech-section__list">
+                                <?php foreach ($group['items'] as $entry): ?>
+                                    <?php $item = $entry['item']; ?>
+                                    <?php $nodeId = $entry['categoryKey'] . ':' . $item['key']; ?>
+                                    <?php $state = getTechState($item['requires'] ?? []); ?>
+                                    <li>
+                                        <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
+                                            <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
+                                            <?php if (isset($item['level'])): ?>
+                                                <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
+                                            <?php endif; ?>
+                                        </button>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                        <?php if (!empty($group['categories'])): ?>
+                            <div class="tech-section__groups">
+                                <?php foreach ($group['categories'] as $subCategory): ?>
+                                    <details class="tech-subsection">
+                                        <summary class="tech-subsection__summary">
+                                            <span class="tech-subsection__title" role="heading" aria-level="3"><?= htmlspecialchars($subCategory['label']) ?></span>
+                                            <span class="tech-subsection__icon" aria-hidden="true"></span>
+                                        </summary>
+                                        <ul class="tech-section__list tech-section__list--nested">
+                                            <?php foreach ($subCategory['items'] as $entry): ?>
+                                                <?php $item = $entry['item']; ?>
+                                                <?php $nodeId = $entry['categoryKey'] . ':' . $item['key']; ?>
+                                                <?php $state = getTechState($item['requires'] ?? []); ?>
+                                                <li>
+                                                    <button class="tech-node-link<?= $state['allMet'] ? ' tech-node-link--ready' : '' ?>" type="button" data-tech-target="<?= htmlspecialchars($nodeId) ?>" data-tech-ready="<?= $state['allMet'] ? '1' : '0' ?>">
+                                                        <span class="tech-node-link__label"><?= htmlspecialchars($item['label']) ?></span>
+                                                        <?php if (isset($item['level'])): ?>
+                                                            <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
+                                                        <?php endif; ?>
+                                                    </button>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </details>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </details>
                 <?php endforeach; ?>
             </aside>
