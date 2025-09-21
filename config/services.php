@@ -43,6 +43,7 @@ use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
+use App\Infrastructure\Config\BalanceConfigLoader;
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Database\ConnectionFactory;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -81,59 +82,56 @@ return function (Container $container): void {
 
     $container->set(ViewRenderer::class, fn () => new ViewRenderer(__DIR__ . '/../templates'));
 
-    $container->set(BuildingCatalog::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
+    $container->set(BalanceConfigLoader::class, fn () => new BalanceConfigLoader(__DIR__ . '/balance'));
 
-        return new BuildingCatalog($config);
+    $container->set(BuildingCatalog::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+
+        return new BuildingCatalog($loader->getBuildingConfigs());
     });
 
     $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
-    $container->set(ResourceTickService::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $effects = ResourceEffectFactory::fromBuildingConfig($config);
+    $container->set(ResourceTickService::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+        $effects = ResourceEffectFactory::fromBuildingConfig($loader->getBuildingConfigs());
 
         return new ResourceTickService($effects);
     });
     $container->set(CostService::class, fn () => new CostService());
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
 
-    $container->set(ResearchCatalog::class, function () {
-        $config = require __DIR__ . '/game/research.php';
+    $container->set(ResearchCatalog::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
 
-        return new ResearchCatalog($config);
+        return new ResearchCatalog($loader->getTechnologyConfigs());
     });
 
-    $container->set(ResearchCalculator::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $bonusConfig = $config['research_lab']['research_speed_bonus'] ?? 0.0;
+    $container->set(ResearchCalculator::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+        $researchLab = $loader->getBuildingConfig('research_lab');
+        $bonusConfig = $researchLab->getResearchSpeedBonus();
+
         $bonusPerLevel = 0.0;
         $bonusMax = 0.0;
 
-        if (is_array($bonusConfig)) {
-            if (array_key_exists('per_level', $bonusConfig)) {
-                $bonusPerLevel = (float) $bonusConfig['per_level'];
-            } else {
-                $bonusPerLevel = (float) ($bonusConfig['base'] ?? 0.0);
-            }
-
-            if (array_key_exists('max', $bonusConfig)) {
-                $bonusMax = (float) $bonusConfig['max'];
-            }
-        } else {
-            $bonusPerLevel = (float) $bonusConfig;
+        if (array_key_exists('per_level', $bonusConfig)) {
+            $bonusPerLevel = (float) $bonusConfig['per_level'];
+        } elseif (array_key_exists('base', $bonusConfig)) {
+            $bonusPerLevel = (float) $bonusConfig['base'];
         }
 
-        $bonusPerLevel = max(0.0, $bonusPerLevel);
-        $bonusMax = max(0.0, $bonusMax);
+        if (array_key_exists('max', $bonusConfig)) {
+            $bonusMax = (float) $bonusConfig['max'];
+        }
 
-        return new ResearchCalculator($bonusPerLevel, $bonusMax);
+        return new ResearchCalculator(max(0.0, $bonusPerLevel), max(0.0, $bonusMax));
     });
 
-    $container->set(ShipCatalog::class, function () {
-        $config = require __DIR__ . '/game/ships.php';
+    $container->set(ShipCatalog::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
 
-        return new ShipCatalog($config);
+        return new ShipCatalog($loader->getShipConfigs());
     });
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));

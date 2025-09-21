@@ -3,6 +3,7 @@
 namespace App\Domain\Service;
 
 use App\Domain\Entity\BuildingDefinition;
+use App\Infrastructure\Config\BuildingConfig;
 use InvalidArgumentException;
 
 class BuildingCatalog
@@ -11,31 +12,37 @@ class BuildingCatalog
     private array $definitions = [];
 
     /**
-     * @param array<string, array<string, mixed>> $config
+     * @param iterable<BuildingConfig> $configs
      */
-    public function __construct(array $config)
+    public function __construct(iterable $configs)
     {
-        foreach ($config as $key => $data) {
+        foreach ($configs as $config) {
+            if (!$config instanceof BuildingConfig) {
+                throw new InvalidArgumentException('BuildingCatalog expects instances of BuildingConfig.');
+            }
+
+            $key = $config->getKey();
+
             $this->definitions[$key] = new BuildingDefinition(
                 $key,
-                $data['label'],
-                $data['base_cost'],
-                (float) $data['growth_cost'],
-                (int) $data['base_time'],
-                (float) $data['growth_time'],
-                (int) ($data['prod_base'] ?? 0),
-                (float) ($data['prod_growth'] ?? 1.0),
-                (int) ($data['energy_use_base'] ?? 0),
-                (float) ($data['energy_use_growth'] ?? 1.0),
-                (bool) ($data['energy_use_linear'] ?? false),
-                $data['affects'],
-                $data['requires'] ?? [],
-                $data['image'] ?? null,
-                $data['ship_build_speed_bonus'] ?? [],
-                $data['research_speed_bonus'] ?? [],
-                $data['storage'] ?? [],
-                $data['upkeep'] ?? [],
-                $data['construction_speed_bonus'] ?? []
+                $config->getLabel(),
+                $config->getBaseCost(),
+                $config->getGrowthCost(),
+                $config->getBaseTime(),
+                $config->getGrowthTime(),
+                $config->getProductionBase(),
+                $config->getProductionGrowth(),
+                $config->getEnergyUseBase(),
+                $config->getEnergyUseGrowth(),
+                $config->isEnergyUseLinear(),
+                $config->getAffects(),
+                $config->getRequirements(),
+                $config->getImage(),
+                $config->getShipBuildSpeedBonus(),
+                $config->getResearchSpeedBonus(),
+                $config->getStorage(),
+                $config->getUpkeep(),
+                $config->getConstructionSpeedBonus()
             );
         }
     }

@@ -27,6 +27,9 @@ use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
+use App\Infrastructure\Config\BuildingConfig;
+use App\Infrastructure\Config\ShipConfig;
+use App\Infrastructure\Config\TechnologyConfig;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\Session;
@@ -46,7 +49,7 @@ class QueueProcessingTest extends TestCase
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
         ]);
         $buildQueue = new InMemoryBuildQueueRepository();
-        $catalog = new BuildingCatalog([
+        $catalog = new BuildingCatalog($this->makeBuildingConfigs([
             'metal_mine' => [
                 'label' => 'Mine de métal',
                 'base_cost' => ['metal' => 100],
@@ -60,7 +63,7 @@ class QueueProcessingTest extends TestCase
                 'energy_use_linear' => false,
                 'affects' => 'metal',
             ],
-        ]);
+        ]));
         $calculator = new BuildingCalculator($catalog);
 
         $playerStats = new InMemoryPlayerStatsRepository();
@@ -102,7 +105,7 @@ class QueueProcessingTest extends TestCase
             1 => ['propulsion_basic' => 0],
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
-        $catalog = new ResearchCatalog([
+        $catalog = new ResearchCatalog($this->makeTechnologyConfigs([
             'propulsion_basic' => [
                 'label' => 'Propulsion spatiale',
                 'category' => 'Propulsion',
@@ -116,7 +119,7 @@ class QueueProcessingTest extends TestCase
                 'requires_lab' => 1,
                 'image' => '',
             ],
-        ]);
+        ]));
         $calculator = new ResearchCalculator(0.1);
 
         $playerStats = new InMemoryPlayerStatsRepository();
@@ -150,7 +153,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
-        $buildingCatalog = new BuildingCatalog([
+        $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
                 'base_cost' => ['metal' => 100],
@@ -165,9 +168,9 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'energy',
                 'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
             ],
-        ]);
+        ]));
         $buildingCalculator = new BuildingCalculator();
-        $catalog = new ShipCatalog([
+        $catalog = new ShipCatalog($this->makeShipConfigs([
             'fighter' => [
                 'label' => 'Chasseur',
                 'category' => 'Escadre',
@@ -179,7 +182,7 @@ class QueueProcessingTest extends TestCase
                 'requires_research' => [],
                 'image' => '',
             ],
-        ]);
+        ]));
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
@@ -213,7 +216,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
-        $buildingCatalog = new BuildingCatalog([
+        $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
                 'base_cost' => ['metal' => 100],
@@ -228,9 +231,9 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'energy',
                 'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
             ],
-        ]);
+        ]));
         $buildingCalculator = new BuildingCalculator();
-        $catalog = new ShipCatalog([
+        $catalog = new ShipCatalog($this->makeShipConfigs([
             'probe' => [
                 'label' => 'Sonde',
                 'category' => 'Divers',
@@ -242,7 +245,7 @@ class QueueProcessingTest extends TestCase
                 'requires_research' => [],
                 'image' => '',
             ],
-        ]);
+        ]));
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
@@ -266,7 +269,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
-        $buildingCatalog = new BuildingCatalog([
+        $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
                 'base_cost' => ['metal' => 100],
@@ -281,9 +284,9 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'energy',
                 'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
             ],
-        ]);
+        ]));
         $buildingCalculator = new BuildingCalculator();
-        $catalog = new ShipCatalog([
+        $catalog = new ShipCatalog($this->makeShipConfigs([
             'fighter' => [
                 'label' => 'Chasseur',
                 'category' => 'Escadre',
@@ -295,7 +298,7 @@ class QueueProcessingTest extends TestCase
                 'requires_research' => [],
                 'image' => '',
             ],
-        ]);
+        ]));
         $queueProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
 
         $overviewUseCase = new GetShipyardOverview(
@@ -348,7 +351,7 @@ class QueueProcessingTest extends TestCase
         $researchStates = new InMemoryResearchStateRepository([
             1 => [],
         ]);
-        $catalog = new BuildingCatalog([
+        $catalog = new BuildingCatalog($this->makeBuildingConfigs([
             'metal_mine' => [
                 'label' => 'Mine de métal',
                 'base_cost' => ['metal' => 100],
@@ -362,7 +365,7 @@ class QueueProcessingTest extends TestCase
                 'energy_use_linear' => false,
                 'affects' => 'metal',
             ],
-        ]);
+        ]));
         $calculator = new BuildingCalculator($catalog);
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
@@ -393,7 +396,7 @@ class QueueProcessingTest extends TestCase
         $researchStates = new InMemoryResearchStateRepository([
             1 => [],
         ]);
-        $catalog = new BuildingCatalog([
+        $catalog = new BuildingCatalog($this->makeBuildingConfigs([
             'metal_mine' => [
                 'label' => 'Mine de métal',
                 'base_cost' => ['metal' => 50],
@@ -407,7 +410,7 @@ class QueueProcessingTest extends TestCase
                 'energy_use_linear' => false,
                 'affects' => 'metal',
             ],
-        ]);
+        ]));
         $calculator = new BuildingCalculator($catalog);
 
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
@@ -435,7 +438,7 @@ class QueueProcessingTest extends TestCase
         $researchStates = new InMemoryResearchStateRepository([
             1 => [],
         ]);
-        $catalog = new BuildingCatalog([
+        $catalog = new BuildingCatalog($this->makeBuildingConfigs([
             'metal_mine' => [
                 'label' => 'Mine de métal',
                 'base_cost' => ['metal' => 100],
@@ -449,7 +452,7 @@ class QueueProcessingTest extends TestCase
                 'energy_use_linear' => false,
                 'affects' => 'metal',
             ],
-        ]);
+        ]));
         $calculator = new BuildingCalculator($catalog);
         $useCase = new UpgradeBuilding($planetRepository, $buildingStates, $buildQueue, $playerStats, $researchStates, $catalog, $calculator);
         $processor = new ProcessBuildQueue($buildQueue, $buildingStates, $planetRepository, $catalog, $calculator);
@@ -479,7 +482,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
-        $catalog = new ResearchCatalog([
+        $catalog = new ResearchCatalog($this->makeTechnologyConfigs([
             'propulsion_basic' => [
                 'label' => 'Propulsion spatiale',
                 'category' => 'Propulsion',
@@ -493,7 +496,7 @@ class QueueProcessingTest extends TestCase
                 'requires_lab' => 1,
                 'image' => '',
             ],
-        ]);
+        ]));
         $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
@@ -521,7 +524,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $researchQueue = new InMemoryResearchQueueRepository();
         $playerStats = new InMemoryPlayerStatsRepository();
-        $catalog = new ResearchCatalog([
+        $catalog = new ResearchCatalog($this->makeTechnologyConfigs([
             'propulsion_basic' => [
                 'label' => 'Propulsion spatiale',
                 'category' => 'Propulsion',
@@ -535,7 +538,7 @@ class QueueProcessingTest extends TestCase
                 'requires_lab' => 1,
                 'image' => '',
             ],
-        ]);
+        ]));
         $calculator = new ResearchCalculator(0.1);
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
 
@@ -587,7 +590,7 @@ class QueueProcessingTest extends TestCase
             ],
         ];
 
-        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($this->makeBuildingConfigs($buildingConfig)));
 
         $sessionStorage = ['user_id' => 5];
         $session = new Session($sessionStorage);
@@ -661,7 +664,7 @@ class QueueProcessingTest extends TestCase
             ],
         ];
 
-        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($buildingConfig));
+        $resourceTick = new ResourceTickService(ResourceEffectFactory::fromBuildingConfig($this->makeBuildingConfigs($buildingConfig)));
 
         $sessionStorage = ['user_id' => 5];
         $session = new Session($sessionStorage);
@@ -717,7 +720,7 @@ class QueueProcessingTest extends TestCase
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
         $fleetRepository = new InMemoryFleetRepository();
-        $buildingCatalog = new BuildingCatalog([
+        $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
                 'base_cost' => ['metal' => 100],
@@ -732,9 +735,9 @@ class QueueProcessingTest extends TestCase
                 'affects' => 'energy',
                 'ship_build_speed_bonus' => ['base' => 0.1, 'linear' => true, 'max' => 0.9],
             ],
-        ]);
+        ]));
         $buildingCalculator = new BuildingCalculator();
-        $catalog = new ShipCatalog([
+        $catalog = new ShipCatalog($this->makeShipConfigs([
             'fighter' => [
                 'label' => 'Chasseur',
                 'category' => 'Escadre',
@@ -746,7 +749,7 @@ class QueueProcessingTest extends TestCase
                 'requires_research' => [],
                 'image' => '',
             ],
-        ]);
+        ]));
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
@@ -773,6 +776,51 @@ class QueueProcessingTest extends TestCase
         self::assertSame(12000, $plan['speed']);
         self::assertSame(36, $plan['travel_time']);
         self::assertSame(144, $plan['fuel']);
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return BuildingConfig[]
+     */
+    private function makeBuildingConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new BuildingConfig($key, $data);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return TechnologyConfig[]
+     */
+    private function makeTechnologyConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new TechnologyConfig($key, $data);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return ShipConfig[]
+     */
+    private function makeShipConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new ShipConfig($key, $data);
+        }
+
+        return $result;
     }
 }
 
