@@ -1107,7 +1107,6 @@ const initTechTree = () => {
         nodes = {};
     }
 
-    const initial = detailContainer.getAttribute('data-initial') || '';
     const baseUrl = detailContainer.getAttribute('data-base-url') || '';
     const normalizedBase = baseUrl.replace(/\/$/, '');
 
@@ -1256,15 +1255,6 @@ const initTechTree = () => {
         });
     });
 
-    if (initial && nodes[initial]) {
-        activateNode(initial);
-        return;
-    }
-
-    const firstTarget = nodeLinks[0]?.dataset.techTarget;
-    if (firstTarget) {
-        activateNode(firstTarget);
-    }
 };
 
 const ready = () => {
