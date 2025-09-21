@@ -38,7 +38,7 @@ class TechTreeController extends AbstractController
             return $this->render('pages/tech-tree/index.php', [
                 'title' => 'Arbre technologique',
                 'planets' => [],
-                'tree' => ['categories' => []],
+                'tree' => ['groups' => []],
                 'flashes' => $this->flashBag->consume(),
                 'baseUrl' => $this->baseUrl,
                 'currentUserId' => $userId,
