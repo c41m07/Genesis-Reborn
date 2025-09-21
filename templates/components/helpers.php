@@ -23,6 +23,56 @@ if (!function_exists('format_duration')) {
     }
 }
 
+if (!function_exists('format_number')) {
+    /**
+     * Format a number using compact notation for large values.
+     */
+    function format_number(int|float $value): string
+    {
+        if (!is_numeric($value)) {
+            $number = 0.0;
+        } else {
+            $number = (float) $value;
+        }
+
+        $absValue = abs($number);
+        $suffix = '';
+        $divisor = 1.0;
+        $thresholds = [
+            1_000_000_000 => 'b',
+            1_000_000 => 'm',
+            1_000 => 'k',
+        ];
+
+        foreach ($thresholds as $limit => $symbol) {
+            if ($absValue >= $limit) {
+                $suffix = $symbol;
+                $divisor = (float) $limit;
+
+                break;
+            }
+        }
+
+        if ($suffix === '') {
+            $hasFraction = abs($number - round($number)) >= 1e-9;
+            $decimals = $hasFraction ? 2 : 0;
+
+            return number_format($number, $decimals, ',', ' ');
+        }
+
+        $scaled = $absValue / $divisor;
+        $scaled = floor($scaled * 100.0) / 100.0;
+        if ($number < 0) {
+            $scaled *= -1;
+        }
+
+        $isInteger = abs($scaled - round($scaled)) < 1e-9;
+        $decimals = $isInteger ? 0 : 2;
+
+        return number_format($scaled, $decimals, ',', ' ') . $suffix;
+    }
+}
+
 if (!function_exists('asset_url')) {
     /**
      * Build an absolute asset URL based on the provided base URL.

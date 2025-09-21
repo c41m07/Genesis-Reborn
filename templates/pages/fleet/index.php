@@ -38,8 +38,8 @@ ob_start();
     'subtitle' => 'Origine ' . $origin['galaxy'] . ':' . $origin['system'] . ':' . $origin['position'],
     'body' => static function () use ($fleetShips, $totalShips, $power): void {
         echo '<div class="metrics metrics--compact">';
-        echo '<div class="metric"><span class="metric__label">Unités</span><strong class="metric__value">' . number_format((int) $totalShips) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Puissance estimée</span><strong class="metric__value">' . number_format((int) $power) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Unités</span><strong class="metric__value">' . format_number((int) $totalShips) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Puissance estimée</span><strong class="metric__value">' . format_number((int) $power) . '</strong></div>';
         echo '</div>';
         if ($fleetShips === []) {
             echo '<p class="empty-state">Aucun vaisseau n’est actuellement disponible sur cette orbite.</p>';
@@ -53,10 +53,10 @@ ob_start();
         foreach ($fleetShips as $ship) {
             echo '<tr>';
             echo '<td>' . htmlspecialchars($ship['label']) . '</td>';
-            echo '<td>' . number_format((int) $ship['quantity']) . '</td>';
-            echo '<td>' . number_format((int) $ship['attack']) . '</td>';
-            echo '<td>' . number_format((int) $ship['defense']) . '</td>';
-            echo '<td>' . number_format((int) $ship['speed']) . '</td>';
+            echo '<td>' . format_number((int) $ship['quantity']) . '</td>';
+            echo '<td>' . format_number((int) $ship['attack']) . '</td>';
+            echo '<td>' . format_number((int) $ship['defense']) . '</td>';
+            echo '<td>' . format_number((int) $ship['speed']) . '</td>';
             echo '</tr>';
         }
         echo '</tbody></table>';
@@ -96,7 +96,7 @@ ob_start();
             foreach ($availableShips as $ship) {
                 $value = $submittedComposition[$ship['key']] ?? 0;
                 echo '<label class="planner-composition__row">';
-                echo '<span class="planner-composition__label">' . htmlspecialchars($ship['label']) . ' <small>(' . number_format((int) $ship['quantity']) . ')</small></span>';
+                echo '<span class="planner-composition__label">' . htmlspecialchars($ship['label']) . ' <small>(' . format_number((int) $ship['quantity']) . ')</small></span>';
                 echo '<input type="number" min="0" max="' . (int) $ship['quantity'] . '" name="composition[' . htmlspecialchars($ship['key'], ENT_QUOTES) . ']" value="' . (int) $value . '">';
                 echo '</label>';
             }
@@ -117,13 +117,13 @@ ob_start();
             echo '<div class="planner-result">';
             echo '<h3>Résultat de la simulation</h3>';
             echo '<ul class="metric-list">';
-            echo '<li><span>Distance</span><strong>' . number_format((int) $plan['distance']) . ' u</strong></li>';
-            echo '<li><span>Vitesse effective</span><strong>' . number_format((int) $plan['speed']) . ' u/h</strong></li>';
+            echo '<li><span>Distance</span><strong>' . format_number((int) $plan['distance']) . ' u</strong></li>';
+            echo '<li><span>Vitesse effective</span><strong>' . format_number((int) $plan['speed']) . ' u/h</strong></li>';
             echo '<li><span>Durée</span><strong>' . htmlspecialchars(format_duration((int) $plan['travel_time'])) . '</strong></li>';
             if (!empty($plan['arrival_time']) && $plan['arrival_time'] instanceof \DateTimeImmutable) {
                 echo '<li><span>Arrivée estimée</span><strong>' . $plan['arrival_time']->format('d/m/Y H:i') . '</strong></li>';
             }
-            echo '<li><span>Consommation d’hydrogène</span><strong>' . number_format((int) $plan['fuel']) . '</strong></li>';
+            echo '<li><span>Consommation d’hydrogène</span><strong>' . format_number((int) $plan['fuel']) . '</strong></li>';
             echo '</ul>';
             echo '</div>';
         }

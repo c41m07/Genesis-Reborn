@@ -9,6 +9,7 @@
 $title = $title ?? 'Journal de bord';
 $icon = require __DIR__ . '/../../components/_icon.php';
 $card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 
 ob_start();
 ?>
@@ -25,13 +26,13 @@ ob_start();
     'subtitle' => 'Aperçu des productions en attente',
     'body' => static function () use ($insights): void {
         echo '<div class="metrics metrics--compact">';
-        echo '<div class="metric"><span class="metric__label">Bâtiments</span><strong class="metric__value">' . number_format((int) $insights['buildQueue']) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Recherches</span><strong class="metric__value">' . number_format((int) $insights['researchQueue']) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Chantier spatial</span><strong class="metric__value">' . number_format((int) $insights['shipQueue']) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Bâtiments</span><strong class="metric__value">' . format_number((int) $insights['buildQueue']) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Recherches</span><strong class="metric__value">' . format_number((int) $insights['researchQueue']) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Chantier spatial</span><strong class="metric__value">' . format_number((int) $insights['shipQueue']) . '</strong></div>';
         echo '</div>';
         if (!empty($insights['nextEvent']) && is_array($insights['nextEvent'])) {
             $event = $insights['nextEvent'];
-            echo '<p class="metric-hint">Prochain événement : <strong>' . htmlspecialchars($event['title']) . '</strong> dans ' . number_format((int) floor($event['remaining'] / 60)) . ' min.</p>';
+            echo '<p class="metric-hint">Prochain événement : <strong>' . htmlspecialchars($event['title']) . '</strong> dans ' . format_number((int) floor($event['remaining'] / 60)) . ' min.</p>';
         }
     },
 ]) ?>

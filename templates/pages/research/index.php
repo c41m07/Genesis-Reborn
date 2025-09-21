@@ -50,7 +50,7 @@ ob_start();
         'subtitle' => 'Suivi des programmes scientifiques actifs',
         'body' => static function () use ($queue, $labLevel, $labBonus): void {
             $emptyMessage = 'Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.';
-            echo '<p class="metric-line"><span class="metric-line__label">Niveau du laboratoire</span><span class="metric-line__value">' . number_format($labLevel) . '</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Niveau du laboratoire</span><span class="metric-line__value">' . format_number($labLevel) . '</span></p>';
             if ($labBonus > 0) {
                 $bonusPercent = $labBonus * 100;
                 $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
@@ -64,7 +64,7 @@ ob_start();
                 foreach ($queue['jobs'] as $job) {
                     $label = $job['label'] ?? $job['research'] ?? '';
                     echo '<li class="queue-list__item">';
-                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . number_format((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . format_number((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
                     echo '<div class="queue-list__timing">';
                     echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
                     if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
@@ -125,7 +125,7 @@ ob_start();
                             echo '<h3>Prochaine amélioration</h3>';
                             echo '<ul class="resource-list">';
                             foreach ($item['nextCost'] as $resource => $amount) {
-                                echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . number_format((int) $amount) . '</span></li>';
+                                echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . format_number((int) $amount) . '</span></li>';
                             }
                             echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $item['nextTime'])) . '</span></li>';
                             echo '</ul>';

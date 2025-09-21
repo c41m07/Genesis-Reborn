@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 return static function (array $props): string {
     $title = $props['title'] ?? 'Pré-requis';
     $items = $props['items'] ?? [];
@@ -64,8 +66,8 @@ return static function (array $props): string {
     $listItemsHtml = '';
     foreach ($normalizedItems as $item) {
         $label = htmlspecialchars($item['label'], ENT_QUOTES);
-        $current = number_format($item['current']);
-        $required = number_format($item['required']);
+        $current = format_number($item['current']);
+        $required = format_number($item['required']);
 
         $listItemsHtml .= '<li class="requirements-panel__item">';
         $listItemsHtml .= '<span class="requirements-panel__name building-card__requirement-name">' . $label . '</span>';

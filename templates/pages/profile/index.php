@@ -56,9 +56,9 @@ ob_start();
         'subtitle' => 'Vue d’ensemble de votre progression solo',
         'body' => static function () use ($empire): void {
             echo '<div class="metrics metrics--compact">';
-            echo '<div class="metric"><span class="metric__label">Points d’empire</span><strong class="metric__value">' . number_format((int) ($empire['points'] ?? 0)) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Puissance militaire</span><strong class="metric__value">' . number_format((int) ($empire['militaryPower'] ?? 0)) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . number_format((int) ($empire['planetCount'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Points d’empire</span><strong class="metric__value">' . format_number((int) ($empire['points'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Puissance militaire</span><strong class="metric__value">' . format_number((int) ($empire['militaryPower'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . format_number((int) ($empire['planetCount'] ?? 0)) . '</strong></div>';
             echo '</div>';
         },
     ]) ?>
@@ -80,8 +80,8 @@ ob_start();
     'body' => static function () use ($researchTotals): void {
         $best = $researchTotals['best'] ?? ['label' => 'Aucune technologie', 'level' => 0];
         echo '<div class="metrics metrics--compact">';
-        echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . number_format((int) ($researchTotals['sumLevels'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Découvertes actives</span><strong class="metric__value">' . number_format((int) ($researchTotals['unlocked'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . format_number((int) ($researchTotals['sumLevels'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Découvertes actives</span><strong class="metric__value">' . format_number((int) ($researchTotals['unlocked'] ?? 0)) . '</strong></div>';
         echo '<div class="metric"><span class="metric__label">Technologie phare</span><strong class="metric__value">' . htmlspecialchars(($best['label'] ?? 'Aucune technologie') . ' • niveau ' . ($best['level'] ?? 0)) . '</strong></div>';
         echo '</div>';
     },
@@ -116,12 +116,12 @@ ob_start();
                     $labels = ['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'];
                     foreach ($production as $resource => $amount) {
                         $label = $labels[$resource] ?? ucfirst((string) $resource);
-                        echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars($label) . '</span><span>' . number_format((int) $amount) . '/h</span></li>';
+                        echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars($label) . '</span><span>' . format_number((int) $amount) . '/h</span></li>';
                     }
                     echo '</ul>';
                     $net = (int) ($energyBalance['net'] ?? 0);
-                    $netDisplay = ($net > 0 ? '+' : '') . number_format($net);
-                    echo '<p class="planet-profile__energy">Énergie : ' . number_format((int) ($energyBalance['production'] ?? 0)) . ' générée / ' . number_format((int) ($energyBalance['consumption'] ?? 0)) . ' consommée (solde ' . $netDisplay . ').</p>';
+                    $netDisplay = ($net > 0 ? '+' : '') . format_number($net);
+                    echo '<p class="planet-profile__energy">Énergie : ' . format_number((int) ($energyBalance['production'] ?? 0)) . ' générée / ' . format_number((int) ($energyBalance['consumption'] ?? 0)) . ' consommée (solde ' . $netDisplay . ').</p>';
                     echo '</div>';
 
                     echo '<div class="planet-profile__section">';
@@ -156,7 +156,7 @@ ob_start();
                     } else {
                         echo '<ul class="fleet-panel__list">';
                         foreach (array_slice($fleet, 0, 4) as $ship) {
-                            echo '<li><span class="fleet-panel__ship">' . htmlspecialchars($ship['label'] ?? $ship['key'] ?? 'Vaisseau') . '</span><span class="fleet-panel__qty">× ' . number_format((int) ($ship['quantity'] ?? 0)) . '</span></li>';
+                            echo '<li><span class="fleet-panel__ship">' . htmlspecialchars($ship['label'] ?? $ship['key'] ?? 'Vaisseau') . '</span><span class="fleet-panel__qty">× ' . format_number((int) ($ship['quantity'] ?? 0)) . '</span></li>';
                         }
                         echo '</ul>';
                     }

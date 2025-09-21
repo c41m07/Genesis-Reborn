@@ -61,13 +61,13 @@ ob_start();
         'subtitle' => 'Suivi des constructions orbitales',
         'body' => static function () use ($queue, $shipyardLevel, $shipyardBonus, $fleetCount): void {
             $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
-            echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . number_format((int) $shipyardLevel) . '</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . format_number((int) $shipyardLevel) . '</span></p>';
             if ($shipyardBonus > 0) {
                 $bonusPercent = $shipyardBonus * 100;
                 $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
                 echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">+' . htmlspecialchars($bonusDisplay) . ' %</span></p>';
             }
-            echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . number_format((int) $fleetCount) . ' unité(s)</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . format_number((int) $fleetCount) . ' unité(s)</span></p>';
             echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
@@ -76,7 +76,7 @@ ob_start();
                 foreach ($queue['jobs'] as $job) {
                     $label = $job['label'] ?? $job['ship'] ?? '';
                     echo '<li class="queue-list__item">';
-                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>' . number_format((int) ($job['quantity'] ?? 0)) . ' unité(s)</span></div>';
+                    echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>' . format_number((int) ($job['quantity'] ?? 0)) . ' unité(s)</span></div>';
                     echo '<div class="queue-list__timing">';
                     echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
                     if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
@@ -135,7 +135,7 @@ ob_start();
                                 foreach ($stats as $label => $value) {
                                     echo '<div class="mini-stat">';
                                     echo '<span class="mini-stat__label">' . htmlspecialchars(ucfirst((string) $label)) . '</span>';
-                                    echo '<strong class="mini-stat__value">' . number_format((int) $value) . '</strong>';
+                                    echo '<strong class="mini-stat__value">' . format_number((int) $value) . '</strong>';
                                     echo '</div>';
                                 }
                                 echo '</div>';
@@ -148,7 +148,7 @@ ob_start();
                             foreach ($definition->getBaseCost() as $resource => $amount) {
                                 echo '<li>';
                                 echo $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
-                                echo '<span>' . number_format((int) $amount) . '</span>';
+                                echo '<span>' . format_number((int) $amount) . '</span>';
                                 echo '</li>';
                             }
                             echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
