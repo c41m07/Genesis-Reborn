@@ -15,6 +15,8 @@ require_once __DIR__ . '/../../components/helpers.php';
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $categories = $overview['categories'] ?? [];
+$labLevel = (int) ($overview['labLevel'] ?? 0);
+$labBonus = (float) ($overview['labBonus'] ?? 0.0);
 $assetBase = rtrim($baseUrl, '/');
 
 ob_start();
@@ -46,8 +48,14 @@ ob_start();
     <?= $card([
         'title' => 'Recherches en cours',
         'subtitle' => 'Suivi des programmes scientifiques actifs',
-        'body' => static function () use ($queue): void {
+        'body' => static function () use ($queue, $labLevel, $labBonus): void {
             $emptyMessage = 'Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.';
+            echo '<p class="metric-line"><span class="metric-line__label">Niveau du laboratoire</span><span class="metric-line__value">' . number_format($labLevel) . '</span></p>';
+            if ($labBonus > 0) {
+                $bonusPercent = $labBonus * 100;
+                $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">+' . htmlspecialchars($bonusDisplay) . ' %</span></p>';
+            }
             echo '<div class="queue-block" data-queue="research" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
@@ -86,6 +94,7 @@ ob_start();
                     $maxLevel = (int) ($item['maxLevel'] ?? 0);
                     $progress = (int) round(($item['progress'] ?? 0) * 100);
                     $status = $canResearch ? '' : 'is-locked';
+                    $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
                         'title' => $definition->getLabel(),
@@ -95,6 +104,7 @@ ob_start();
                         'attributes' => [
                             'data-research-card' => $definition->getKey(),
                         ],
+                        'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                         'body' => static function () use (
                             $definition,
                             $item,

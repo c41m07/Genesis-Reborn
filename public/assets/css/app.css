@@ -1247,6 +1247,11 @@ main.workspace__content {
     height: 100%;
 }
 
+.tech-card .panel__header {
+    align-items: flex-start;
+    gap: var(--space-3);
+}
+
 .tech-card .panel__body {
     flex: 1;
     gap: var(--space-3);

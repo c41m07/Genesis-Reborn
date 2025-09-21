@@ -28,6 +28,8 @@ class GetResearchOverview
      * @return array{
      *     planet: \App\Domain\Entity\Planet,
      *     labLevel: int,
+     *     labBonus: float,
+     *     buildingLevels: array<string, int>,
      *     researchLevels: array<string, int>,
      *     queue: array{count: int, jobs: array<int, array{research: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
      *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>,
@@ -46,6 +48,7 @@ class GetResearchOverview
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $researchLevels = $this->researchStates->getLevels($planetId);
         $labLevel = $buildingLevels['research_lab'] ?? 0;
+        $labBonus = $this->calculator->labSpeedBonus($labLevel);
 
         $catalogMap = [];
         foreach ($this->catalog->all() as $definition) {
@@ -122,6 +125,7 @@ class GetResearchOverview
         return [
             'planet' => $planet,
             'labLevel' => $labLevel,
+            'labBonus' => $labBonus,
             'researchLevels' => $researchLevels,
             'buildingLevels' => $buildingLevels,
             'queue' => [
