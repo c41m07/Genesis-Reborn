@@ -179,6 +179,26 @@ class GetBuildingsOverview
                 ];
             }
 
+            $researchSpeedCurrent = $this->calculator->researchSpeedBonusAt($definition, $currentLevel);
+            $researchSpeedNext = $this->calculator->researchSpeedBonusAt($definition, $nextTargetLevel);
+            if ($researchSpeedCurrent > 0.0 || $researchSpeedNext > 0.0) {
+                $bonuses['research_speed'] = [
+                    'current' => $researchSpeedCurrent,
+                    'next' => $researchSpeedNext,
+                    'delta' => max(0.0, $researchSpeedNext - $researchSpeedCurrent),
+                ];
+            }
+
+            $shipSpeedCurrent = $this->calculator->shipBuildSpeedBonus($definition, $currentLevel);
+            $shipSpeedNext = $this->calculator->shipBuildSpeedBonus($definition, $nextTargetLevel);
+            if ($shipSpeedCurrent > 0.0 || $shipSpeedNext > 0.0) {
+                $bonuses['ship_build_speed'] = [
+                    'current' => $shipSpeedCurrent,
+                    'next' => $shipSpeedNext,
+                    'delta' => max(0.0, $shipSpeedNext - $shipSpeedCurrent),
+                ];
+            }
+
             $buildings[] = [
                 'definition' => $definition,
                 'level' => $currentLevel,
