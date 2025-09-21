@@ -42,7 +42,7 @@
 ## Architecture & organisation
 ```
 /config
-  /game (buildings.php, research.php, ships.php)
+  /balance (balance.yml, buildings.yml, ships.yml, technologies.yml)
   /migrations
 /public
   /assets/css (tokens.css, app.css)

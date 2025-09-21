@@ -1,0 +1,492 @@
+category_images:
+  Petits vaisseaux: &cat_light assets/svg/illustrations/ships/light-wing.svg
+  "Unités d’escorte": &cat_escort assets/svg/illustrations/ships/escort-frigate.svg
+  "Navires de ligne": &cat_line assets/svg/illustrations/ships/line-cruiser.svg
+  "Navires lourds": &cat_heavy assets/svg/illustrations/ships/heavy-battleship.svg
+  "Capitaux spécialisés": &cat_capital assets/svg/illustrations/ships/capital-carrier.svg
+  "Vaisseaux colossaux": &cat_colossus assets/svg/illustrations/ships/colossus.svg
+  "Stations stellaires": &cat_station assets/svg/illustrations/ships/battle-station.svg
+  Divers: &cat_default assets/svg/illustrations/ships/ship-generic.svg
+default_image: *cat_default
+ships:
+  fighter:
+    label: "Ailes Lyrae"
+    category: "Petits vaisseaux"
+    role: "Chasseur léger de supériorité spatiale"
+    description: "Véhicule agile conçu pour intercepter rapidement les menaces proches et saturer la défense adverse."
+    base_cost:
+      metal: 220
+      crystal: 90
+      hydrogen: 45
+    build_time: 60
+    stats:
+      attaque: 6
+      défense: 3
+      vitesse: 18
+    requires_research:
+      propulsion_basic: 1
+      life_support: 2
+      miniaturisation: 2
+      weapon_light: 2
+      radar_basic: 1
+    image: *cat_light
+  bomber:
+    label: "Maraudeur Obsidien"
+    category: "Petits vaisseaux"
+    role: "Bombardier d’assaut lourd"
+    description: "Transporte un arsenal de torpilles magnétiques capables de briser le blindage des cibles capitales."
+    base_cost:
+      metal: 420
+      crystal: 260
+      hydrogen: 120
+    build_time: 140
+    stats:
+      attaque: 15
+      défense: 6
+      vitesse: 12
+    requires_research:
+      life_support: 2
+      miniaturisation: 2
+      armor_basic: 2
+      weapon_light: 6
+      weapon_medium: 1
+    image: *cat_light
+  interceptor:
+    label: "Éclair Stentor"
+    category: "Petits vaisseaux"
+    role: "Intercepteur ultrarapide"
+    description: "Priorité à la vitesse et à la précision pour contrer les chasseurs ennemis et les éclaireurs."
+    base_cost:
+      metal: 280
+      crystal: 160
+      hydrogen: 90
+    build_time: 90
+    stats:
+      attaque: 7
+      défense: 4
+      vitesse: 24
+    requires_research:
+      propulsion_basic: 2
+      life_support: 3
+      miniaturisation: 3
+      weapon_light: 3
+      radar_basic: 3
+    image: *cat_light
+  heavy_fighter:
+    label: "Griffon Halcyon"
+    category: "Petits vaisseaux"
+    role: "Chasseur lourd polyvalent"
+    description: "Combine l’armement d’un bombardier à la mobilité d’un intercepteur pour dominer la ligne de front."
+    base_cost:
+      metal: 520
+      crystal: 360
+      hydrogen: 160
+    build_time: 180
+    stats:
+      attaque: 18
+      défense: 10
+      vitesse: 16
+    requires_research:
+      propulsion_basic: 3
+      life_support: 3
+      miniaturisation: 4
+      weapon_light: 4
+      radar_basic: 3
+      armor_basic: 3
+    image: *cat_light
+  corvette:
+    label: "Corvette Vigilum"
+    category: "Unités d’escorte"
+    role: "Plateforme polyvalente de patrouille"
+    description: "Assure la reconnaissance, la couverture anti-chasseur et la projection rapide de puissance légère."
+    base_cost:
+      metal: 950
+      crystal: 520
+      hydrogen: 220
+    build_time: 300
+    stats:
+      attaque: 28
+      défense: 22
+      vitesse: 14
+    requires_research:
+      propulsion_basic: 4
+      life_support: 4
+      logistics: 1
+      armor_basic: 5
+      armor_enhanced: 1
+      weapon_light: 6
+      weapon_medium: 3
+      radar_basic: 3
+    image: *cat_escort
+  gunship:
+    label: "Havoc Aster"
+    category: "Unités d’escorte"
+    role: "Canonnière à saturation de feu"
+    description: "Embarque des canons à plasma lourds pour perforer les coques des navires moyens."
+    base_cost:
+      metal: 1250
+      crystal: 720
+      hydrogen: 260
+    build_time: 420
+    stats:
+      attaque: 40
+      défense: 28
+      vitesse: 12
+    requires_research:
+      armor_basic: 5
+      armor_enhanced: 1
+      weapon_light: 6
+      weapon_medium: 2
+      radar_basic: 3
+    image: *cat_escort
+  frigate:
+    label: "Frégate Solstice"
+    category: "Unités d’escorte"
+    role: "Frégate anti-chasseur"
+    description: "Grille de missiles défensifs et batteries traçantes pour protéger les unités capitales."
+    base_cost:
+      metal: 2200
+      crystal: 1350
+      hydrogen: 480
+    build_time: 600
+    stats:
+      attaque: 55
+      défense: 48
+      vitesse: 10
+    requires_research:
+      armor_basic: 5
+      armor_enhanced: 3
+      weapon_light: 4
+      shield_energy: 1
+      weapon_medium: 4
+      propulsion_basic: 4
+      life_support: 4
+      logistics: 2
+      tactical_coordination: 1
+    image: *cat_escort
+  destroyer:
+    label: "Destroyer Fulguris"
+    category: "Navires de ligne"
+    role: "Chasseur de frégates et croiseurs"
+    description: "Longue coque bardée de canons rails optimisés pour démanteler les escorteurs ennemis."
+    base_cost:
+      metal: 3600
+      crystal: 2400
+      hydrogen: 800
+    build_time: 900
+    stats:
+      attaque: 80
+      défense: 60
+      vitesse: 9
+    requires_research:
+      engineering_heavy: 2
+      propulsion_basic: 5
+      reactor_advanced: 2
+      weapon_light: 6
+      weapon_medium: 5
+      weapon_heavy: 1
+      tactical_coordination: 3
+    image: *cat_line
+  light_cruiser:
+    label: "Croiseur Lumen"
+    category: "Navires de ligne"
+    role: "Croiseur léger polyvalent"
+    description: "Équilibre propulsion, blindage et puissance de feu pour mener des flottes rapides."
+    base_cost:
+      metal: 5200
+      crystal: 3600
+      hydrogen: 1200
+    build_time: 1200
+    stats:
+      attaque: 110
+      défense: 95
+      vitesse: 8
+    requires_research:
+      engineering_heavy: 3
+      armor_basic: 6
+      armor_enhanced: 3
+      weapon_light: 4
+      shield_energy: 3
+      reactor_advanced: 3
+      weapon_medium: 5
+      weapon_heavy: 2
+      tactical_coordination: 3
+    image: *cat_line
+  heavy_cruiser:
+    label: "Croiseur Axiom"
+    category: "Navires de ligne"
+    role: "Croiseur lourd de percée"
+    description: "Blindage renforcé, artillerie lourde et systèmes de projection pour les batailles d’attrition."
+    base_cost:
+      metal: 8800
+      crystal: 6200
+      hydrogen: 1800
+    build_time: 1800
+    stats:
+      attaque: 150
+      défense: 140
+      vitesse: 7
+    requires_research:
+      engineering_heavy: 5
+      superstructures: 1
+      reactor_advanced: 4
+      weapon_medium: 5
+      weapon_heavy: 3
+      armor_basic: 6
+      armor_enhanced: 6
+      weapon_light: 5
+      shield_energy: 5
+      defense_multilayer: 2
+      tactical_coordination: 4
+    image: *cat_line
+  battleship:
+    label: "Cuirassé Helior"
+    category: "Navires lourds"
+    role: "Cuirassé de ligne"
+    description: "Boucliers étagés et batteries orbitales massives pour absorber et infliger d’énormes dégâts."
+    base_cost:
+      metal: 15000
+      crystal: 9800
+      hydrogen: 2600
+    build_time: 2700
+    stats:
+      attaque: 220
+      défense: 260
+      vitesse: 6
+    requires_research:
+      engineering_heavy: 5
+      superstructures: 4
+      reactor_advanced: 6
+      reactor_antimatter: 1
+      weapon_medium: 6
+      weapon_heavy: 6
+      weapon_capital: 1
+      armor_basic: 6
+      armor_enhanced: 6
+      weapon_light: 5
+      shield_energy: 5
+      defense_multilayer: 3
+    image: *cat_heavy
+  battlecruiser:
+    label: "Arbiter Solaris"
+    category: "Navires lourds"
+    role: "Croiseur de bataille"
+    description: "Compromis entre vitesse et artillerie lourde pour manœuvrer autour des cuirassés ennemis."
+    base_cost:
+      metal: 18800
+      crystal: 12600
+      hydrogen: 3200
+    build_time: 3300
+    stats:
+      attaque: 240
+      défense: 210
+      vitesse: 7
+    requires_research:
+      engineering_heavy: 5
+      superstructures: 2
+      reactor_advanced: 5
+      weapon_medium: 5
+      weapon_heavy: 4
+      tactical_coordination: 5
+    image: *cat_heavy
+  dreadnought:
+    label: "Dreadnought Orichal"
+    category: "Navires lourds"
+    role: "Dreadnought d’assaut"
+    description: "Pièce maîtresse d’une armada, concentrant le feu de multiples batteries super-lourdes."
+    base_cost:
+      metal: 26000
+      crystal: 18000
+      hydrogen: 4200
+    build_time: 4200
+    stats:
+      attaque: 320
+      défense: 320
+      vitesse: 5
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 4
+      reactor_advanced: 6
+      reactor_antimatter: 2
+      weapon_heavy: 6
+      weapon_capital: 2
+      armor_enhanced: 6
+      shield_energy: 5
+      defense_multilayer: 4
+      tactical_coordination: 6
+      stellar_shipyards: 2
+    image: *cat_heavy
+  carrier:
+    label: "Porte-chasseurs Aegira"
+    category: "Capitaux spécialisés"
+    role: "Transport et projection de chasseurs"
+    description: "Hangars magnétiques pouvant lancer simultanément des vagues complètes d’escadrilles."
+    base_cost:
+      metal: 22000
+      crystal: 21000
+      hydrogen: 5200
+    build_time: 4500
+    stats:
+      attaque: 180
+      défense: 300
+      vitesse: 5
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 5
+      stellar_shipyards: 2
+      tactical_coordination: 4
+      autonomous_hangars: 3
+      reactor_advanced: 5
+      weapon_medium: 5
+      shield_energy: 5
+      armor_enhanced: 6
+      fleet_networks: 2
+    image: *cat_capital
+  heavy_transport:
+    label: "Transporteur Atlas"
+    category: "Capitaux spécialisés"
+    role: "Transport lourd interplanétaire"
+    description: "Plate-forme d’atterrissage blindée pour déployer troupes, véhicules ou modules orbitaux."
+    base_cost:
+      metal: 12800
+      crystal: 9000
+      hydrogen: 6400
+    build_time: 3000
+    stats:
+      attaque: 70
+      défense: 150
+      vitesse: 6
+    requires_research:
+      propulsion_basic: 4
+      life_support: 4
+      logistics: 3
+      engineering_heavy: 2
+      armor_basic: 3
+      weapon_light: 3
+      tactical_coordination: 1
+    image: *cat_capital
+  command_ship:
+    label: "Vaisseau de commandement Novarch"
+    category: "Capitaux spécialisés"
+    role: "Centre de commandement stratégique"
+    description: "Coordinateur de flotte doté de suites tactiques avancées et de systèmes de communications quantiques."
+    base_cost:
+      metal: 24000
+      crystal: 20000
+      hydrogen: 7000
+    build_time: 4800
+    stats:
+      attaque: 160
+      défense: 340
+      vitesse: 5
+    requires_research:
+      tactical_coordination: 5
+      fleet_networks: 2
+      autonomous_hangars: 2
+      shield_energy: 4
+      armor_enhanced: 4
+      weapon_medium: 4
+    image: *cat_capital
+  super_battleship:
+    label: "Super-cuirassé Empyrium"
+    category: "Vaisseaux colossaux"
+    role: "Super-cuirassé de domination"
+    description: "Vaisseau emblématique, quasiment indestructible, arborant une armure multi-couches et un armement d’anéantissement."
+    base_cost:
+      metal: 54000
+      crystal: 42000
+      hydrogen: 12000
+    build_time: 9000
+    stats:
+      attaque: 420
+      défense: 520
+      vitesse: 4
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 5
+      stellar_shipyards: 3
+      reactor_advanced: 6
+      reactor_antimatter: 3
+      weapon_heavy: 6
+      weapon_capital: 3
+      armor_enhanced: 6
+      shield_energy: 5
+      defense_multilayer: 5
+    image: *cat_colossus
+  siege_breaker:
+    label: "Cuirassé de siège Ragnarok"
+    category: "Vaisseaux colossaux"
+    role: "Bélier orbital"
+    description: "Optimisé pour raser les fortifications planétaires grâce à des canons gravitoniques massifs."
+    base_cost:
+      metal: 62000
+      crystal: 46000
+      hydrogen: 15000
+    build_time: 9600
+    stats:
+      attaque: 480
+      défense: 480
+      vitesse: 4
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 5
+      stellar_shipyards: 3
+      weapon_capital: 3
+      super_weapon: 1
+      reactor_antimatter: 3
+      defense_multilayer: 4
+      shield_energy: 5
+    image: *cat_colossus
+  super_dreadnought:
+    label: "Super-dreadnought Nemesis"
+    category: "Vaisseaux colossaux"
+    role: "Arme capitale ultime"
+    description: "Capable de déployer un canon stellaire, ce navire dicte l’issue de n’importe quelle bataille."
+    base_cost:
+      metal: 72000
+      crystal: 56000
+      hydrogen: 18000
+    build_time: 10800
+    stats:
+      attaque: 560
+      défense: 580
+      vitesse: 3
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 5
+      stellar_shipyards: 3
+      reactor_advanced: 6
+      reactor_antimatter: 4
+      weapon_heavy: 6
+      weapon_capital: 4
+      super_weapon: 1
+      armor_enhanced: 6
+      shield_energy: 5
+      defense_multilayer: 5
+      fleet_networks: 3
+    image: *cat_colossus
+  battle_station:
+    label: "Citadelle Astra"
+    category: "Stations stellaires"
+    role: "Station spatiale armée"
+    description: "Forteresse orbitale dotée d’un anneau de super-lasers et de plates-formes autonomes."
+    base_cost:
+      metal: 95000
+      crystal: 82000
+      hydrogen: 25000
+    build_time: 14400
+    stats:
+      attaque: 680
+      défense: 760
+      vitesse: 0
+    requires_research:
+      engineering_heavy: 7
+      superstructures: 6
+      stellar_shipyards: 4
+      armor_enhanced: 6
+      shield_energy: 5
+      defense_multilayer: 5
+      weapon_capital: 3
+      super_weapon: 1
+      fleet_networks: 3
+    image: *cat_station

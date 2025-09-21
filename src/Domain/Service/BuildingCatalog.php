@@ -15,7 +15,16 @@ class BuildingCatalog
      */
     public function __construct(array $config)
     {
-        foreach ($config as $key => $data) {
+        $definitions = $config['buildings'] ?? $config;
+        if (!is_array($definitions)) {
+            $definitions = [];
+        }
+
+        foreach ($definitions as $key => $data) {
+            if (!is_array($data)) {
+                continue;
+            }
+
             $this->definitions[$key] = new BuildingDefinition(
                 $key,
                 $data['label'],

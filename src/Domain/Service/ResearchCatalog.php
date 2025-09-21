@@ -18,30 +18,67 @@ class ResearchCatalog
      */
     public function __construct(array $config)
     {
-        foreach ($config as $key => $data) {
+        $categoryImages = [];
+        if (isset($config['category_images']) && is_array($config['category_images'])) {
+            foreach ($config['category_images'] as $category => $image) {
+                if (is_string($image)) {
+                    $categoryImages[$category] = $image;
+                }
+            }
+        }
+
+        $defaultImage = '';
+        if (isset($config['default_image']) && is_string($config['default_image'])) {
+            $defaultImage = $config['default_image'];
+        }
+
+        $definitions = $config['technologies'] ?? $config;
+        if (!is_array($definitions)) {
+            $definitions = [];
+        }
+
+        foreach ($definitions as $key => $data) {
+            if (!is_array($data)) {
+                continue;
+            }
+
+            $category = (string) ($data['category'] ?? '');
+            $image = (string) ($data['image'] ?? '');
+            if ($image === '' && $category !== '' && isset($categoryImages[$category])) {
+                $image = $categoryImages[$category];
+            }
+            if ($image === '' && $defaultImage !== '') {
+                $image = $defaultImage;
+            }
+
             $definition = new ResearchDefinition(
                 $key,
                 $data['label'],
-                $data['category'],
+                $category,
                 $data['description'] ?? '',
-                $data['base_cost'],
+                is_array($data['base_cost'] ?? null) ? $data['base_cost'] : [],
                 (int) $data['base_time'],
                 (float) ($data['growth_cost'] ?? 1.0),
                 (float) ($data['growth_time'] ?? 1.0),
                 (int) ($data['max_level'] ?? 10),
-                $data['requires'] ?? [],
+                is_array($data['requires'] ?? null) ? $data['requires'] : [],
                 (int) ($data['requires_lab'] ?? 0),
-                $data['image'] ?? ''
+                $image
             );
 
             $this->definitions[$key] = $definition;
-            $category = $definition->getCategory();
-
             if (!isset($this->categories[$category])) {
+                $categoryImage = $categoryImages[$category] ?? $image;
+                if ($categoryImage === '' && $defaultImage !== '') {
+                    $categoryImage = $defaultImage;
+                }
+
                 $this->categories[$category] = [
-                    'image' => $definition->getImage(),
+                    'image' => (string) $categoryImage,
                     'items' => [],
                 ];
+            } elseif ($this->categories[$category]['image'] === '' && $image !== '') {
+                $this->categories[$category]['image'] = $image;
             }
 
             $this->categories[$category]['items'][] = $definition;

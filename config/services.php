@@ -59,8 +59,32 @@ use App\Infrastructure\Persistence\PdoResearchStateRepository;
 use App\Infrastructure\Persistence\PdoShipBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoUserRepository;
 use App\Infrastructure\Security\CsrfTokenManager;
+use Symfony\Component\Yaml\Yaml;
 
 return function (Container $container): void {
+    $loadYamlConfig = static function (string $file): array {
+        $path = __DIR__ . '/balance/' . $file;
+
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $data = Yaml::parseFile($path);
+
+        return is_array($data) ? $data : [];
+    };
+
+    $buildingConfig = $loadYamlConfig('buildings.yml');
+    $buildingDefinitions = $buildingConfig['buildings'] ?? $buildingConfig;
+    if (!is_array($buildingDefinitions)) {
+        $buildingDefinitions = [];
+    }
+
+    $technologyConfig = $loadYamlConfig('technologies.yml');
+    $shipConfig = $loadYamlConfig('ships.yml');
+    $balanceConfig = $loadYamlConfig('balance.yml');
+
+    $container->setParameter('game.balance', $balanceConfig);
     $container->set(ConnectionFactory::class, function (Container $c) {
         return new ConnectionFactory(
             $c->getParameter('db.host'),
@@ -81,32 +105,26 @@ return function (Container $container): void {
 
     $container->set(ViewRenderer::class, fn () => new ViewRenderer(__DIR__ . '/../templates'));
 
-    $container->set(BuildingCatalog::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-
-        return new BuildingCatalog($config);
+    $container->set(BuildingCatalog::class, function () use ($buildingDefinitions) {
+        return new BuildingCatalog($buildingDefinitions);
     });
 
     $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
-    $container->set(ResourceTickService::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $effects = ResourceEffectFactory::fromBuildingConfig($config);
+    $container->set(ResourceTickService::class, function () use ($buildingDefinitions) {
+        $effects = ResourceEffectFactory::fromBuildingConfig($buildingDefinitions);
 
         return new ResourceTickService($effects);
     });
     $container->set(CostService::class, fn () => new CostService());
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
 
-    $container->set(ResearchCatalog::class, function () {
-        $config = require __DIR__ . '/game/research.php';
-
-        return new ResearchCatalog($config);
+    $container->set(ResearchCatalog::class, function () use ($technologyConfig) {
+        return new ResearchCatalog($technologyConfig);
     });
 
-    $container->set(ResearchCalculator::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $bonusConfig = $config['research_lab']['research_speed_bonus'] ?? 0.0;
+    $container->set(ResearchCalculator::class, function () use ($buildingDefinitions, $balanceConfig) {
+        $bonusConfig = $buildingDefinitions['research_lab']['research_speed_bonus'] ?? 0.0;
         $bonusPerLevel = 0.0;
         $bonusMax = 0.0;
 
@@ -127,13 +145,19 @@ return function (Container $container): void {
         $bonusPerLevel = max(0.0, $bonusPerLevel);
         $bonusMax = max(0.0, $bonusMax);
 
+        if ($bonusMax <= 0.0 && isset($balanceConfig['research']['lab_bonus_max'])) {
+            $bonusMax = (float) $balanceConfig['research']['lab_bonus_max'];
+        }
+
+        if ($bonusPerLevel <= 0.0 && isset($balanceConfig['research']['lab_bonus_per_level'])) {
+            $bonusPerLevel = (float) $balanceConfig['research']['lab_bonus_per_level'];
+        }
+
         return new ResearchCalculator($bonusPerLevel, $bonusMax);
     });
 
-    $container->set(ShipCatalog::class, function () {
-        $config = require __DIR__ . '/game/ships.php';
-
-        return new ShipCatalog($config);
+    $container->set(ShipCatalog::class, function () use ($shipConfig) {
+        return new ShipCatalog($shipConfig);
     });
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
