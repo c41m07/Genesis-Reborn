@@ -63,8 +63,11 @@ ob_start();
         <div class="tech-tree__layout">
             <aside class="tech-tree__sidebar">
                 <?php foreach ($categories as $category): ?>
-                    <div class="tech-section">
-                        <h2 class="tech-section__title"><?= htmlspecialchars($category['label']) ?></h2>
+                    <details class="tech-section">
+                        <summary class="tech-section__summary">
+                            <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($category['label']) ?></span>
+                            <span class="tech-section__icon" aria-hidden="true"></span>
+                        </summary>
                         <ul class="tech-section__list">
                             <?php foreach ($category['items'] as $item): ?>
                                 <?php $nodeId = $category['key'] . ':' . $item['key']; ?>
@@ -79,7 +82,7 @@ ob_start();
                                 </li>
                             <?php endforeach; ?>
                         </ul>
-                    </div>
+                    </details>
                 <?php endforeach; ?>
             </aside>
             <section class="tech-tree__details" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
