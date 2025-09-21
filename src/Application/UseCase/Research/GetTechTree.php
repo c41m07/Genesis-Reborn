@@ -21,27 +21,30 @@ class GetTechTree
 
     /**
      * @return array{
-     *     categories: array<int, array{
+     *     groups: array<int, array{
      *         key: string,
      *         label: string,
-     *         items: array<int, array{
-     *             type: string,
+     *         categories: array<int, array{
      *             key: string,
      *             label: string,
-     *             level?: int,
-     *             description?: string,
-     *             image?: ?string,
-     *             requires: array<int, array{type: string, key: string, label: string, required: int, current: int, met: bool}>
+     *             items: array<int, array{
+     *                 type: string,
+     *                 key: string,
+     *                 label: string,
+     *                 level?: int,
+     *                 description?: string,
+     *                 image?: ?string,
+     *                 requires: array<int, array{type: string, key: string, label: string, required: int, current: int, met: bool}>
+     *             }>
      *         }>
-     *     }>
+     *     }>,
+     *     buildingLevels: array<string, int>
      * }
      */
     public function execute(int $planetId): array
     {
         $researchLevels = $this->researchStates->getLevels($planetId);
         $buildingLevels = $this->buildingStates->getLevels($planetId);
-
-        $categories = [];
 
         $buildingItems = [];
         foreach ($this->buildingCatalog->all() as $definition) {
@@ -82,12 +85,13 @@ class GetTechTree
             ];
         }
         usort($buildingItems, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
-        $categories[] = [
+        $buildingCategories = [[
             'key' => 'buildings',
             'label' => 'Bâtiments',
             'items' => $buildingItems,
-        ];
+        ]];
 
+        $shipCategories = [];
         foreach ($this->shipCatalog->groupedByCategory() as $category => $data) {
             $shipItems = [];
             foreach ($data['items'] as $definition) {
@@ -115,13 +119,18 @@ class GetTechTree
                 ];
             }
 
-            $categories[] = [
+            if ($shipItems === []) {
+                continue;
+            }
+
+            $shipCategories[] = [
                 'key' => 'ship-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($category)),
                 'label' => $category,
                 'items' => $shipItems,
             ];
         }
 
+        $researchCategories = [];
         $labDefinition = $this->buildingCatalog->get('research_lab');
         foreach ($this->researchCatalog->groupedByCategory() as $category => $data) {
             $items = [];
@@ -164,7 +173,11 @@ class GetTechTree
                 ];
             }
 
-            $categories[] = [
+            if ($items === []) {
+                continue;
+            }
+
+            $researchCategories[] = [
                 'key' => 'research-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($category)),
                 'label' => $category,
                 'items' => $items,
@@ -172,7 +185,23 @@ class GetTechTree
         }
 
         return [
-            'categories' => $categories,
+            'groups' => [
+                [
+                    'key' => 'buildings',
+                    'label' => 'Bâtiments',
+                    'categories' => $buildingCategories,
+                ],
+                [
+                    'key' => 'ships',
+                    'label' => 'Vaisseaux',
+                    'categories' => $shipCategories,
+                ],
+                [
+                    'key' => 'research',
+                    'label' => 'Recherches',
+                    'categories' => $researchCategories,
+                ],
+            ],
             'buildingLevels' => $buildingLevels,
         ];
     }
