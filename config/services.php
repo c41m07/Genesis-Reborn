@@ -25,6 +25,7 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
+use App\Domain\Config\BalanceConfig;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
@@ -43,6 +44,7 @@ use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
+use App\Infrastructure\Config\BalanceConfigLoader;
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Database\ConnectionFactory;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -81,6 +83,13 @@ return function (Container $container): void {
 
     $container->set(ViewRenderer::class, fn () => new ViewRenderer(__DIR__ . '/../templates'));
 
+    $container->set(BalanceConfigLoader::class, fn () => new BalanceConfigLoader());
+    $container->set(BalanceConfig::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+
+        return $loader->load(__DIR__ . '/game/balance.php');
+    });
+
     $container->set(BuildingCatalog::class, function () {
         $config = require __DIR__ . '/game/buildings.php';
 
@@ -89,13 +98,13 @@ return function (Container $container): void {
 
     $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
-    $container->set(ResourceTickService::class, function () {
+    $container->set(ResourceTickService::class, function (Container $c) {
         $config = require __DIR__ . '/game/buildings.php';
         $effects = ResourceEffectFactory::fromBuildingConfig($config);
 
-        return new ResourceTickService($effects);
+        return new ResourceTickService($effects, $c->get(BalanceConfig::class));
     });
-    $container->set(CostService::class, fn () => new CostService());
+    $container->set(CostService::class, fn (Container $c) => new CostService($c->get(BalanceConfig::class)));
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
 
     $container->set(ResearchCatalog::class, function () {

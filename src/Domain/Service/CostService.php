@@ -2,8 +2,14 @@
 
 namespace App\Domain\Service;
 
+use App\Domain\Config\BalanceConfig;
+
 class CostService
 {
+    public function __construct(private readonly BalanceConfig $balanceConfig = new BalanceConfig())
+    {
+    }
+
     /**
      * @param array<string, int|float> $baseCost
      *
@@ -44,7 +50,7 @@ class CostService
 
     public function scaledDuration(int $baseDuration, float $growthFactor, int $currentLevel, float $speedModifier = 1.0): int
     {
-        $speedModifier = max(0.01, $speedModifier);
+        $speedModifier = max($this->balanceConfig->getMinimumSpeedModifier(), $speedModifier);
 
         return (int) max(1, round($baseDuration * pow($growthFactor, $currentLevel) / $speedModifier));
     }
@@ -56,7 +62,7 @@ class CostService
      */
     public function applyDiscount(array $cost, float $discount): array
     {
-        $discount = max(0.0, min(0.95, $discount));
+        $discount = max(0.0, min($this->balanceConfig->getMaximumDiscount(), $discount));
 
         $result = [];
         foreach ($cost as $resource => $value) {
