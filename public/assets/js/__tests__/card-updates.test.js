@@ -68,6 +68,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
         canUpgrade: false,
         cost: { metal: 150, crystal: 75 },
         time: 120,
+        baseTime: 180,
         production: { resource: 'metal', current: 30, next: 40 },
         consumption: { energy: { current: 5, next: 7 } },
         storage: { current: {}, next: {}, delta: {} },
@@ -89,6 +90,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
     assert.ok(costList?.textContent?.includes('150'));
     assert.ok(costList?.textContent?.includes('75'));
     assert.ok(costList?.textContent?.includes('2 min'));
+    assert.ok(costList?.innerHTML?.includes('(base 3 min)'));
 
     const requirements = card?.querySelector('.building-card__requirements');
     assert.ok(requirements);
@@ -140,6 +142,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         progress: 0.4,
         nextCost: { metal: 100, crystal: 50 },
         nextTime: 180,
+        nextBaseTime: 240,
         requirements: { ok: true, missing: [] },
         canResearch: true,
     });
@@ -161,6 +164,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
     assert.ok(costList?.textContent?.includes('100'));
     assert.ok(costList?.textContent?.includes('50'));
     assert.ok(costList?.textContent?.includes('3 min'));
+    assert.ok(costList?.innerHTML?.includes('(base 4 min)'));
 
     const requirements = card?.querySelector('.tech-card__requirements');
     assert.equal(requirements, null);
@@ -176,6 +180,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         progress: 0.4,
         nextCost: { metal: 100, crystal: 50 },
         nextTime: 180,
+        nextBaseTime: 240,
         requirements: {
             ok: false,
             missing: [

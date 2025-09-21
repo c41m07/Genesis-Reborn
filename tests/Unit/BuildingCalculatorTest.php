@@ -7,6 +7,7 @@ namespace App\Tests\Unit;
 use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
+use App\Infrastructure\Config\BuildingConfig;
 use PHPUnit\Framework\TestCase;
 
 class BuildingCalculatorTest extends TestCase
@@ -89,7 +90,12 @@ class BuildingCalculatorTest extends TestCase
             ],
         ];
 
-        $this->catalog = new BuildingCatalog($config);
+        $buildingConfigs = [];
+        foreach ($config as $key => $data) {
+            $buildingConfigs[] = new BuildingConfig($key, $data);
+        }
+
+        $this->catalog = new BuildingCatalog($buildingConfigs);
         $this->calculator = new BuildingCalculator($this->catalog);
         $this->definition = $this->catalog->get('metal_mine');
     }

@@ -3,7 +3,7 @@
 require_once __DIR__ . '/helpers.php';
 
 /**
- * @param array<string, array{label: string, value: int|float, perHour?: int|float, hint?: string, trend?: string}> $resources
+ * @param array<string, array{label: string, value: int|float, perHour?: int|float, capacity?: int|float, hint?: string, trend?: string}> $resources
  * @param array{baseUrl?: string, class?: string, showRates?: bool} $options
  */
 return static function (array $resources, array $options = []): string {
@@ -25,6 +25,7 @@ return static function (array $resources, array $options = []): string {
         $label = $data['label'] ?? ucfirst((string) $key);
         $value = (float) ($data['value'] ?? 0);
         $perHour = $data['perHour'] ?? null;
+        $capacity = $data['capacity'] ?? null;
         $hint = $data['hint'] ?? null;
         $trend = $data['trend'] ?? null;
 
@@ -58,13 +59,23 @@ return static function (array $resources, array $options = []): string {
             $rateMarkup = sprintf('<span class="resource-meter__rate %s">%s</span>', htmlspecialchars($rateClass, ENT_QUOTES), htmlspecialchars($rateDisplay, ENT_QUOTES));
         }
 
+        $capacityMarkup = '';
+        if (array_key_exists('capacity', $data)) {
+            $capacityValue = $capacity !== null ? (float) $capacity : 0.0;
+            $formattedCapacity = $capacityValue > 0 ? format_number($capacityValue) : '—';
+            $capacityMarkup = sprintf('<span class="resource-meter__capacity">/ %s</span>', htmlspecialchars($formattedCapacity, ENT_QUOTES));
+        }
+
         $items .= '<div class="resource-meter" role="group" aria-label="' . htmlspecialchars((string) $label, ENT_QUOTES) . '">';
         $items .= '<div class="resource-meter__icon">' . $icon . '</div>';
         $items .= '<div class="resource-meter__details">';
         $items .= '<span class="resource-meter__label">' . htmlspecialchars((string) $label, ENT_QUOTES) . '</span>';
         $items .= '<div class="resource-meter__values">';
+        $items .= '<div class="resource-meter__primary">';
         $items .= '<span class="resource-meter__value">' . htmlspecialchars($valueDisplay, ENT_QUOTES) . '</span>';
         $items .= $rateMarkup;
+        $items .= '</div>';
+        $items .= $capacityMarkup;
         $items .= '</div>';
         $items .= $hintMarkup;
         $items .= '</div>';

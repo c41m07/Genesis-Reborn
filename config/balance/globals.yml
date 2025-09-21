@@ -1,0 +1,10 @@
+initial_resources:
+  metal: 1000
+  crystal: 1000
+  hydrogen: 1000
+  energy: 0
+initial_capacities:
+  metal: 1000
+  crystal: 1000
+  hydrogen: 1000
+  energy: 1000

@@ -185,7 +185,13 @@ ob_start();
                                 echo '<span>' . format_number((int) $amount) . '</span>';
                                 echo '</li>';
                             }
-                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $building['time'])) . '</span></li>';
+                            $buildTime = (int) ($building['time'] ?? 0);
+                            $baseBuildTime = (int) ($building['baseTime'] ?? $buildTime);
+                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
+                            if ($baseBuildTime !== $buildTime) {
+                                echo ' <small>(base ' . htmlspecialchars(format_duration($baseBuildTime)) . ')</small>';
+                            }
+                            echo '</span></li>';
                             echo '</ul>';
                             echo '</div>';
 

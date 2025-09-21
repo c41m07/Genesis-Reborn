@@ -2,37 +2,41 @@
 
 namespace App\Domain\Service;
 
+use App\Infrastructure\Config\BuildingConfig;
+use InvalidArgumentException;
+
 final class ResourceEffectFactory
 {
     /**
-     * @param array<string, array<string, mixed>> $buildingConfig
+     * @param iterable<BuildingConfig> $buildingConfigs
      *
      * @return array<string, array<string, mixed>>
      */
-    public static function fromBuildingConfig(array $buildingConfig): array
+    public static function fromBuildingConfig(iterable $buildingConfigs): array
     {
         $effects = [];
 
-        foreach ($buildingConfig as $key => $data) {
-            if (!is_array($data)) {
-                continue;
+        foreach ($buildingConfigs as $config) {
+            if (!$config instanceof BuildingConfig) {
+                throw new InvalidArgumentException('ResourceEffectFactory expects instances of BuildingConfig.');
             }
 
+            $key = $config->getKey();
             $effect = [];
-            $affects = $data['affects'] ?? null;
+            $affects = $config->getAffects();
 
-            $productionBase = (float) ($data['prod_base'] ?? 0);
-            $productionGrowth = (float) ($data['prod_growth'] ?? 1);
-            $energyUseBase = (float) ($data['energy_use_base'] ?? 0);
-            $energyUseGrowth = (float) ($data['energy_use_growth'] ?? 1);
-            $energyUseLinear = !empty($data['energy_use_linear']);
+            $productionBase = (float) $config->getProductionBase();
+            $productionGrowth = $config->getProductionGrowth();
+            $energyUseBase = (float) $config->getEnergyUseBase();
+            $energyUseGrowth = $config->getEnergyUseGrowth();
+            $energyUseLinear = $config->isEnergyUseLinear();
 
-            if (in_array($affects, ['metal', 'crystal', 'hydrogen'], true) && $productionBase > 0) {
+            if (in_array($affects, ['metal', 'crystal', 'hydrogen'], true) && $productionBase > 0.0) {
                 $effect['produces'][$affects] = [
                     'base' => $productionBase,
                     'growth' => $productionGrowth,
                 ];
-            } elseif ($affects === 'energy' && $productionBase > 0) {
+            } elseif ($affects === 'energy' && $productionBase > 0.0) {
                 $effect['energy']['production'] = [
                     'base' => $productionBase,
                     'growth' => $productionGrowth,
@@ -49,28 +53,22 @@ final class ResourceEffectFactory
                 }
             }
 
-            if (!empty($data['storage']) && is_array($data['storage'])) {
-                foreach ($data['storage'] as $resourceKey => $storageConfig) {
-                    if (!is_array($storageConfig)) {
-                        continue;
-                    }
-
+            $storage = $config->getStorage();
+            if ($storage !== []) {
+                foreach ($storage as $resourceKey => $storageConfig) {
                     $effect['storage'][$resourceKey] = [
-                        'base' => (float) ($storageConfig['base'] ?? 0),
-                        'growth' => (float) ($storageConfig['growth'] ?? 1),
+                        'base' => (float) ($storageConfig['base'] ?? 0.0),
+                        'growth' => (float) ($storageConfig['growth'] ?? 1.0),
                     ];
                 }
             }
 
-            if (!empty($data['upkeep']) && is_array($data['upkeep'])) {
-                foreach ($data['upkeep'] as $resourceKey => $upkeepConfig) {
-                    if (!is_array($upkeepConfig)) {
-                        continue;
-                    }
-
+            $upkeep = $config->getUpkeep();
+            if ($upkeep !== []) {
+                foreach ($upkeep as $resourceKey => $upkeepConfig) {
                     $consumption = [
-                        'base' => (float) ($upkeepConfig['base'] ?? 0),
-                        'growth' => (float) ($upkeepConfig['growth'] ?? 1),
+                        'base' => (float) ($upkeepConfig['base'] ?? 0.0),
+                        'growth' => (float) ($upkeepConfig['growth'] ?? 1.0),
                     ];
 
                     if (!empty($upkeepConfig['linear'])) {
