@@ -2,6 +2,7 @@
 
 namespace App\Domain\Service;
 
+use App\Domain\Config\BalanceConfig;
 use DateTimeImmutable;
 use DateTimeInterface;
 use InvalidArgumentException;
@@ -13,12 +14,15 @@ class ResourceTickService
      */
     private array $defaultEffects;
 
+    private BalanceConfig $balanceConfig;
+
     /**
      * @param array<string, array<string, mixed>> $defaultEffects
      */
-    public function __construct(array $defaultEffects = [])
+    public function __construct(array $defaultEffects = [], ?BalanceConfig $balanceConfig = null)
     {
         $this->defaultEffects = $defaultEffects;
+        $this->balanceConfig = $balanceConfig ?? new BalanceConfig();
     }
 
     /**
@@ -176,7 +180,7 @@ class ResourceTickService
                 $energyRatio = max(0.0, $energyProduction / $energyConsumption);
             }
 
-            $secondsFactor = $elapsedSeconds / 3600;
+            $secondsFactor = $elapsedSeconds / $this->balanceConfig->getTickDurationSeconds();
             $adjustedProduction = [];
 
             foreach ($productionRaw as $resourceKey => $perHour) {
@@ -215,30 +219,30 @@ class ResourceTickService
 
             $finalResources = [];
             foreach ($resourceTotals as $resourceKey => $value) {
-                $finalResources[$resourceKey] = (int) floor($value + 0.000001);
+                $finalResources[$resourceKey] = $this->balanceConfig->roundResourceQuantity($value);
             }
 
             $finalCapacities = [];
             foreach ($capacityTotals as $resourceKey => $value) {
-                $finalCapacities[$resourceKey] = (int) round($value);
+                $finalCapacities[$resourceKey] = $this->balanceConfig->roundCapacity($value);
             }
 
             $productionPerHour = [];
             foreach ($adjustedProduction as $resourceKey => $perHour) {
-                $productionPerHour[$resourceKey] = (int) round($perHour);
+                $productionPerHour[$resourceKey] = $this->balanceConfig->roundProduction($perHour);
             }
 
-            $productionPerHour['energy'] = (int) round($energyPerHour);
+            $productionPerHour['energy'] = $this->balanceConfig->roundEnergyStat($energyPerHour);
 
             $results[$key] = [
                 'resources' => $finalResources,
                 'production_per_hour' => $productionPerHour,
                 'capacities' => $finalCapacities,
                 'energy' => [
-                    'production' => (int) round($energyProduction),
-                    'consumption' => (int) round($energyConsumption),
-                    'balance' => (int) round($energyPerHour),
-                    'available' => (int) floor($energyAvailable + 0.000001),
+                    'production' => $this->balanceConfig->roundEnergyStat($energyProduction),
+                    'consumption' => $this->balanceConfig->roundEnergyStat($energyConsumption),
+                    'balance' => $this->balanceConfig->roundEnergyStat($energyPerHour),
+                    'available' => $this->balanceConfig->roundEnergyAvailable($energyAvailable),
                     'ratio' => $energyRatio,
                 ],
                 'elapsed_seconds' => $elapsedSeconds,

@@ -12,6 +12,30 @@ combat:
     attacker: 1.0
     defender: 1.0
   default_damage_modifier: 1.0
+defaults:
+  cost_multiplier: 1.0
+  time_multiplier: 1.0
+  minimum_duration: 1
+  maximum_discount: 0.95
+construction:
+  time_bonus_cap: 0.95
+  minimum_time_modifier: 0.01
+  shipyard_speed_bonus_cap: 0.99
+research:
+  time_multiplier: 1.0
+  cost_multiplier: 1.0
+  lab_bonus_per_level: 0.01
+  lab_bonus_max: 0.99
+energy:
+  production_ratio: 1.0
+  consumption_ratio: 1.0
+queues:
+  build:
+    max_parallel: 1
+  research:
+    max_parallel: 1
+  shipyard:
+    max_parallel: 1
 target_priorities:
   fighter:
     - interceptor

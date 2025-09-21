@@ -3,6 +3,7 @@
 namespace App\Domain\Service;
 
 use App\Domain\Entity\ResearchDefinition;
+use App\Infrastructure\Config\TechnologyConfig;
 use InvalidArgumentException;
 
 class ResearchCatalog
@@ -14,24 +15,30 @@ class ResearchCatalog
     private array $categories = [];
 
     /**
-     * @param array<string, array<string, mixed>> $config
+     * @param iterable<TechnologyConfig> $configs
      */
-    public function __construct(array $config)
+    public function __construct(iterable $configs)
     {
-        foreach ($config as $key => $data) {
+        foreach ($configs as $config) {
+            if (!$config instanceof TechnologyConfig) {
+                throw new InvalidArgumentException('ResearchCatalog expects instances of TechnologyConfig.');
+            }
+
+            $key = $config->getKey();
+
             $definition = new ResearchDefinition(
                 $key,
-                $data['label'],
-                $data['category'],
-                $data['description'] ?? '',
-                $data['base_cost'],
-                (int) $data['base_time'],
-                (float) ($data['growth_cost'] ?? 1.0),
-                (float) ($data['growth_time'] ?? 1.0),
-                (int) ($data['max_level'] ?? 10),
-                $data['requires'] ?? [],
-                (int) ($data['requires_lab'] ?? 0),
-                $data['image'] ?? ''
+                $config->getLabel(),
+                $config->getCategory(),
+                $config->getDescription(),
+                $config->getBaseCost(),
+                $config->getBaseTime(),
+                $config->getGrowthCost(),
+                $config->getGrowthTime(),
+                $config->getMaxLevel(),
+                $config->getRequires(),
+                $config->getRequiresLab(),
+                $config->getImage() ?? ''
             );
 
             $this->definitions[$key] = $definition;
