@@ -243,6 +243,7 @@ class ResearchController extends AbstractController
             'progress' => (float) ($entry['progress'] ?? 0.0),
             'nextCost' => array_map(static fn ($value) => (int) $value, $entry['nextCost'] ?? []),
             'nextTime' => (int) ($entry['nextTime'] ?? 0),
+            'nextBaseTime' => (int) ($entry['nextBaseTime'] ?? 0),
             'requirements' => [
                 'ok' => (bool) ($requirements['ok'] ?? false),
                 'missing' => $missing,

@@ -84,6 +84,7 @@ class GetResearchOverview
                 $effectiveResearchLevels = $researchLevels;
                 $effectiveResearchLevels[$definition->getKey()] = $effectiveLevel;
                 $nextCost = $this->calculator->nextCost($definition, $effectiveLevel);
+                $nextBaseTime = $this->calculator->nextTime($definition, $effectiveLevel, 0);
                 $nextTime = $this->calculator->nextTime($definition, $effectiveLevel, $labLevel);
                 $requirements = $this->calculator->checkRequirements(
                     $definition,
@@ -106,6 +107,7 @@ class GetResearchOverview
                     'progress' => $definition->getMaxLevel() > 0 ? min(1.0, $currentLevel / $definition->getMaxLevel()) : 0,
                     'nextCost' => $nextCost,
                     'nextTime' => $nextTime,
+                    'nextBaseTime' => $nextBaseTime,
                     'requirements' => $requirements,
                     'canResearch' => $canResearch,
                 ];
