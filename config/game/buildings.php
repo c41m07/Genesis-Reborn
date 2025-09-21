@@ -202,7 +202,7 @@ return [
             ],
         ],
         'construction_speed_bonus' => [
-            'per_level' => 0.05,
+            'per_level' => 0.03,
             'max' => 0.99,
         ],
         'upkeep' => [
