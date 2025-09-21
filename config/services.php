@@ -343,54 +343,48 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
-    $container->set(FleetController::class, static function (Container $c): FleetController {
-        return new FleetController(
-            planets: $c->get(PlanetRepositoryInterface::class),
-            buildingStates: $c->get(BuildingStateRepositoryInterface::class),
-            fleets: $c->get(FleetRepositoryInterface::class),
-            shipCatalog: $c->get(ShipCatalog::class),
-            shipQueueProcessor: $c->get(ProcessShipBuildQueue::class),
-            navigationService: $c->get(FleetNavigationService::class),
-            renderer: $c->get(ViewRenderer::class),
-            session: $c->get(SessionInterface::class),
-            flashBag: $c->get(FlashBag::class),
-            csrfTokenManager: $c->get(CsrfTokenManager::class),
-            baseUrl: $c->getParameter('app.base_url')
-        );
-    });
+    $container->set(FleetController::class, fn (Container $c) => new FleetController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(FleetNavigationService::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
 
-    $container->set(JournalController::class, static function (Container $c): JournalController {
-        return new JournalController(
-            planets: $c->get(PlanetRepositoryInterface::class),
-            buildingStates: $c->get(BuildingStateRepositoryInterface::class),
-            buildQueue: $c->get(BuildQueueRepositoryInterface::class),
-            researchQueue: $c->get(ResearchQueueRepositoryInterface::class),
-            shipQueue: $c->get(ShipBuildQueueRepositoryInterface::class),
-            processBuildQueue: $c->get(ProcessBuildQueue::class),
-            processResearchQueue: $c->get(ProcessResearchQueue::class),
-            processShipBuildQueue: $c->get(ProcessShipBuildQueue::class),
-            buildingCatalog: $c->get(BuildingCatalog::class),
-            researchCatalog: $c->get(ResearchCatalog::class),
-            shipCatalog: $c->get(ShipCatalog::class),
-            renderer: $c->get(ViewRenderer::class),
-            session: $c->get(SessionInterface::class),
-            flashBag: $c->get(FlashBag::class),
-            csrfTokenManager: $c->get(CsrfTokenManager::class),
-            baseUrl: $c->getParameter('app.base_url')
-        );
-    });
+    $container->set(JournalController::class, fn (Container $c) => new JournalController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(ResearchCatalog::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
 
-    $container->set(ProfileController::class, static function (Container $c): ProfileController {
-        return new ProfileController(
-            users: $c->get(UserRepositoryInterface::class),
-            getDashboard: $c->get(GetDashboard::class),
-            renderer: $c->get(ViewRenderer::class),
-            session: $c->get(SessionInterface::class),
-            flashBag: $c->get(FlashBag::class),
-            csrfTokenManager: $c->get(CsrfTokenManager::class),
-            baseUrl: $c->getParameter('app.base_url')
-        );
-    });
+    $container->set(ProfileController::class, fn (Container $c) => new ProfileController(
+        $c->get(UserRepositoryInterface::class),
+        $c->get(GetDashboard::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
 
     $container->set(TechTreeController::class, fn (Container $c) => new TechTreeController(
         $c->get(PlanetRepositoryInterface::class),
