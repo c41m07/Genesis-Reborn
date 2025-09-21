@@ -408,8 +408,16 @@ return function (Container $container): void {
 
     $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResourceTickService::class),
-        $c->get(SessionInterface::class)
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
     ));
 
     $container->set(TechTreeController::class, fn (Container $c) => new TechTreeController(
