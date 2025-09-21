@@ -106,9 +106,28 @@ return function (Container $container): void {
 
     $container->set(ResearchCalculator::class, function () {
         $config = require __DIR__ . '/game/buildings.php';
-        $bonus = (float) ($config['research_lab']['research_speed_bonus'] ?? 0.0);
+        $bonusConfig = $config['research_lab']['research_speed_bonus'] ?? 0.0;
+        $bonusPerLevel = 0.0;
+        $bonusMax = 0.0;
 
-        return new ResearchCalculator($bonus);
+        if (is_array($bonusConfig)) {
+            if (array_key_exists('per_level', $bonusConfig)) {
+                $bonusPerLevel = (float) $bonusConfig['per_level'];
+            } else {
+                $bonusPerLevel = (float) ($bonusConfig['base'] ?? 0.0);
+            }
+
+            if (array_key_exists('max', $bonusConfig)) {
+                $bonusMax = (float) $bonusConfig['max'];
+            }
+        } else {
+            $bonusPerLevel = (float) $bonusConfig;
+        }
+
+        $bonusPerLevel = max(0.0, $bonusPerLevel);
+        $bonusMax = max(0.0, $bonusMax);
+
+        return new ResearchCalculator($bonusPerLevel, $bonusMax);
     });
 
     $container->set(ShipCatalog::class, function () {
