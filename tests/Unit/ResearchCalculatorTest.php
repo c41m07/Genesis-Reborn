@@ -111,4 +111,12 @@ class ResearchCalculatorTest extends TestCase
 
         self::assertSame(1, $shortDuration);
     }
+
+    public function testLabSpeedBonusRespectsConfiguredMaximum(): void
+    {
+        $cappedCalculator = new ResearchCalculator(0.5, 0.75);
+
+        self::assertSame(0.75, $cappedCalculator->labSpeedBonus(5));
+        self::assertSame(69, $cappedCalculator->nextTime($this->definition, 0, 5));
+    }
 }
