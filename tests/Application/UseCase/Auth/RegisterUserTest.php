@@ -42,6 +42,16 @@ class RegisterUserTest extends TestCase
         self::assertSame(1000, $planet->getCrystal());
         self::assertSame(1000, $planet->getHydrogen());
         self::assertSame(0, $planet->getEnergy());
+        self::assertSame(1000, $planet->getMetalCapacity());
+        self::assertSame(1000, $planet->getCrystalCapacity());
+        self::assertSame(1000, $planet->getHydrogenCapacity());
+        self::assertSame(1000, $planet->getEnergyCapacity());
+        self::assertGreaterThanOrEqual(1, $planet->getGalaxy());
+        self::assertLessThanOrEqual(9, $planet->getGalaxy());
+        self::assertGreaterThanOrEqual(1, $planet->getSystem());
+        self::assertLessThanOrEqual(9, $planet->getSystem());
+        self::assertGreaterThanOrEqual(1, $planet->getPosition());
+        self::assertLessThanOrEqual(9, $planet->getPosition());
     }
 }
 
@@ -117,9 +127,9 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
         $planet = new Planet(
             $this->autoIncrement++,
             $userId,
-            1,
-            1,
-            1,
+            random_int(1, 9),
+            random_int(1, 9),
+            random_int(1, 9),
             'Planète mère',
             1000,
             1000,
@@ -129,9 +139,9 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
             0,
             0,
             0,
-            80000,
-            60000,
-            40000,
+            1000,
+            1000,
+            1000,
             1000,
             new DateTimeImmutable()
         );
