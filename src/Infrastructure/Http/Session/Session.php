@@ -17,7 +17,7 @@ class Session implements SessionInterface
      */
     public function __construct(array &$data)
     {
-        $this->data =& $data;
+        $this->data = & $data;
     }
 
     /**

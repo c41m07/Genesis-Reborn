@@ -55,6 +55,58 @@ return [
             'research' => [],
         ],
     ],
+    'fusion_reactor' => [
+        'label' => 'Réacteur à fusion',
+        'base_cost' => ['metal' => 900, 'crystal' => 360, 'hydrogen' => 180],
+        'base_time' => 60,
+        'growth_cost' => 1.55,
+        'growth_time' => 1.6,
+        'prod_base' => 320,
+        'prod_growth' => 1.18,
+        'energy_use_base' => 0,
+        'energy_use_growth' => 1.0,
+        'energy_use_linear' => false,
+        'affects' => 'energy',
+        'image' => 'assets/svg/illustrations/buildings/fusion-reactor.svg',
+        'requires' => [
+            'buildings' => [
+                'solar_plant' => 5,
+                'hydrogen_plant' => 3,
+            ],
+            'research' => [
+                'reactor_advanced' => 2,
+            ],
+        ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 30, 'growth' => 1.16],
+        ],
+    ],
+    'antimatter_reactor' => [
+        'label' => 'Réacteur à antimatière',
+        'base_cost' => ['metal' => 3200, 'crystal' => 2200, 'hydrogen' => 1200],
+        'base_time' => 90,
+        'growth_cost' => 1.55,
+        'growth_time' => 1.6,
+        'prod_base' => 800,
+        'prod_growth' => 1.2,
+        'energy_use_base' => 0,
+        'energy_use_growth' => 1.0,
+        'energy_use_linear' => false,
+        'affects' => 'energy',
+        'image' => 'assets/svg/illustrations/buildings/antimatter-reactor.svg',
+        'requires' => [
+            'buildings' => [
+                'fusion_reactor' => 5,
+                'research_lab' => 6,
+            ],
+            'research' => [
+                'reactor_antimatter' => 1,
+            ],
+        ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 60, 'growth' => 1.2],
+        ],
+    ],
     'hydrogen_plant' => [
         'label' => 'Générateur d’hydrogène',
         'base_cost' => ['metal' => 150, 'crystal' => 100],
@@ -71,6 +123,90 @@ return [
         'requires' => [
             'buildings' => ['solar_plant' => 1],
             'research' => [],
+        ],
+    ],
+    'storage_depot' => [
+        'label' => 'Entrepôt planétaire',
+        'base_cost' => ['metal' => 1000, 'crystal' => 400],
+        'base_time' => 55,
+        'growth_cost' => 1.6,
+        'growth_time' => 1.6,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 0,
+        'energy_use_growth' => 1.0,
+        'energy_use_linear' => false,
+        'affects' => 'storage',
+        'image' => 'assets/svg/illustrations/buildings/storage-depot.svg',
+        'requires' => [
+            'buildings' => [
+                'metal_mine' => 4,
+                'crystal_mine' => 3,
+            ],
+            'research' => [
+                'logistics' => 2,
+            ],
+        ],
+        'storage' => [
+            'metal' => ['base' => 50000, 'growth' => 1.6],
+            'crystal' => ['base' => 40000, 'growth' => 1.6],
+            'hydrogen' => ['base' => 30000, 'growth' => 1.6],
+            'energy' => ['base' => 2500, 'growth' => 1.5],
+        ],
+    ],
+    'worker_factory' => [
+        'label' => 'Complexe d’ouvriers',
+        'base_cost' => ['metal' => 420, 'crystal' => 160],
+        'base_time' => 45,
+        'growth_cost' => 1.6,
+        'growth_time' => 1.55,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 18,
+        'energy_use_growth' => 1.12,
+        'energy_use_linear' => true,
+        'affects' => 'infrastructure',
+        'image' => 'assets/svg/illustrations/buildings/worker-factory.svg',
+        'requires' => [
+            'buildings' => [
+                'metal_mine' => 4,
+                'crystal_mine' => 3,
+            ],
+            'research' => [],
+        ],
+        'construction_speed_bonus' => [
+            'per_level' => 0.01,
+            'max' => 0.99,
+        ],
+    ],
+    'robot_factory' => [
+        'label' => 'Chantier robotique',
+        'base_cost' => ['metal' => 2400, 'crystal' => 1200, 'hydrogen' => 300],
+        'base_time' => 85,
+        'growth_cost' => 1.75,
+        'growth_time' => 1.65,
+        'prod_base' => 0,
+        'prod_growth' => 1.0,
+        'energy_use_base' => 36,
+        'energy_use_growth' => 1.2,
+        'energy_use_linear' => true,
+        'affects' => 'infrastructure',
+        'image' => 'assets/svg/illustrations/buildings/robot-factory.svg',
+        'requires' => [
+            'buildings' => [
+                'worker_factory' => 6,
+                'research_lab' => 2,
+            ],
+            'research' => [
+                'engineering_heavy' => 3,
+            ],
+        ],
+        'construction_speed_bonus' => [
+            'per_level' => 0.03,
+            'max' => 0.99,
+        ],
+        'upkeep' => [
+            'hydrogen' => ['base' => 12, 'growth' => 1.15],
         ],
     ],
     'research_lab' => [
@@ -93,6 +229,7 @@ return [
             ],
             'research' => [],
         ],
+        'research_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.99],
     ],
     'shipyard' => [
         'label' => 'Chantier spatial Asterion',
@@ -106,6 +243,7 @@ return [
         'energy_use_growth' => 1.25,
         'energy_use_linear' => true,
         'affects' => 'energy',
+        'ship_build_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.99],
         'image' => 'assets/svg/illustrations/buildings/shipyard.svg',
         'requires' => [
             'buildings' => ['research_lab' => 1],

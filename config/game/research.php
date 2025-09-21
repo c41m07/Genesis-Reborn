@@ -1,4 +1,5 @@
 <?php
+
 // Configuration de l'arbre de recherche scientifique.
 
 $categoryImages = [

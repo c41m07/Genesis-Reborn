@@ -80,6 +80,27 @@ class ProcessBuildQueue
                     $production['energyConsumption'] += $energyUse;
                     break;
             }
+
+            foreach ($this->calculator->upkeepAt($definition, $level) as $resource => $amount) {
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                switch ($resource) {
+                    case 'metal':
+                        $production['metal'] -= $amount;
+                        break;
+                    case 'crystal':
+                        $production['crystal'] -= $amount;
+                        break;
+                    case 'hydrogen':
+                        $production['hydrogen'] -= $amount;
+                        break;
+                    case 'energy':
+                        $production['energyConsumption'] += $amount;
+                        break;
+                }
+            }
         }
 
         return $production;

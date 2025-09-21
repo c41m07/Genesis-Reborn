@@ -1,8 +1,8 @@
 <?php
-/** @var string $csrf_token */
-/** @var string $baseUrl */
-/** @var array $flashes */
-/** @var int|null $currentUserId */
+/** @var string $csrf_token Jeton CSRF pour le formulaire d’inscription. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var array $flashes Messages flash éventuels. */
+/** @var int|null $currentUserId Identifiant utilisateur si déjà connecté. */
 $title = $title ?? 'Inscription';
 ob_start();
 ?>

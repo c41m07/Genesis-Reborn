@@ -28,9 +28,11 @@ class GetResearchOverview
      * @return array{
      *     planet: \App\Domain\Entity\Planet,
      *     labLevel: int,
+     *     labBonus: float,
+     *     buildingLevels: array<string, int>,
      *     researchLevels: array<string, int>,
      *     queue: array{count: int, jobs: array<int, array{research: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ResearchDefinition, level: int, maxLevel: int, progress: float, nextCost: array<string, int>, nextTime: int, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canResearch: bool}>>,
+     *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>,
      *     totals: array{completedLevels: int, unlockedResearch: int, highestLevel: int}
      * }
      */
@@ -46,6 +48,7 @@ class GetResearchOverview
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $researchLevels = $this->researchStates->getLevels($planetId);
         $labLevel = $buildingLevels['research_lab'] ?? 0;
+        $labBonus = $this->calculator->labSpeedBonus($labLevel);
 
         $catalogMap = [];
         foreach ($this->catalog->all() as $definition) {
@@ -54,6 +57,7 @@ class GetResearchOverview
 
         $queueJobs = $this->researchQueue->getActiveQueue($planetId);
         $queueView = [];
+        $queuedByResearch = [];
 
         foreach ($queueJobs as $job) {
             $definition = $this->catalog->get($job->getResearchKey());
@@ -64,23 +68,34 @@ class GetResearchOverview
                 'endsAt' => $job->getEndsAt(),
                 'remaining' => max(0, $job->getEndsAt()->getTimestamp() - time()),
             ];
+            $queuedByResearch[$job->getResearchKey()] = ($queuedByResearch[$job->getResearchKey()] ?? 0) + 1;
         }
+
+        $queueLimitReached = count($queueJobs) >= 5;
 
         $categories = [];
         foreach ($this->catalog->groupedByCategory() as $category => $data) {
             $items = [];
             foreach ($data['items'] as $definition) {
                 $currentLevel = $researchLevels[$definition->getKey()] ?? 0;
-                $nextCost = $this->calculator->nextCost($definition, $currentLevel);
-                $nextTime = $this->calculator->nextTime($definition, $currentLevel);
+                $queuedCount = $queuedByResearch[$definition->getKey()] ?? 0;
+                $effectiveLevel = $currentLevel + $queuedCount;
+                $targetLevel = $effectiveLevel + 1;
+                $effectiveResearchLevels = $researchLevels;
+                $effectiveResearchLevels[$definition->getKey()] = $effectiveLevel;
+                $nextCost = $this->calculator->nextCost($definition, $effectiveLevel);
+                $nextTime = $this->calculator->nextTime($definition, $effectiveLevel, $labLevel);
                 $requirements = $this->calculator->checkRequirements(
                     $definition,
-                    $researchLevels,
+                    $effectiveResearchLevels,
                     $labLevel,
                     $catalogMap
                 );
 
-                $canResearch = $currentLevel < $definition->getMaxLevel()
+                $maxLevel = $definition->getMaxLevel();
+                $hasLevelRoom = $maxLevel === 0 || $targetLevel <= $maxLevel;
+                $canResearch = !$queueLimitReached
+                    && $hasLevelRoom
                     && $requirements['ok']
                     && $this->canAfford($planet->getMetal(), $planet->getCrystal(), $planet->getHydrogen(), $nextCost);
 
@@ -110,7 +125,9 @@ class GetResearchOverview
         return [
             'planet' => $planet,
             'labLevel' => $labLevel,
+            'labBonus' => $labBonus,
             'researchLevels' => $researchLevels,
+            'buildingLevels' => $buildingLevels,
             'queue' => [
                 'count' => count($queueView),
                 'jobs' => $queueView,

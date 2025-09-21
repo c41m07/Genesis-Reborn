@@ -4,6 +4,7 @@ namespace App\Application\UseCase\Research;
 
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Service\ResearchCalculator;
@@ -16,6 +17,7 @@ class StartResearch
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ResearchQueueRepositoryInterface $researchQueue,
+        private readonly PlayerStatsRepositoryInterface $playerStats,
         private readonly ResearchCatalog $catalog,
         private readonly ResearchCalculator $calculator
     ) {
@@ -34,7 +36,24 @@ class StartResearch
         $researchLevels = $this->researchStates->getLevels($planetId);
         $currentLevel = $researchLevels[$researchKey] ?? 0;
 
-        if ($currentLevel >= $definition->getMaxLevel()) {
+        if ($currentLevel >= $definition->getMaxLevel() && $definition->getMaxLevel() > 0) {
+            return ['success' => false, 'message' => 'Ce domaine scientifique a atteint son niveau maximal.'];
+        }
+
+        if ($this->researchQueue->countActive($planetId) >= 5) {
+            return ['success' => false, 'message' => 'La file de recherche est pleine (5 programmes maximum).'];
+        }
+
+        $queuedOccurrences = 0;
+        foreach ($this->researchQueue->getActiveQueue($planetId) as $job) {
+            if ($job->getResearchKey() === $researchKey) {
+                ++$queuedOccurrences;
+            }
+        }
+
+        $targetLevel = $currentLevel + $queuedOccurrences + 1;
+        $maxLevel = $definition->getMaxLevel();
+        if ($maxLevel > 0 && $targetLevel > $maxLevel) {
             return ['success' => false, 'message' => 'Ce domaine scientifique a atteint son niveau maximal.'];
         }
 
@@ -49,14 +68,15 @@ class StartResearch
             return ['success' => false, 'message' => 'Pré-requis de recherche manquants.'];
         }
 
-        $cost = $this->calculator->nextCost($definition, $currentLevel);
+        $cost = $this->calculator->nextCost($definition, $targetLevel - 1);
         if (!$this->canAfford($planet, $cost)) {
             return ['success' => false, 'message' => 'Ressources insuffisantes pour lancer cette recherche.'];
         }
 
         $this->deductCost($planet, $cost);
-        $duration = $this->calculator->nextTime($definition, $currentLevel);
-        $this->researchQueue->enqueue($planetId, $researchKey, $currentLevel + 1, $duration);
+        $duration = $this->calculator->nextTime($definition, $targetLevel - 1, $labLevel);
+        $this->researchQueue->enqueue($planetId, $researchKey, $targetLevel, $duration);
+        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Recherche planifiée.'];
@@ -109,5 +129,20 @@ class StartResearch
                     break;
             }
         }
+    }
+
+    /**
+     * @param array<string, int> $cost
+     */
+    private function sumCost(array $cost): int
+    {
+        $total = 0;
+        foreach ($cost as $amount) {
+            if ($amount > 0) {
+                $total += (int) $amount;
+            }
+        }
+
+        return $total;
     }
 }

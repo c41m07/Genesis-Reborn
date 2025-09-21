@@ -45,6 +45,7 @@ class DashboardController extends AbstractController
                 'activeSection' => 'dashboard',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -70,11 +71,17 @@ class DashboardController extends AbstractController
                 'activeSection' => 'dashboard',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
         $planet = $activeSummary['planet'];
         $production = $activeSummary['production'];
+        $levels = $activeSummary['levels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($levels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($levels['shipyard'] ?? 0) > 0,
+        ];
 
         $activePlanetSummary = [
             'planet' => $planet,
@@ -97,6 +104,7 @@ class DashboardController extends AbstractController
             'activeSection' => 'dashboard',
             'selectedPlanetId' => $planet->getId(),
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }

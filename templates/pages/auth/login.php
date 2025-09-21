@@ -1,8 +1,8 @@
 <?php
-/** @var string $csrf_token */
-/** @var string $baseUrl */
-/** @var array $flashes */
-/** @var int|null $currentUserId */
+/** @var string $csrf_token Jeton CSRF du formulaire de connexion. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var array $flashes Messages flash à afficher. */
+/** @var int|null $currentUserId Identifiant utilisateur si connecté. */
 $title = $title ?? 'Connexion';
 ob_start();
 ?>

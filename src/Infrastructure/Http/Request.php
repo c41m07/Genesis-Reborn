@@ -13,7 +13,8 @@ class Request
         private readonly string $path,
         private readonly array $query,
         private readonly array $body,
-        public readonly Session $session
+        public readonly Session $session,
+        private readonly array $headers = []
     ) {
     }
 
@@ -28,8 +29,26 @@ class Request
                 session_start();
             }
 
-            $storage =& $_SESSION;
+            $storage = & $_SESSION;
             $session = new Session($storage);
+        }
+
+        $headers = [];
+        foreach ($_SERVER as $key => $value) {
+            if (!is_string($key) || !is_scalar($value)) {
+                continue;
+            }
+
+            if (str_starts_with($key, 'HTTP_')) {
+                $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
+                $headers[$headerName] = (string) $value;
+            }
+        }
+
+        foreach (['CONTENT_TYPE' => 'Content-Type', 'CONTENT_LENGTH' => 'Content-Length'] as $serverKey => $headerName) {
+            if (isset($_SERVER[$serverKey]) && is_scalar($_SERVER[$serverKey])) {
+                $headers[$headerName] = (string) $_SERVER[$serverKey];
+            }
         }
 
         return new self(
@@ -37,7 +56,8 @@ class Request
             $path,
             $_GET,
             $_POST,
-            $session
+            $session,
+            $headers
         );
     }
 
@@ -48,7 +68,8 @@ class Request
             $this->path,
             $this->query,
             $this->body,
-            $session
+            $session,
+            $this->headers
         );
         $clone->attributes = $this->attributes;
 
@@ -103,5 +124,34 @@ class Request
     public function getAttributes(): array
     {
         return $this->attributes;
+    }
+
+    public function getHeader(string $name): ?string
+    {
+        $normalized = strtolower($name);
+        foreach ($this->headers as $headerName => $value) {
+            if (strtolower($headerName) === $normalized) {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    public function wantsJson(): bool
+    {
+        $accept = strtolower($this->getHeader('Accept') ?? '');
+        if ($accept !== '' && str_contains($accept, 'application/json')) {
+            return true;
+        }
+
+        $requestedWith = strtolower($this->getHeader('X-Requested-With') ?? '');
+
+        return $requestedWith === 'xmlhttprequest';
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 }

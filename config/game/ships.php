@@ -1,4 +1,5 @@
 <?php
+
 // Configuration des unités spatiales construites au chantier spatial.
 
 $categoryImages = [

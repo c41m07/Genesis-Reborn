@@ -45,6 +45,7 @@ class TechTreeController extends AbstractController
                 'activeSection' => 'tech-tree',
                 'selectedPlanetId' => null,
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -63,6 +64,11 @@ class TechTreeController extends AbstractController
         }
 
         $tree = $this->getTechTree->execute($selectedId);
+        $buildingLevels = $tree['buildingLevels'] ?? [];
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
         $activePlanetSummary = [
             'planet' => $selectedPlanet,
             'resources' => [
@@ -84,6 +90,7 @@ class TechTreeController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'tech-tree',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }

@@ -36,16 +36,16 @@
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" d="M20 10c-2.5 2.5-9 5-14.5 3.8-1.45-.33-2.76-.97-3.5-1.8" opacity=".6"/>
   </symbol>
   <symbol id="icon-research" viewBox="0 0 24 24">
-    <path fill="currentColor" d="M10 3.5a1 1 0 0 0-1 1V5h1.5v3.68l-3.18 5.13A3.5 3.5 0 0 0 10.1 20h3.8a3.5 3.5 0 0 0 2.78-6.19L13.5 8.68V5H15V4.5a1 1 0 0 0-1-1Z"/>
+    <path fill="currentColor" d="M10 3.5a1 1 0 0 0-1 1V5h1.5v3.68l-3.18 5.13A3.5 3.5 0 0 0 10.1 20h3.8a3.5 3.5 0 0 0 2.78-6.19L13.5 8.68V5H15v-.5a1 1 0 0 0-1-1Z"/>
     <path fill="currentColor" d="M9 15.5h6" opacity=".4"/>
     <path fill="currentColor" d="M9.5 13h5" opacity=".25"/>
   </symbol>
   <symbol id="icon-shipyard" viewBox="0 0 24 24">
-    <path fill="currentColor" d="M12 3.5a1 1 0 0 0-.58.18l-7 5A1 1 0 0 0 4 9.5v2a9 9 0 0 0 16 0v-2a1 1 0 0 0-.42-.82l-7-5a1 1 0 0 0-.58-.18Zm0 2.12 5 3.57v1.81a7 7 0 0 1-10 0V9.19Z"/>
-    <path fill="currentColor" d="M12 12.5c-1.93 0-3.5 1.9-3.5 4.25S10.07 21 12 21s3.5-1.9 3.5-4.25S13.93 12.5 12 12.5Zm0 2c.83 0 1.5.98 1.5 2.25S12.83 19 12 19s-1.5-.98-1.5-2.25.67-2.25 1.5-2.25Z" opacity=".65"/>
+    <path fill="currentColor" d="M12 3.5a1 1 0 0 0-.58.18l-7 5A1 1 0 0 0 4 9.5v2a9 9 0 0 0 16 0v-2a1 1 0 0 0-.42-.82l-7-5A1 1 0 0 0 12 3.5m0 2.12 5 3.57V11a7 7 0 0 1-10 0V9.19Z"/>
+    <path fill="currentColor" d="M12 12.5c-1.93 0-3.5 1.9-3.5 4.25S10.07 21 12 21s3.5-1.9 3.5-4.25-1.57-4.25-3.5-4.25m0 2c.83 0 1.5.98 1.5 2.25S12.83 19 12 19s-1.5-.98-1.5-2.25.67-2.25 1.5-2.25" opacity=".65"/>
   </symbol>
   <symbol id="icon-tech" viewBox="0 0 24 24">
-    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" d="M5 5h4v14H5m10-10h4v10h-4M9 12h6" opacity=".9"/>
+    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.6" d="M5 5h4v14H5M15 9h4v10h-4m-6-7h6" opacity=".9"/>
     <circle cx="9" cy="5" r="1.7" fill="currentColor"/>
     <circle cx="15" cy="9" r="1.7" fill="currentColor"/>
     <circle cx="9" cy="19" r="1.7" fill="currentColor"/>
@@ -54,6 +54,6 @@
   <symbol id="icon-time" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".85"/>
     <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8" d="M12 7v5l3 2"/>
-    <circle cx="12" cy="12" r="0.9" fill="currentColor"/>
+    <circle cx="12" cy="12" r=".9" fill="currentColor"/>
   </symbol>
 </svg>

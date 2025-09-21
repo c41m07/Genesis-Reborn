@@ -39,11 +39,12 @@ class ProfileController extends AbstractController
         }
 
         $dashboard = $this->getDashboard->execute($userId);
-        $planetSummaries = $dashboard['planets'] ?? [];
+        $planetSummaries = $dashboard['planets'];
         $planetList = array_map(static fn (array $summary) => $summary['planet'], $planetSummaries);
 
         $selectedPlanetId = null;
         $activePlanetSummary = null;
+        $facilityStatuses = [];
         if ($planetSummaries !== []) {
             $selectedPlanetId = $planetSummaries[0]['planet']->getId();
             $activePlanetSummary = [
@@ -55,9 +56,14 @@ class ProfileController extends AbstractController
                     'energy' => ['value' => $planetSummaries[0]['planet']->getEnergy(), 'perHour' => $planetSummaries[0]['production']['energy']],
                 ],
             ];
+            $levels = $planetSummaries[0]['levels'] ?? [];
+            $facilityStatuses = [
+                'research_lab' => ($levels['research_lab'] ?? 0) > 0,
+                'shipyard' => ($levels['shipyard'] ?? 0) > 0,
+            ];
         }
 
-        return $this->render('profile/index.php', [
+        return $this->render('pages/profile/index.php', [
             'title' => 'Profil commandant',
             'account' => [
                 'email' => $user->getEmail(),
@@ -72,6 +78,7 @@ class ProfileController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'profile',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }

@@ -30,7 +30,12 @@ class BuildingCatalog
                 (bool) ($data['energy_use_linear'] ?? false),
                 $data['affects'],
                 $data['requires'] ?? [],
-                $data['image'] ?? null
+                $data['image'] ?? null,
+                $data['ship_build_speed_bonus'] ?? [],
+                $data['research_speed_bonus'] ?? [],
+                $data['storage'] ?? [],
+                $data['upkeep'] ?? [],
+                $data['construction_speed_bonus'] ?? []
             );
         }
     }

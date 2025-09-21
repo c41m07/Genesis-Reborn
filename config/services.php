@@ -18,15 +18,18 @@ use App\Controller\AuthController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\GalaxyController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
 use App\Controller\ResearchController;
+use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
@@ -35,9 +38,9 @@ use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\CostService;
 use App\Domain\Service\FleetNavigationService;
-use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
+use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Container\Container;
@@ -50,6 +53,7 @@ use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoBuildingStateRepository;
 use App\Infrastructure\Persistence\PdoFleetRepository;
 use App\Infrastructure\Persistence\PdoPlanetRepository;
+use App\Infrastructure\Persistence\PdoPlayerStatsRepository;
 use App\Infrastructure\Persistence\PdoResearchQueueRepository;
 use App\Infrastructure\Persistence\PdoResearchStateRepository;
 use App\Infrastructure\Persistence\PdoShipBuildQueueRepository;
@@ -83,12 +87,16 @@ return function (Container $container): void {
         return new BuildingCatalog($config);
     });
 
-    $container->set(BuildingCalculator::class, fn () => new BuildingCalculator());
+    $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
-    $container->set(ResourceTickService::class, fn () => new ResourceTickService());
+    $container->set(ResourceTickService::class, function () {
+        $config = require __DIR__ . '/game/buildings.php';
+        $effects = ResourceEffectFactory::fromBuildingConfig($config);
+
+        return new ResourceTickService($effects);
+    });
     $container->set(CostService::class, fn () => new CostService());
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
-    $container->set(FleetResolutionService::class, fn () => new FleetResolutionService());
 
     $container->set(ResearchCatalog::class, function () {
         $config = require __DIR__ . '/game/research.php';
@@ -96,7 +104,31 @@ return function (Container $container): void {
         return new ResearchCatalog($config);
     });
 
-    $container->set(ResearchCalculator::class, fn () => new ResearchCalculator());
+    $container->set(ResearchCalculator::class, function () {
+        $config = require __DIR__ . '/game/buildings.php';
+        $bonusConfig = $config['research_lab']['research_speed_bonus'] ?? 0.0;
+        $bonusPerLevel = 0.0;
+        $bonusMax = 0.0;
+
+        if (is_array($bonusConfig)) {
+            if (array_key_exists('per_level', $bonusConfig)) {
+                $bonusPerLevel = (float) $bonusConfig['per_level'];
+            } else {
+                $bonusPerLevel = (float) ($bonusConfig['base'] ?? 0.0);
+            }
+
+            if (array_key_exists('max', $bonusConfig)) {
+                $bonusMax = (float) $bonusConfig['max'];
+            }
+        } else {
+            $bonusPerLevel = (float) $bonusConfig;
+        }
+
+        $bonusPerLevel = max(0.0, $bonusPerLevel);
+        $bonusMax = max(0.0, $bonusMax);
+
+        return new ResearchCalculator($bonusPerLevel, $bonusMax);
+    });
 
     $container->set(ShipCatalog::class, function () {
         $config = require __DIR__ . '/game/ships.php';
@@ -106,6 +138,7 @@ return function (Container $container): void {
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
     $container->set(PlanetRepositoryInterface::class, fn (Container $c) => new PdoPlanetRepository($c->get(\PDO::class)));
+    $container->set(PlayerStatsRepositoryInterface::class, fn (Container $c) => new PdoPlayerStatsRepository($c->get(\PDO::class)));
     $container->set(BuildingStateRepositoryInterface::class, fn (Container $c) => new PdoBuildingStateRepository($c->get(\PDO::class)));
     $container->set(BuildQueueRepositoryInterface::class, fn (Container $c) => new PdoBuildQueueRepository($c->get(\PDO::class)));
     $container->set(ResearchQueueRepositoryInterface::class, fn (Container $c) => new PdoResearchQueueRepository($c->get(\PDO::class)));
@@ -145,6 +178,7 @@ return function (Container $container): void {
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
@@ -162,13 +196,17 @@ return function (Container $container): void {
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class),
-        $c->get(ProcessBuildQueue::class)
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ResearchStateRepositoryInterface::class),
+        $c->get(ResearchCatalog::class)
     ));
 
     $container->set(UpgradeBuilding::class, fn (Container $c) => new UpgradeBuilding(
         $c->get(PlanetRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
+        $c->get(ResearchStateRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class)
     ));
@@ -188,6 +226,7 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ResearchCatalog::class),
         $c->get(ResearchCalculator::class)
     ));
@@ -207,7 +246,9 @@ return function (Container $container): void {
         $c->get(ShipBuildQueueRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(ShipCatalog::class),
-        $c->get(ProcessShipBuildQueue::class)
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class)
     ));
 
     $container->set(BuildShips::class, fn (Container $c) => new BuildShips(
@@ -215,6 +256,9 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(PlayerStatsRepositoryInterface::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class),
         $c->get(ShipCatalog::class)
     ));
 
@@ -231,6 +275,17 @@ return function (Container $container): void {
 
     $container->set(DashboardController::class, fn (Container $c) => new DashboardController(
         $c->get(GetDashboard::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(GalaxyController::class, fn (Container $c) => new GalaxyController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(UserRepositoryInterface::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -274,8 +329,23 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
+    $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(ResourceTickService::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
     $container->set(FleetController::class, fn (Container $c) => new FleetController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
         $c->get(ShipCatalog::class),
         $c->get(ProcessShipBuildQueue::class),
@@ -289,6 +359,7 @@ return function (Container $container): void {
 
     $container->set(JournalController::class, fn (Container $c) => new JournalController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(ResearchQueueRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),

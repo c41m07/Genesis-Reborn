@@ -53,7 +53,7 @@ class FleetNavigationService
             }
 
             $stats = $shipStats[$shipKey];
-            $speed = (int) ($stats['speed'] ?? 0);
+            $speed = (int) $stats['speed'];
             if ($speed <= 0) {
                 throw new InvalidArgumentException(sprintf('Ship "%s" must have a speed greater than zero.', $shipKey));
             }
@@ -99,7 +99,7 @@ class FleetNavigationService
         $systemDistance = abs($destination['system'] - $origin['system']) * $this->systemDistance;
         $positionDistance = abs($destination['position'] - $origin['position']) * $this->positionDistance;
 
-        if ($galaxyDistance === 0.0 && $systemDistance === 0.0 && $positionDistance === 0.0) {
+        if ($galaxyDistance === 0 && $systemDistance === 0 && $positionDistance === 0) {
             return (float) $this->baseDistance;
         }
 

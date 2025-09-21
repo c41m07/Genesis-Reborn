@@ -27,8 +27,10 @@ class ResourceTickService
      *     player_id?: int,
      *     resources: array<string, int|float>,
      *     capacities: array<string, int|float>,
-     *     last_tick: DateTimeInterface,
+     *     base_capacities?: array<string, int|float>,
+     *     last_tick?: DateTimeInterface,
      *     building_levels: array<string, int>,
+     *     previous_building_levels?: array<string, int>,
      * }> $planetStates
      * @param DateTimeInterface $now
      * @param array<string, array<string, mixed>>|null $effectsOverride
@@ -59,19 +61,51 @@ class ResourceTickService
                 $resourceTotals[$resourceKey] = (float) $value;
             }
 
-            $capacityTotals = [];
+            $baseCapacities = [];
+            if (isset($state['base_capacities']) && is_array($state['base_capacities'])) {
+                foreach ($state['base_capacities'] as $resourceKey => $value) {
+                    $baseCapacities[$resourceKey] = (float) $value;
+                }
+            }
+
+            $capacityTotals = $baseCapacities;
+            $currentCapacities = [];
             foreach ($state['capacities'] as $resourceKey => $value) {
-                $capacityTotals[$resourceKey] = (float) $value;
+                $currentCapacities[$resourceKey] = (float) $value;
+
+                if (!array_key_exists($resourceKey, $capacityTotals)) {
+                    $capacityTotals[$resourceKey] = (float) $value;
+                }
+            }
+
+            $buildingLevels = [];
+            if (isset($state['building_levels']) && is_array($state['building_levels'])) {
+                foreach ($state['building_levels'] as $buildingKey => $level) {
+                    $buildingLevels[$buildingKey] = max(0, (int) $level);
+                }
+            }
+
+            $previousBuildingLevels = [];
+            if (isset($state['previous_building_levels']) && is_array($state['previous_building_levels'])) {
+                foreach ($state['previous_building_levels'] as $buildingKey => $level) {
+                    $previousBuildingLevels[$buildingKey] = max(0, (int) $level);
+                }
             }
 
             $productionRaw = [];
             $energyProduction = 0.0;
             $energyConsumption = 0.0;
 
-            foreach ($state['building_levels'] as $buildingKey => $level) {
-                if ($level <= 0) {
-                    continue;
-                }
+            $allBuildingKeys = array_unique(array_merge(
+                array_keys($buildingLevels),
+                array_keys($previousBuildingLevels)
+            ));
+
+            $baseCapacitiesProvided = $baseCapacities !== [];
+
+            foreach ($allBuildingKeys as $buildingKey) {
+                $level = $buildingLevels[$buildingKey] ?? 0;
+                $previousLevel = $previousBuildingLevels[$buildingKey] ?? $level;
 
                 $effect = $effects[$buildingKey] ?? null;
                 if ($effect === null) {
@@ -80,9 +114,25 @@ class ResourceTickService
 
                 if (isset($effect['storage']) && is_array($effect['storage'])) {
                     foreach ($effect['storage'] as $resourceKey => $config) {
-                        $capacityTotals[$resourceKey] = ($capacityTotals[$resourceKey] ?? 0.0)
-                            + $this->valueForLevel($config, $level);
+                        $currentValue = $this->valueForLevel($config, $level);
+
+                        if ($baseCapacitiesProvided) {
+                            $capacityTotals[$resourceKey] = ($capacityTotals[$resourceKey] ?? 0.0) + $currentValue;
+                            continue;
+                        }
+
+                        $previousValue = $this->valueForLevel($config, $previousLevel);
+                        $currentTotal = ($capacityTotals[$resourceKey] ?? 0.0) - $previousValue;
+                        if ($currentTotal < 0.0) {
+                            $currentTotal = 0.0;
+                        }
+
+                        $capacityTotals[$resourceKey] = $currentTotal + $currentValue;
                     }
+                }
+
+                if ($level <= 0) {
+                    continue;
                 }
 
                 if (isset($effect['produces']) && is_array($effect['produces'])) {
@@ -93,6 +143,18 @@ class ResourceTickService
                         if ($resourceKey === 'energy') {
                             $energyProduction += $amount;
                         }
+                    }
+                }
+
+                if (isset($effect['consumes']) && is_array($effect['consumes'])) {
+                    foreach ($effect['consumes'] as $resourceKey => $config) {
+                        $amount = $this->valueForLevel($config, $level);
+                        if ($resourceKey === 'energy') {
+                            $energyConsumption += $amount;
+                            continue;
+                        }
+
+                        $productionRaw[$resourceKey] = ($productionRaw[$resourceKey] ?? 0.0) - $amount;
                     }
                 }
 
@@ -187,7 +249,7 @@ class ResourceTickService
     }
 
     /**
-     * @param array{base: float|int, growth?: float|int, linear?: bool} $config
+     * @param array{base?: float|int, growth?: float|int, linear?: bool} $config
      */
     private function valueForLevel(array $config, int $level): float
     {

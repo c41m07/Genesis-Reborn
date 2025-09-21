@@ -173,6 +173,7 @@ class GetTechTree
 
         return [
             'categories' => $categories,
+            'buildingLevels' => $buildingLevels,
         ];
     }
 }

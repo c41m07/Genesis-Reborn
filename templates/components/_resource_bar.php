@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 /**
  * @param array<string, array{label: string, value: int|float, perHour?: int|float, hint?: string, trend?: string}> $resources
  * @param array{baseUrl?: string, class?: string, showRates?: bool} $options
@@ -9,9 +11,10 @@ return static function (array $resources, array $options = []): string {
         return '';
     }
 
-    $baseUrl = $options['baseUrl'] ?? '';
     $showRates = (bool) ($options['showRates'] ?? true);
     $class = trim('resource-bar ' . ($options['class'] ?? ''));
+    $baseUrlOption = $options['baseUrl'] ?? null;
+    $assetBase = is_string($baseUrlOption) ? $baseUrlOption : null;
 
     $items = '';
     foreach ($resources as $key => $data) {
@@ -25,13 +28,13 @@ return static function (array $resources, array $options = []): string {
         $hint = $data['hint'] ?? null;
         $trend = $data['trend'] ?? null;
 
-        $valueDisplay = number_format((float) $value);
+        $valueDisplay = format_number((float) $value);
         $rateDisplay = '';
         $rateClass = '';
         if ($showRates && $perHour !== null) {
             $rate = (float) $perHour;
             $ratePrefix = ($key !== 'energy' && $rate > 0) ? '+' : '';
-            $rateDisplay = $ratePrefix . number_format($rate) . '/h';
+            $rateDisplay = $ratePrefix . format_number($rate) . '/h';
             $rateClass = $rate >= 0 ? 'is-positive' : 'is-negative';
         }
 
@@ -39,9 +42,10 @@ return static function (array $resources, array $options = []): string {
             $rateClass = $trend;
         }
 
+        $iconHref = asset_url('assets/svg/sprite.svg#icon-' . (string) $key, $assetBase);
         $icon = sprintf(
             '<svg class="icon icon-sm" aria-hidden="true"><use href="%s"></use></svg>',
-            rtrim($baseUrl, '/') . '/assets/svg/sprite.svg#icon-' . htmlspecialchars((string) $key, ENT_QUOTES)
+            htmlspecialchars($iconHref, ENT_QUOTES)
         );
 
         $hintMarkup = '';

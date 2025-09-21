@@ -1,38 +1,16 @@
 <?php
-/** @var array{email: string, username: string} $account */
-/** @var array<int, \App\Domain\Entity\Planet> $planets */
-/** @var array $dashboard */
-/** @var string $baseUrl */
-/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary */
+/** @var array{email: string, username: string} $account Infos de mon profil. */
+/** @var array<int, \App\Domain\Entity\Planet> $planets Liste de mes planètes. */
+/** @var array $dashboard Données consolidées du tableau de bord. */
+/** @var string $baseUrl URL de base pour les liens. */
+/** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé de la planète affichée. */
 
 $title = $title ?? 'Profil commandant';
-$icon = require __DIR__ . '/../components/_icon.php';
-$resourceBar = require __DIR__ . '/../components/_resource_bar.php';
-$card = require __DIR__ . '/../components/_card.php';
+$icon = require __DIR__ . '/../../components/_icon.php';
+$resourceBar = require __DIR__ . '/../../components/_resource_bar.php';
+$card = require __DIR__ . '/../../components/_card.php';
+require_once __DIR__ . '/../../components/helpers.php';
 $planets = $planets ?? [];
-
-if (!function_exists('format_duration')) {
-    function format_duration(int $seconds): string
-    {
-        $seconds = max(0, $seconds);
-        $hours = intdiv($seconds, 3600);
-        $minutes = intdiv($seconds % 3600, 60);
-        $remainingSeconds = $seconds % 60;
-
-        $parts = [];
-        if ($hours > 0) {
-            $parts[] = sprintf('%d h', $hours);
-        }
-        if ($minutes > 0) {
-            $parts[] = sprintf('%d min', $minutes);
-        }
-        if (($hours === 0 && $minutes === 0) || $remainingSeconds > 0) {
-            $parts[] = sprintf('%d s', $remainingSeconds);
-        }
-
-        return implode(' ', $parts);
-    }
-}
 
 $dashboard = $dashboard ?? [];
 $empire = $dashboard['empire'] ?? ['points' => 0, 'militaryPower' => 0, 'planetCount' => count($planets)];
@@ -61,7 +39,7 @@ ob_start();
     </div>
 </section>
 
-<div class="grid grid--cards">
+<div class="card-grid card-grid--quad">
     <?= $card([
         'title' => 'Identité du compte',
         'subtitle' => 'Informations personnelles et de connexion',
@@ -78,9 +56,9 @@ ob_start();
         'subtitle' => 'Vue d’ensemble de votre progression solo',
         'body' => static function () use ($empire): void {
             echo '<div class="metrics metrics--compact">';
-            echo '<div class="metric"><span class="metric__label">Points d’empire</span><strong class="metric__value">' . number_format((int) ($empire['points'] ?? 0)) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Puissance militaire</span><strong class="metric__value">' . number_format((int) ($empire['militaryPower'] ?? 0)) . '</strong></div>';
-            echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . number_format((int) ($empire['planetCount'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Points d’empire</span><strong class="metric__value">' . format_number((int) ($empire['points'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Puissance militaire</span><strong class="metric__value">' . format_number((int) ($empire['militaryPower'] ?? 0)) . '</strong></div>';
+            echo '<div class="metric"><span class="metric__label">Colonies actives</span><strong class="metric__value">' . format_number((int) ($empire['planetCount'] ?? 0)) . '</strong></div>';
             echo '</div>';
         },
     ]) ?>
@@ -102,8 +80,8 @@ ob_start();
     'body' => static function () use ($researchTotals): void {
         $best = $researchTotals['best'] ?? ['label' => 'Aucune technologie', 'level' => 0];
         echo '<div class="metrics metrics--compact">';
-        echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . number_format((int) ($researchTotals['sumLevels'] ?? 0)) . '</strong></div>';
-        echo '<div class="metric"><span class="metric__label">Découvertes actives</span><strong class="metric__value">' . number_format((int) ($researchTotals['unlocked'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Niveaux cumulés</span><strong class="metric__value">' . format_number((int) ($researchTotals['sumLevels'] ?? 0)) . '</strong></div>';
+        echo '<div class="metric"><span class="metric__label">Découvertes actives</span><strong class="metric__value">' . format_number((int) ($researchTotals['unlocked'] ?? 0)) . '</strong></div>';
         echo '<div class="metric"><span class="metric__label">Technologie phare</span><strong class="metric__value">' . htmlspecialchars(($best['label'] ?? 'Aucune technologie') . ' • niveau ' . ($best['level'] ?? 0)) . '</strong></div>';
         echo '</div>';
     },
@@ -138,12 +116,12 @@ ob_start();
                     $labels = ['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'];
                     foreach ($production as $resource => $amount) {
                         $label = $labels[$resource] ?? ucfirst((string) $resource);
-                        echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars($label) . '</span><span>' . number_format((int) $amount) . '/h</span></li>';
+                        echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars($label) . '</span><span>' . format_number((int) $amount) . '/h</span></li>';
                     }
                     echo '</ul>';
                     $net = (int) ($energyBalance['net'] ?? 0);
-                    $netDisplay = ($net > 0 ? '+' : '') . number_format($net);
-                    echo '<p class="planet-profile__energy">Énergie : ' . number_format((int) ($energyBalance['production'] ?? 0)) . ' générée / ' . number_format((int) ($energyBalance['consumption'] ?? 0)) . ' consommée (solde ' . $netDisplay . ').</p>';
+                    $netDisplay = ($net > 0 ? '+' : '') . format_number($net);
+                    echo '<p class="planet-profile__energy">Énergie : ' . format_number((int) ($energyBalance['production'] ?? 0)) . ' générée / ' . format_number((int) ($energyBalance['consumption'] ?? 0)) . ' consommée (solde ' . $netDisplay . ').</p>';
                     echo '</div>';
 
                     echo '<div class="planet-profile__section">';
@@ -178,7 +156,7 @@ ob_start();
                     } else {
                         echo '<ul class="fleet-panel__list">';
                         foreach (array_slice($fleet, 0, 4) as $ship) {
-                            echo '<li><span class="fleet-panel__ship">' . htmlspecialchars($ship['label'] ?? $ship['key'] ?? 'Vaisseau') . '</span><span class="fleet-panel__qty">× ' . number_format((int) ($ship['quantity'] ?? 0)) . '</span></li>';
+                            echo '<li><span class="fleet-panel__ship">' . htmlspecialchars($ship['label'] ?? $ship['key'] ?? 'Vaisseau') . '</span><span class="fleet-panel__qty">× ' . format_number((int) ($ship['quantity'] ?? 0)) . '</span></li>';
                         }
                         echo '</ul>';
                     }
@@ -191,4 +169,4 @@ ob_start();
 <?php endif; ?>
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../layouts/base.php';
+require __DIR__ . '/../../layouts/base.php';

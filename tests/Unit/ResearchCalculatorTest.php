@@ -16,7 +16,7 @@ class ResearchCalculatorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->calculator = new ResearchCalculator();
+        $this->calculator = new ResearchCalculator(0.1);
         $this->definition = new ResearchDefinition(
             'hyperdrive',
             'Propulsion hyperspatial',
@@ -27,7 +27,7 @@ class ResearchCalculatorTest extends TestCase
             1.75,
             1.6,
             10,
-            ['energy_tech' => 3, 'laser_tech' => 2],
+            ['propulsion_basic' => 3, 'weapon_light' => 2],
             4,
             '/assets/research/hyperdrive.png'
         );
@@ -36,13 +36,13 @@ class ResearchCalculatorTest extends TestCase
     public function testCheckRequirementsSatisfied(): void
     {
         $catalog = [
-            'energy_tech' => ['label' => 'Technologie énergétique'],
-            'laser_tech' => ['label' => 'Technologie laser'],
+            'propulsion_basic' => ['label' => 'Propulsion spatiale'],
+            'weapon_light' => ['label' => 'Armes légères'],
         ];
 
         $result = $this->calculator->checkRequirements(
             $this->definition,
-            ['energy_tech' => 3, 'laser_tech' => 2],
+            ['propulsion_basic' => 3, 'weapon_light' => 2],
             4,
             $catalog
         );
@@ -54,13 +54,13 @@ class ResearchCalculatorTest extends TestCase
     public function testCheckRequirementsReportsMissingLabAndResearch(): void
     {
         $catalog = [
-            'energy_tech' => ['label' => 'Technologie énergétique'],
-            'laser_tech' => ['label' => 'Technologie laser'],
+            'propulsion_basic' => ['label' => 'Propulsion spatiale'],
+            'weapon_light' => ['label' => 'Armes légères'],
         ];
 
         $result = $this->calculator->checkRequirements(
             $this->definition,
-            ['energy_tech' => 3],
+            ['propulsion_basic' => 3],
             2,
             $catalog
         );
@@ -76,8 +76,8 @@ class ResearchCalculatorTest extends TestCase
 
         $researchRequirement = $result['missing'][1];
         self::assertSame('research', $researchRequirement['type']);
-        self::assertSame('laser_tech', $researchRequirement['key']);
-        self::assertSame('Technologie laser', $researchRequirement['label']);
+        self::assertSame('weapon_light', $researchRequirement['key']);
+        self::assertSame('Armes légères', $researchRequirement['label']);
         self::assertSame(2, $researchRequirement['level']);
         self::assertSame(0, $researchRequirement['current']);
     }
@@ -92,10 +92,31 @@ class ResearchCalculatorTest extends TestCase
         self::assertGreaterThan($level0Cost['crystal'], $level2Cost['crystal']);
         self::assertGreaterThan($level0Cost['hydrogen'], $level2Cost['hydrogen']);
 
-        $baseTime = $this->calculator->nextTime($this->definition, 0);
-        $levelThreeTime = $this->calculator->nextTime($this->definition, 3);
+        $baseTime = $this->calculator->nextTime($this->definition, 0, 0);
+        $levelThreeTime = $this->calculator->nextTime($this->definition, 3, 0);
 
         self::assertSame(120, $baseTime);
         self::assertGreaterThan($baseTime, $levelThreeTime);
+    }
+
+    public function testNextTimeAppliesLabBonusAndRespectsMinimum(): void
+    {
+        $noLab = $this->calculator->nextTime($this->definition, 0, 0);
+        $withLab = $this->calculator->nextTime($this->definition, 0, 5);
+
+        self::assertLessThan($noLab, $withLab);
+
+        $aggressiveCalculator = new ResearchCalculator(0.5);
+        $shortDuration = $aggressiveCalculator->nextTime($this->definition, 0, 1000);
+
+        self::assertSame(1, $shortDuration);
+    }
+
+    public function testLabSpeedBonusRespectsConfiguredMaximum(): void
+    {
+        $cappedCalculator = new ResearchCalculator(0.5, 0.75);
+
+        self::assertSame(0.75, $cappedCalculator->labSpeedBonus(5));
+        self::assertSame(69, $cappedCalculator->nextTime($this->definition, 0, 5));
     }
 }

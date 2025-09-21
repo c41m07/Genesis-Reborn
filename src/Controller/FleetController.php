@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Service\FleetNavigationService;
@@ -20,6 +21,7 @@ class FleetController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
+        private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly FleetRepositoryInterface $fleets,
         private readonly ShipCatalog $shipCatalog,
         private readonly ProcessShipBuildQueue $shipQueueProcessor,
@@ -44,7 +46,7 @@ class FleetController extends AbstractController
         if ($planets === []) {
             $this->addFlash('info', 'Aucune planète disponible.');
 
-            return $this->render('fleet/index.php', [
+            return $this->render('pages/fleet/index.php', [
                 'title' => 'Flotte',
                 'planets' => [],
                 'selectedPlanetId' => null,
@@ -66,6 +68,7 @@ class FleetController extends AbstractController
                 'currentUserId' => $userId,
                 'activeSection' => 'fleet',
                 'activePlanetSummary' => null,
+                'facilityStatuses' => [],
             ]);
         }
 
@@ -85,6 +88,12 @@ class FleetController extends AbstractController
 
         $this->shipQueueProcessor->process($selectedId);
 
+        $buildingLevels = $this->buildingStates->getLevels($selectedId);
+        $facilityStatuses = [
+            'research_lab' => ($buildingLevels['research_lab'] ?? 0) > 0,
+            'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
+        ];
+
         $fleet = $this->fleets->getFleet($selectedId);
         $fleetShips = [];
         $availableShips = [];
@@ -102,7 +111,7 @@ class FleetController extends AbstractController
             try {
                 $definition = $this->shipCatalog->get($shipKey);
             } catch (InvalidArgumentException $exception) {
-                // Unknown ship in the catalogue – skip fancy data but keep counts.
+                // Je note ici que le vaisseau est inconnu, du coup je garde juste les infos minimales.
             }
 
             $label = $definition ? $definition->getLabel() : $shipKey;
@@ -149,6 +158,7 @@ class FleetController extends AbstractController
         usort($availableShips, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
 
         $origin = $selectedPlanet->getCoordinates();
+        // Je prépare la destination par défaut avec les coordonnées actuelles.
         $submittedDestination = [
             'galaxy' => $origin['galaxy'],
             'system' => $origin['system'],
@@ -163,6 +173,7 @@ class FleetController extends AbstractController
             if (!$this->isCsrfTokenValid('fleet_plan_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $planErrors[] = 'Session expirée, veuillez recharger la page.';
             } else {
+                // Je récupère les coordonnées visées dans le formulaire.
                 $destination = [
                     'galaxy' => max(1, (int) ($data['destination_galaxy'] ?? $origin['galaxy'])),
                     'system' => max(1, (int) ($data['destination_system'] ?? $origin['system'])),
@@ -235,7 +246,7 @@ class FleetController extends AbstractController
             ],
         ];
 
-        return $this->render('fleet/index.php', [
+        return $this->render('pages/fleet/index.php', [
             'title' => 'Flotte',
             'planets' => $planets,
             'selectedPlanetId' => $selectedId,
@@ -258,6 +269,7 @@ class FleetController extends AbstractController
             'currentUserId' => $userId,
             'activeSection' => 'fleet',
             'activePlanetSummary' => $activePlanetSummary,
+            'facilityStatuses' => $facilityStatuses,
         ]);
     }
 }
