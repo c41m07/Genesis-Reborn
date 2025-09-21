@@ -3,6 +3,7 @@
 namespace App\Domain\Service;
 
 use App\Domain\Entity\ShipDefinition;
+use App\Infrastructure\Config\ShipConfig;
 use InvalidArgumentException;
 
 class ShipCatalog
@@ -14,22 +15,28 @@ class ShipCatalog
     private array $categories = [];
 
     /**
-     * @param array<string, array<string, mixed>> $config
+     * @param iterable<ShipConfig> $configs
      */
-    public function __construct(array $config)
+    public function __construct(iterable $configs)
     {
-        foreach ($config as $key => $data) {
+        foreach ($configs as $config) {
+            if (!$config instanceof ShipConfig) {
+                throw new InvalidArgumentException('ShipCatalog expects instances of ShipConfig.');
+            }
+
+            $key = $config->getKey();
+
             $definition = new ShipDefinition(
                 $key,
-                $data['label'],
-                $data['category'] ?? 'Divers',
-                $data['role'] ?? '',
-                $data['description'] ?? '',
-                $data['base_cost'] ?? [],
-                (int) ($data['build_time'] ?? 0),
-                $data['stats'] ?? [],
-                $data['requires_research'] ?? [],
-                $data['image'] ?? ''
+                $config->getLabel(),
+                $config->getCategory(),
+                $config->getRole(),
+                $config->getDescription(),
+                $config->getBaseCost(),
+                $config->getBuildTime(),
+                $config->getStats(),
+                $config->getRequiresResearch(),
+                $config->getImage() ?? ''
             );
 
             $this->definitions[$key] = $definition;

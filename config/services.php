@@ -3,10 +3,6 @@
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
-use App\Domain\Battle\DTO\AttackingFleetDTO;
-use App\Domain\Battle\DTO\DefendingFleetDTO;
-use App\Domain\Battle\DTO\FleetBattleResultDTO;
-use App\Domain\Battle\DTO\FleetBattleRoundDTO;
 use App\Application\UseCase\Auth\LoginUser;
 use App\Application\UseCase\Auth\LogoutUser;
 use App\Application\UseCase\Auth\RegisterUser;
@@ -29,6 +25,11 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
+use App\Domain\Battle\DTO\AttackingFleetDTO;
+use App\Domain\Battle\DTO\DefendingFleetDTO;
+use App\Domain\Battle\DTO\FleetBattleResultDTO;
+use App\Domain\Battle\DTO\FleetBattleRoundDTO;
+use App\Domain\Config\BalanceConfig;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
@@ -87,63 +88,52 @@ return function (Container $container): void {
 
     $container->set(ViewRenderer::class, fn () => new ViewRenderer(__DIR__ . '/../templates'));
 
-    $container->set(BuildingCatalog::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
+    $container->set(BalanceConfigLoader::class, fn () => new BalanceConfigLoader(__DIR__ . '/balance'));
 
-        return new BuildingCatalog($config);
+    $container->set(BalanceConfig::class, fn (Container $c) => $c->get(BalanceConfigLoader::class)->getBalanceConfig());
+
+    $container->set(BuildingCatalog::class, function (Container $c) {
+        return new BuildingCatalog($c->get(BalanceConfigLoader::class)->getBuildingConfigs());
     });
 
     $container->set(BuildingCalculator::class, fn (Container $c) => new BuildingCalculator($c->get(BuildingCatalog::class)));
 
-    $container->set(ResourceTickService::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $effects = ResourceEffectFactory::fromBuildingConfig($config);
+    $container->set(ResourceTickService::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+        $effects = ResourceEffectFactory::fromBuildingConfig($loader->getBuildingConfigs());
 
-        return new ResourceTickService($effects);
+        return new ResourceTickService($effects, $c->get(BalanceConfig::class));
     });
-    $container->set(CostService::class, fn () => new CostService());
+    $container->set(CostService::class, fn (Container $c) => new CostService($c->get(BalanceConfig::class)));
     $container->set(FleetNavigationService::class, fn () => new FleetNavigationService());
 
-    $container->set(ResearchCatalog::class, function () {
-        $config = require __DIR__ . '/game/research.php';
-
-        return new ResearchCatalog($config);
+    $container->set(ResearchCatalog::class, function (Container $c) {
+        return new ResearchCatalog($c->get(BalanceConfigLoader::class)->getTechnologyConfigs());
     });
 
-    $container->set(ResearchCalculator::class, function () {
-        $config = require __DIR__ . '/game/buildings.php';
-        $bonusConfig = $config['research_lab']['research_speed_bonus'] ?? 0.0;
+    $container->set(ResearchCalculator::class, function (Container $c) {
+        $loader = $c->get(BalanceConfigLoader::class);
+        $researchLab = $loader->getBuildingConfig('research_lab');
+        $bonusConfig = $researchLab->getResearchSpeedBonus();
+
         $bonusPerLevel = 0.0;
         $bonusMax = 0.0;
 
-        if (is_array($bonusConfig)) {
-            if (array_key_exists('per_level', $bonusConfig)) {
-                $bonusPerLevel = (float) $bonusConfig['per_level'];
-            } else {
-                $bonusPerLevel = (float) ($bonusConfig['base'] ?? 0.0);
-            }
-
-            if (array_key_exists('max', $bonusConfig)) {
-                $bonusMax = (float) $bonusConfig['max'];
-            }
-        } else {
-            $bonusPerLevel = (float) $bonusConfig;
+        if (array_key_exists('per_level', $bonusConfig)) {
+            $bonusPerLevel = (float) $bonusConfig['per_level'];
+        } elseif (array_key_exists('base', $bonusConfig)) {
+            $bonusPerLevel = (float) $bonusConfig['base'];
         }
 
-        $bonusPerLevel = max(0.0, $bonusPerLevel);
-        $bonusMax = max(0.0, $bonusMax);
+        if (array_key_exists('max', $bonusConfig)) {
+            $bonusMax = (float) $bonusConfig['max'];
+        }
 
-        return new ResearchCalculator($bonusPerLevel, $bonusMax);
+        return new ResearchCalculator(max(0.0, $bonusPerLevel), max(0.0, $bonusMax));
     });
 
-    $container->set(ShipCatalog::class, function () {
-        $config = require __DIR__ . '/game/ships.php';
-
-        return new ShipCatalog($config);
-    });
-
-    $container->set(BalanceConfigLoader::class, function () {
-        return new BalanceConfigLoader(__DIR__ . '/balance/balance.yml');
+    $container->set(ShipCatalog::class, function (Container $c) {
+        return new ShipCatalog($c->get(BalanceConfigLoader::class)->getShipConfigs());
     });
 
     $container->set(FleetResolutionService::class, fn (Container $c) => new FleetResolutionService(
@@ -342,6 +332,8 @@ return function (Container $container): void {
         $c->get(GetBuildingsOverview::class),
         $c->get(UpgradeBuilding::class),
         $c->get(ProcessBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(BuildingCalculator::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -350,9 +342,9 @@ return function (Container $container): void {
     ));
 
     $container->set(ResearchController::class, fn (Container $c) => new ResearchController(
-        $c->get(PlanetRepositoryInterface::class),
         $c->get(GetResearchOverview::class),
         $c->get(StartResearch::class),
+        $c->get(GetTechTree::class),
         $c->get(ProcessResearchQueue::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
@@ -362,7 +354,6 @@ return function (Container $container): void {
     ));
 
     $container->set(ShipyardController::class, fn (Container $c) => new ShipyardController(
-        $c->get(PlanetRepositoryInterface::class),
         $c->get(GetShipyardOverview::class),
         $c->get(BuildShips::class),
         $c->get(ProcessShipBuildQueue::class),
@@ -373,27 +364,7 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
-    $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(ProcessBuildQueue::class),
-        $c->get(ProcessResearchQueue::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(ResourceTickService::class),
-        $c->get(ViewRenderer::class),
-        $c->get(SessionInterface::class),
-        $c->get(FlashBag::class),
-        $c->get(CsrfTokenManager::class),
-        $c->getParameter('app.base_url')
-    ));
-
     $container->set(FleetController::class, fn (Container $c) => new FleetController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(FleetRepositoryInterface::class),
-        $c->get(ShipCatalog::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(FleetNavigationService::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -402,17 +373,6 @@ return function (Container $container): void {
     ));
 
     $container->set(JournalController::class, fn (Container $c) => new JournalController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(BuildQueueRepositoryInterface::class),
-        $c->get(ResearchQueueRepositoryInterface::class),
-        $c->get(ShipBuildQueueRepositoryInterface::class),
-        $c->get(ProcessBuildQueue::class),
-        $c->get(ProcessResearchQueue::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(BuildingCatalog::class),
-        $c->get(ResearchCatalog::class),
-        $c->get(ShipCatalog::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -421,8 +381,6 @@ return function (Container $container): void {
     ));
 
     $container->set(ProfileController::class, fn (Container $c) => new ProfileController(
-        $c->get(UserRepositoryInterface::class),
-        $c->get(GetDashboard::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -430,8 +388,13 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
-    $container->set(TechTreeController::class, fn (Container $c) => new TechTreeController(
+    $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(ResourceTickService::class),
+        $c->get(SessionInterface::class)
+    ));
+
+    $container->set(TechTreeController::class, fn (Container $c) => new TechTreeController(
         $c->get(GetTechTree::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
