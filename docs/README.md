@@ -67,6 +67,7 @@ tests (PHPUnit)
 - **Technologies** : niveaux par joueur, file `research_queue`.
 - **Vaisseaux & flottes** : production par `ship_build_queue`, missions (exploration, attaque, transport).
 - **Journal** : événements PvE et synthèses multi-joueurs.
+- **Balance** : voir [docs/balance.md](./balance.md) pour la structure des YAML (bâtiments, recherches, unités) et leur chargement.
 
 ---
 
