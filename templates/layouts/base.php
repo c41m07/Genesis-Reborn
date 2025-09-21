@@ -190,9 +190,11 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                             <div class="resource-meter__details">
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
-                                    <span class="resource-meter__value" data-resource-value><?= format_number($value) ?></span>
+                                    <div class="resource-meter__primary">
+                                        <span class="resource-meter__value" data-resource-value><?= format_number($value) ?></span>
+                                        <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
+                                    </div>
                                     <span class="resource-meter__capacity" data-resource-capacity-display>/ <?= htmlspecialchars($capacityDisplay) ?></span>
-                                    <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                 </div>
                             </div>
                         </div>
