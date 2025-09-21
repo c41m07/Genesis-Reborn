@@ -55,6 +55,8 @@ class GetBuildingsOverview
      * @return array{
      *     planet: \App\Domain\Entity\Planet,
      *     levels: array<string, int>,
+     *     workerFactory: array{level: int, bonus: float},
+     *     robotFactory: array{level: int, bonus: float},
      *     queue: array{count: int, limit: int, jobs: array<int, array{building: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
      *     buildings: array<int, array{
      *         definition: \App\Domain\Entity\BuildingDefinition,
@@ -81,6 +83,25 @@ class GetBuildingsOverview
         }
 
         $levels = $this->buildingStates->getLevels($planet->getId());
+        $workerFactoryLevel = (int) ($levels['worker_factory'] ?? 0);
+        $robotFactoryLevel = (int) ($levels['robot_factory'] ?? 0);
+        $workerFactoryBonus = 0.0;
+        $robotFactoryBonus = 0.0;
+
+        try {
+            $workerFactoryDefinition = $this->catalog->get('worker_factory');
+            $workerFactoryBonus = $this->calculator->constructionSpeedBonusAt($workerFactoryDefinition, $workerFactoryLevel);
+        } catch (InvalidArgumentException) {
+            $workerFactoryBonus = 0.0;
+        }
+
+        try {
+            $robotFactoryDefinition = $this->catalog->get('robot_factory');
+            $robotFactoryBonus = $this->calculator->constructionSpeedBonusAt($robotFactoryDefinition, $robotFactoryLevel);
+        } catch (InvalidArgumentException) {
+            $robotFactoryBonus = 0.0;
+        }
+
         $researchLevels = $this->researchStates->getLevels($planet->getId());
         $buildings = [];
         $queueJobs = $this->buildQueue->getActiveQueue($planetId);
@@ -245,6 +266,14 @@ class GetBuildingsOverview
         return [
             'planet' => $planet,
             'levels' => $levels,
+            'workerFactory' => [
+                'level' => $workerFactoryLevel,
+                'bonus' => $workerFactoryBonus,
+            ],
+            'robotFactory' => [
+                'level' => $robotFactoryLevel,
+                'bonus' => $robotFactoryBonus,
+            ],
             'queue' => [
                 'count' => count($queueView),
                 'limit' => 5,

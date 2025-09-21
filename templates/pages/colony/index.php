@@ -29,8 +29,18 @@ $resourceLabels = [
 $assetBase = rtrim($baseUrl, '/');
 $queueCount = (int) ($queue['count'] ?? 0);
 $queueLimit = (int) ($queue['limit'] ?? 5);
-$researchLabLevel = (int) ($levels['research_lab'] ?? 0);
-$shipyardLevel = (int) ($levels['shipyard'] ?? 0);
+$workerFactorySummary = $overview['workerFactory'] ?? [
+    'level' => (int) ($levels['worker_factory'] ?? 0),
+    'bonus' => 0.0,
+];
+$robotFactorySummary = $overview['robotFactory'] ?? [
+    'level' => (int) ($levels['robot_factory'] ?? 0),
+    'bonus' => 0.0,
+];
+$workerFactoryLevel = (int) ($workerFactorySummary['level'] ?? 0);
+$workerFactoryBonus = max(0.0, (float) ($workerFactorySummary['bonus'] ?? 0.0));
+$robotFactoryLevel = (int) ($robotFactorySummary['level'] ?? 0);
+$robotFactoryBonus = max(0.0, (float) ($robotFactorySummary['bonus'] ?? 0.0));
 
 ob_start();
 ?>
@@ -61,27 +71,49 @@ ob_start();
     <?= $card([
         'title' => 'File de construction',
         'subtitle' => 'Suivi des améliorations en cours',
-        'body' => static function () use ($queue, $queueCount, $queueLimit, $researchLabLevel, $shipyardLevel): void {
+        'body' => static function () use (
+            $queue,
+            $queueCount,
+            $queueLimit,
+            $workerFactoryLevel,
+            $workerFactoryBonus,
+            $robotFactoryLevel,
+            $robotFactoryBonus
+        ): void {
             $emptyMessage = 'Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.';
             $limitValue = $queueLimit > 0 ? number_format($queueLimit) : '—';
-            $labLabel = $researchLabLevel > 0
-                ? 'Niveau ' . number_format($researchLabLevel)
+            $workerLabel = $workerFactoryLevel > 0
+                ? 'Niveau ' . number_format($workerFactoryLevel)
                 : 'Non construit';
-            $labClass = $researchLabLevel > 0
+            $workerClass = $workerFactoryLevel > 0
                 ? 'metric-line__value metric-line__value--positive'
                 : 'metric-line__value metric-line__value--neutral';
-            $shipyardLabel = $shipyardLevel > 0
-                ? 'Niveau ' . number_format($shipyardLevel)
+            $robotLabel = $robotFactoryLevel > 0
+                ? 'Niveau ' . number_format($robotFactoryLevel)
                 : 'Non construit';
-            $shipyardClass = $shipyardLevel > 0
+            $robotClass = $robotFactoryLevel > 0
                 ? 'metric-line__value metric-line__value--positive'
                 : 'metric-line__value metric-line__value--neutral';
+            $formatPercent = static function (float $value): string {
+                $percent = $value * 100;
+                $formatted = number_format($percent, 1);
+
+                return rtrim(rtrim($formatted, '0'), '.');
+            };
 
             echo '<div class="queue-card" data-queue-wrapper="buildings" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
             echo '<p class="metric-line"><span class="metric-line__label">Améliorations en file</span>';
             echo '<span class="metric-line__value"><span data-queue-count>' . number_format($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
-            echo '<p class="metric-line"><span class="metric-line__label">Laboratoire de recherche</span><span class="' . $labClass . '" data-building-level="research_lab">' . htmlspecialchars($labLabel) . '</span></p>';
-            echo '<p class="metric-line"><span class="metric-line__label">Chantier spatial</span><span class="' . $shipyardClass . '" data-building-level="shipyard">' . htmlspecialchars($shipyardLabel) . '</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Complexe d’ouvriers</span><span class="' . $workerClass . '" data-building-level="worker_factory">' . htmlspecialchars($workerLabel) . '</span></p>';
+            if ($workerFactoryBonus > 0.0) {
+                $workerBonusDisplay = $formatPercent($workerFactoryBonus);
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de construction</span><span class="metric-line__value metric-line__value--positive">-' . htmlspecialchars($workerBonusDisplay) . ' %</span></p>';
+            }
+            echo '<p class="metric-line"><span class="metric-line__label">Chantier robotique</span><span class="' . $robotClass . '" data-building-level="robot_factory">' . htmlspecialchars($robotLabel) . '</span></p>';
+            if ($robotFactoryBonus > 0.0) {
+                $robotBonusDisplay = $formatPercent($robotFactoryBonus);
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de construction</span><span class="metric-line__value metric-line__value--positive">-' . htmlspecialchars($robotBonusDisplay) . ' %</span></p>';
+            }
             echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
