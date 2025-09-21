@@ -386,6 +386,7 @@ main.workspace__content {
 .topbar__planet {
     display: flex;
     flex-direction: column;
+    gap: var(--space-1);
 }
 
 .topbar__selector select {
@@ -456,6 +457,7 @@ main.workspace__content {
 .resource-meter__details {
     display: flex;
     flex-direction: column;
+    gap: var(--space-1);
 }
 
 .resource-meter__label {
@@ -463,31 +465,38 @@ main.workspace__content {
     color: var(--color-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    margin-bottom: var(--space-1);
 }
 
 .resource-meter__values {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    font-weight: 600;
+}
+
+.resource-meter__primary {
+    display: flex;
     align-items: baseline;
     gap: var(--space-2);
-    font-weight: 600;
+    flex-wrap: wrap;
 }
 
 .resource-meter__value {
     font-size: 1.25rem;
 }
 
-.resource-meter__capacity,
-.resource-meter__hint {
+.resource-meter__capacity {
     display: block;
-    margin-top: var(--space-1);
     font-size: var(--font-size-sm);
     color: var(--color-muted);
+    font-weight: 500;
 }
 
 .resource-meter__rate {
     font-size: var(--font-size-sm);
     color: var(--color-muted);
+    font-weight: 500;
 }
 
 .resource-meter__rate.is-positive {
@@ -505,8 +514,7 @@ main.workspace__content {
 
 .resource-meter--warning .resource-meter__label,
 .resource-meter--warning .resource-meter__value,
-.resource-meter--warning .resource-meter__capacity,
-.resource-meter--warning .resource-meter__hint {
+.resource-meter--warning .resource-meter__capacity {
     color: var(--danger);
 }
 
@@ -1098,30 +1106,6 @@ main.workspace__content {
 .galaxy-slot__owner {
     font-weight: 600;
     color: var(--color-text);
-}
-
-.galaxy-slot__stats {
-    margin: 0;
-    display: grid;
-    gap: var(--space-1);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    font-size: var(--font-size-sm);
-}
-
-.galaxy-slot__stats dt {
-    color: var(--color-muted);
-}
-
-.galaxy-slot__stats dd {
-    margin: 0;
-    color: var(--color-text);
-    font-variant-numeric: tabular-nums;
-}
-
-.galaxy-slot__activity {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    color: var(--color-muted);
 }
 
 .galaxy-slot__empty {

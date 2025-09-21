@@ -127,7 +127,13 @@ ob_start();
                             foreach ($item['nextCost'] as $resource => $amount) {
                                 echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . format_number((int) $amount) . '</span></li>';
                             }
-                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration((int) $item['nextTime'])) . '</span></li>';
+                            $nextTime = (int) ($item['nextTime'] ?? 0);
+                            $nextBaseTime = (int) ($item['nextBaseTime'] ?? $nextTime);
+                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($nextTime));
+                            if ($nextBaseTime !== $nextTime) {
+                                echo ' <small>(base ' . htmlspecialchars(format_duration($nextBaseTime)) . ')</small>';
+                            }
+                            echo '</span></li>';
                             echo '</ul>';
                             echo '</div>';
                             if (!($item['requirements']['ok'] ?? true)) {

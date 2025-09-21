@@ -250,6 +250,7 @@ class ColonyController extends AbstractController
             'canUpgrade' => (bool) ($entry['canUpgrade'] ?? false),
             'cost' => array_map(static fn ($value) => (int) $value, $entry['cost'] ?? []),
             'time' => (int) ($entry['time'] ?? 0),
+            'baseTime' => (int) ($entry['baseTime'] ?? 0),
             'production' => [
                 'resource' => (string) ($production['resource'] ?? ''),
                 'current' => (int) ($production['current'] ?? 0),

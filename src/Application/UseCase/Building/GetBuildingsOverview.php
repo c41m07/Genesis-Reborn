@@ -138,6 +138,7 @@ class GetBuildingsOverview
             $effectiveLevel = $projectedLevels[$definition->getKey()] ?? $currentLevel;
             $nextTargetLevel = $effectiveLevel + 1;
             $cost = $this->calculator->nextCost($definition, $effectiveLevel);
+            $baseTime = $this->calculator->nextTime($definition, $effectiveLevel);
             $time = $this->calculator->nextTime($definition, $effectiveLevel, $projectedLevels);
             $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels, $researchCatalogMap);
             if (!empty($requirements['missing'])) {
@@ -225,6 +226,7 @@ class GetBuildingsOverview
                 'level' => $currentLevel,
                 'cost' => $cost,
                 'time' => $time,
+                'baseTime' => $baseTime,
                 'requirements' => $requirements,
                 'canUpgrade' => $canUpgrade,
                 'production' => [

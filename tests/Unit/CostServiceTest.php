@@ -5,37 +5,55 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Domain\Service\CostService;
+use App\Infrastructure\Config\BalanceConfigLoader;
 use PHPUnit\Framework\TestCase;
 
 class CostServiceTest extends TestCase
 {
     private CostService $service;
 
+    private BalanceConfigLoader $loader;
+
     protected function setUp(): void
     {
-        $this->service = new CostService();
+        $basePath = dirname(__DIR__, 2) . '/config/balance';
+        $this->loader = new BalanceConfigLoader($basePath);
+        $this->service = new CostService($this->loader->getBalanceConfig());
     }
 
-    public function testNextLevelAndCumulativeCost(): void
+    public function testMetalMineNextLevelCostMatchesLegacyValues(): void
     {
-        $baseCost = ['metal' => 100, 'crystal' => 50];
+        $metalMine = $this->loader->getBuildingConfig('metal_mine');
 
-        $level0Cost = $this->service->nextLevelCost($baseCost, 1.5, 0);
-        $level2Cost = $this->service->nextLevelCost($baseCost, 1.5, 2);
+        $level5Cost = $this->service->nextLevelCost($metalMine->getBaseCost(), (float) $metalMine->getGrowthCost(), 5);
+        $level9Cost = $this->service->nextLevelCost($metalMine->getBaseCost(), (float) $metalMine->getGrowthCost(), 9);
 
-        self::assertSame(['metal' => 100, 'crystal' => 50], $level0Cost);
-        self::assertSame(['metal' => 225, 'crystal' => 113], $level2Cost);
-
-        $cumulative = $this->service->cumulativeCost($baseCost, 1.5, 0, 3);
-        self::assertSame(['metal' => 100 + 150 + 225, 'crystal' => 50 + 75 + 113], $cumulative);
+        self::assertSame(['metal' => 629, 'crystal' => 157], $level5Cost);
+        self::assertSame(['metal' => 4123, 'crystal' => 1031], $level9Cost);
     }
 
-    public function testScaledDurationAndDiscount(): void
+    public function testPropulsionResearchCumulativeCostFromSnapshots(): void
     {
-        $duration = $this->service->scaledDuration(60, 1.6, 2, 2.0);
-        self::assertSame(77, $duration);
+        $technology = $this->loader->getTechnologyConfig('propulsion_basic');
 
-        $discounted = $this->service->applyDiscount(['metal' => 1000, 'crystal' => 400], 0.2);
-        self::assertSame(['metal' => 800, 'crystal' => 320], $discounted);
+        $cumulative = $this->service->cumulativeCost($technology->getBaseCost(), (float) $technology->getGrowthCost(), 0, 3);
+
+        self::assertSame([
+            'metal' => 645,
+            'crystal' => 430,
+            'hydrogen' => 215,
+        ], $cumulative);
+    }
+
+    public function testScaledDurationAndDiscountMatchReferenceCalculations(): void
+    {
+        $researchLab = $this->loader->getBuildingConfig('research_lab');
+        $shipyard = $this->loader->getBuildingConfig('shipyard');
+
+        $duration = $this->service->scaledDuration($researchLab->getBaseTime(), (float) $researchLab->getGrowthTime(), 5, 1.35);
+        self::assertSame(311, $duration);
+
+        $discounted = $this->service->applyDiscount($shipyard->getBaseCost(), 0.15);
+        self::assertSame(['metal' => 357, 'crystal' => 221, 'hydrogen' => 102], $discounted);
     }
 }

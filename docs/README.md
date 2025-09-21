@@ -42,7 +42,7 @@
 ## Architecture & organisation
 ```
 /config
-  /game (buildings.php, research.php, ships.php)
+  /balance (balance.yml, buildings.yml, ships.yml, technologies.yml)
   /migrations
 /public
   /assets/css (tokens.css, app.css)
@@ -67,6 +67,7 @@ tests (PHPUnit)
 - **Technologies** : niveaux par joueur, file `research_queue`.
 - **Vaisseaux & flottes** : production par `ship_build_queue`, missions (exploration, attaque, transport).
 - **Journal** : événements PvE et synthèses multi-joueurs.
+- **Balance** : voir [docs/balance.md](./balance.md) pour la structure des YAML (bâtiments, recherches, unités) et leur chargement.
 
 ---
 
