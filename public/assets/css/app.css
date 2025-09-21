@@ -386,7 +386,6 @@ main.workspace__content {
 .topbar__planet {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
 }
 
 .topbar__selector select {
@@ -457,7 +456,6 @@ main.workspace__content {
 .resource-meter__details {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1);
 }
 
 .resource-meter__label {
@@ -465,6 +463,7 @@ main.workspace__content {
     color: var(--color-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
+    margin-bottom: var(--space-1);
 }
 
 .resource-meter__values {
@@ -478,7 +477,10 @@ main.workspace__content {
     font-size: 1.25rem;
 }
 
-.resource-meter__capacity {
+.resource-meter__capacity,
+.resource-meter__hint {
+    display: block;
+    margin-top: var(--space-1);
     font-size: var(--font-size-sm);
     color: var(--color-muted);
 }
@@ -503,7 +505,8 @@ main.workspace__content {
 
 .resource-meter--warning .resource-meter__label,
 .resource-meter--warning .resource-meter__value,
-.resource-meter--warning .resource-meter__capacity {
+.resource-meter--warning .resource-meter__capacity,
+.resource-meter--warning .resource-meter__hint {
     color: var(--danger);
 }
 

@@ -178,7 +178,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         $ratePrefix = ($key !== 'energy' && $perHourValue > 0) ? '+' : '';
                         $rateDisplay = $ratePrefix . $rateNumber . '/h';
                         $rateClass = $perHourValue >= 0 ? 'is-positive' : 'is-negative';
-                        $capacityDisplay = $capacityValue > 0 ? format_number($capacityValue) : '—';
+                        $capacityDisplay = $capacityValue > 0 ? '/' . format_number($capacityValue) : '/—';
                         $meterClasses = 'resource-meter' . (($value <= 0 && $perHourValue < 0) ? ' resource-meter--warning' : '');
                         ?>
                         <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>" data-resource-capacity="<?= $capacityValue ?>">
@@ -191,9 +191,9 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
                                     <span class="resource-meter__value" data-resource-value><?= format_number($value) ?></span>
-                                    <span class="resource-meter__capacity" data-resource-capacity-display>/ <?= htmlspecialchars($capacityDisplay) ?></span>
                                     <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                 </div>
+                                <span class="resource-meter__capacity" data-resource-capacity-display><?= htmlspecialchars($capacityDisplay) ?></span>
                             </div>
                         </div>
                     <?php endforeach; ?>

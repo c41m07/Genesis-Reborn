@@ -399,8 +399,8 @@ const renderResourceMeter = (key, value, perHour, capacity) => {
 
     if (capacityElement) {
         capacityElement.textContent = normalizedCapacity > 0
-            ? `/ ${formatNumber(normalizedCapacity)}`
-            : '/ —';
+            ? `/${formatNumber(normalizedCapacity)}`
+            : '/—';
     }
 
     meter.dataset.resourceCapacity = String(normalizedCapacity);
