@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Entity\BuildJob;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
+use DateInterval;
 use DateTimeImmutable;
 use PDO;
 use RuntimeException;
@@ -40,14 +41,29 @@ class PdoBuildQueueRepository implements BuildQueueRepositoryInterface
     {
         $playerId = $this->getPlayerIdForPlanet($planetId);
 
+        $lastEndStatement = $this->pdo->prepare('SELECT MAX(ends_at) FROM build_queue WHERE planet_id = :planet');
+        $lastEndStatement->execute(['planet' => $planetId]);
+        $lastEndsAt = $lastEndStatement->fetchColumn();
+
+        $startAt = new DateTimeImmutable();
+        if ($lastEndsAt !== false && $lastEndsAt !== null) {
+            $lastEndsAtTime = new DateTimeImmutable((string) $lastEndsAt);
+            if ($lastEndsAtTime > $startAt) {
+                $startAt = $lastEndsAtTime;
+            }
+        }
+
+        $duration = max(0, $durationSeconds);
+        $endsAt = $startAt->add(new DateInterval(sprintf('PT%dS', $duration)));
+
         $stmt = $this->pdo->prepare('INSERT INTO build_queue (player_id, planet_id, bkey, target_level, ends_at)
-            VALUES (:player, :planet, :key, :level, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
+            VALUES (:player, :planet, :key, :level, :endsAt)');
         $stmt->execute([
             'player' => $playerId,
             'planet' => $planetId,
             'key' => $buildingKey,
             'level' => $targetLevel,
-            'duration' => $durationSeconds,
+            'endsAt' => $endsAt->format('Y-m-d H:i:s'),
         ]);
     }
 
