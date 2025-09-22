@@ -3,10 +3,7 @@
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Http\Kernel;
 use App\Infrastructure\Http\Router;
-use DateTimeZone;
 use Dotenv\Dotenv;
-use Exception;
-use RuntimeException;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
