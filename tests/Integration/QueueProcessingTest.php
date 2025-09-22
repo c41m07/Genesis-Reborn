@@ -30,12 +30,14 @@ use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Config\BuildingConfig;
 use App\Infrastructure\Config\ShipConfig;
 use App\Infrastructure\Config\TechnologyConfig;
+use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 use DateTimeImmutable;
+use PDO;
 use PHPUnit\Framework\TestCase;
 
 class QueueProcessingTest extends TestCase
@@ -381,6 +383,56 @@ class QueueProcessingTest extends TestCase
         $endTimes = array_map(static fn ($job) => $job->getEndsAt()->getTimestamp(), $jobs);
         self::assertTrue($endTimes[0] < $endTimes[1]);
         self::assertTrue($endTimes[1] < $endTimes[2]);
+    }
+
+    public function testPdoBuildQueueAlignsJobsSequentially(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+        if (method_exists($pdo, 'sqliteCreateFunction')) {
+            $pdo->sqliteCreateFunction('NOW', static fn (): string => (new DateTimeImmutable())->format('Y-m-d H:i:s'));
+        }
+
+        $pdo->exec('CREATE TABLE players (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT)');
+        $pdo->exec('CREATE TABLE planets (id INTEGER PRIMARY KEY, player_id INTEGER NOT NULL)');
+        $pdo->exec('CREATE TABLE build_queue (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            player_id INTEGER NOT NULL,
+            planet_id INTEGER NOT NULL,
+            bkey TEXT NOT NULL,
+            target_level INTEGER NOT NULL,
+            ends_at TEXT NOT NULL
+        )');
+
+        $pdo->exec("INSERT INTO players (id, username) VALUES (1, 'Commander')");
+        $pdo->exec('INSERT INTO planets (id, player_id) VALUES (1, 1)');
+
+        $repository = new PdoBuildQueueRepository($pdo);
+
+        $durations = [12, 18, 9];
+        foreach ($durations as $index => $duration) {
+            $repository->enqueue(1, 'metal_mine', $index + 1, $duration);
+        }
+
+        $jobs = array_values($repository->getActiveQueue(1));
+        self::assertCount(count($durations), $jobs);
+
+        $previousEnd = null;
+        foreach ($jobs as $index => $job) {
+            $startAt = $job->getEndsAt()->sub(new \DateInterval('PT' . $durations[$index] . 'S'));
+
+            if ($previousEnd !== null) {
+                self::assertGreaterThanOrEqual($previousEnd->getTimestamp(), $startAt->getTimestamp());
+                self::assertSame(
+                    $previousEnd->format('Y-m-d H:i:s'),
+                    $startAt->format('Y-m-d H:i:s')
+                );
+            }
+
+            $previousEnd = $job->getEndsAt();
+        }
     }
 
     public function testBuildingQueueRejectsWhenFull(): void
