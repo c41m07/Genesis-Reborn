@@ -19,9 +19,7 @@ services:
             - DB_PORT=${DB_PORT}
             - DISPLAY_ERRORS=${DISPLAY_ERRORS}
             - DISPLAY_REPORTING=${DISPLAY_REPORTING}
-            - BASE_URL=${BASE_URL}
-            - TRAEFIK_URL_APP=${TRAEFIK_URL_APP}
-            - PROJECT_IDENTIFIER=${PROJECT_IDENTIFIER}
+            - BASE_URL=https://${TRAEFIK_URL_APP}
         networks:
             - backend
             - traefik_network
