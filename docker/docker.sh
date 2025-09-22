@@ -1,4 +1,4 @@
 composer dump-autoload --optimize
-composer db:create
+composer db:migrate
 
 exec apache2-foreground

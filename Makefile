@@ -9,7 +9,7 @@ dev-dependencies:
 	$(EXEC_APP) composer install
 	$(EXEC_APP) composer dump-autoload --optimize
 	$(EXEC_APP) npm install
-	$(EXEC_APP) composer db:create
+	$(EXEC_APP) composer db:migrate
 
 gitignore:
 	git rm -r --cached .
