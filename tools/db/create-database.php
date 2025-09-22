@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use DateTimeImmutable;
-use PDO;
-use RuntimeException;
 use Dotenv\Dotenv;
 
 require __DIR__ . '/../../vendor/autoload.php';
