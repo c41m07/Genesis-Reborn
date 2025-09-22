@@ -4,6 +4,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Entity\ShipBuildJob;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
+use DateInterval;
 use DateTimeImmutable;
 use PDO;
 use RuntimeException;
@@ -40,14 +41,29 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
     {
         $playerId = $this->getPlayerIdForPlanet($planetId);
 
+        $lastEndStatement = $this->pdo->prepare('SELECT MAX(ends_at) FROM ship_build_queue WHERE planet_id = :planet');
+        $lastEndStatement->execute(['planet' => $planetId]);
+        $lastEndsAt = $lastEndStatement->fetchColumn();
+
+        $startAt = new DateTimeImmutable();
+        if ($lastEndsAt !== false && $lastEndsAt !== null) {
+            $lastEndsAtTime = new DateTimeImmutable((string) $lastEndsAt);
+            if ($lastEndsAtTime > $startAt) {
+                $startAt = $lastEndsAtTime;
+            }
+        }
+
+        $duration = max(0, $durationSeconds);
+        $endsAt = $startAt->add(new DateInterval(sprintf('PT%dS', $duration)));
+
         $stmt = $this->pdo->prepare('INSERT INTO ship_build_queue (player_id, planet_id, skey, quantity, ends_at)
-            VALUES (:player, :planet, :key, :quantity, DATE_ADD(NOW(), INTERVAL :duration SECOND))');
+            VALUES (:player, :planet, :key, :quantity, :endsAt)');
         $stmt->execute([
             'player' => $playerId,
             'planet' => $planetId,
             'key' => $shipKey,
             'quantity' => $quantity,
-            'duration' => $durationSeconds,
+            'endsAt' => $endsAt->format('Y-m-d H:i:s'),
         ]);
     }
 
