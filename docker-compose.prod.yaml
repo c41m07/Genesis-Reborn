@@ -1,0 +1,45 @@
+networks:
+    backend:
+        external: false
+    traefik_network:
+        name: ${DOCKER_NETWORK_TRAEFIK}
+        external: true
+
+services:
+    app:
+        restart: unless-stopped
+        container_name: ${PROJECT_IDENTIFIER}_app
+        image: registry.gitlab.com/genesis4951139/draf/app:v1.0.0-alpha
+        environment:
+            - APP_VERSION=${APP_VERSION}
+            - DB_HOST=${DB_HOST}
+            - DB_NAME=${DB_NAME}
+            - DB_USER=${DB_USER}
+            - DB_PASS=${DB_PASS}
+            - DB_PORT=${DB_PORT}
+            - DISPLAY_ERRORS=${DISPLAY_ERRORS}
+            - DISPLAY_REPORTING=${DISPLAY_REPORTING}
+            - BASE_URL=https://${TRAEFIK_URL_APP}
+        networks:
+            - backend
+            - traefik_network
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_IDENTIFIER}-app.entrypoints=websecure"
+            - "traefik.http.routers.${PROJECT_IDENTIFIER}-app.rule=Host(`${TRAEFIK_URL_APP}`)"
+            - "traefik.http.routers.${PROJECT_IDENTIFIER}-app.tls.certresolver=myresolver"
+            - "traefik.http.services.${PROJECT_IDENTIFIER}-app.loadbalancer.server.port=80"
+            - "traefik.docker.network=traefik_network"
+
+    database:
+        restart: unless-stopped
+        image: mariadb:11.7.2
+        container_name: ${PROJECT_IDENTIFIER}_database
+        environment:
+            MARIADB_ROOT_PASSWORD: ${DB_PASS}
+        volumes:
+            - ./mariadb:/var/lib/mysql
+        networks:
+            - backend
+#        ports:
+#            - "${DATABASE_PORT_EXTERNAL}:${DATABASE_PORT}"
