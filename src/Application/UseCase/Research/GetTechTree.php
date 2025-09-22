@@ -21,19 +21,24 @@ class GetTechTree
 
     /**
      * @return array{
-     *     categories: array<int, array{
+     *     groups: array<int, array{
      *         key: string,
      *         label: string,
-     *         items: array<int, array{
-     *             type: string,
+     *         categories: array<int, array{
      *             key: string,
      *             label: string,
-     *             level?: int,
-     *             description?: string,
-     *             image?: ?string,
-     *             requires: array<int, array{type: string, key: string, label: string, required: int, current: int, met: bool}>
+     *             items: array<int, array{
+     *                 type: string,
+     *                 key: string,
+     *                 label: string,
+     *                 level?: int,
+     *                 description?: string,
+     *                 image?: ?string,
+     *                 requires: array<int, array{type: string, key: string, label: string, required: int, current: int, met: bool}>
+     *             }>
      *         }>
-     *     }>
+     *     }>,
+     *     buildingLevels: array<string, int>
      * }
      */
     public function execute(int $planetId): array
@@ -41,9 +46,32 @@ class GetTechTree
         $researchLevels = $this->researchStates->getLevels($planetId);
         $buildingLevels = $this->buildingStates->getLevels($planetId);
 
-        $categories = [];
 
-        $buildingItems = [];
+        $buildingCategoryLabels = [
+            'production' => 'Production',
+            'energy' => 'Énergie',
+            'research' => 'Recherche',
+            'military' => 'Militaire',
+            'infrastructure' => 'Infrastructure',
+        ];
+        $buildingCategoryMap = [
+            'metal_mine' => 'production',
+            'crystal_mine' => 'production',
+            'hydrogen_plant' => 'production',
+            'solar_plant' => 'energy',
+            'fusion_reactor' => 'energy',
+            'antimatter_reactor' => 'energy',
+            'research_lab' => 'research',
+            'shipyard' => 'military',
+            'storage_depot' => 'infrastructure',
+            'worker_factory' => 'infrastructure',
+            'robot_factory' => 'infrastructure',
+        ];
+
+        $buildingsByCategory = [];
+        foreach (array_keys($buildingCategoryLabels) as $categoryKey) {
+            $buildingsByCategory[$categoryKey] = [];
+        }
         foreach ($this->buildingCatalog->all() as $definition) {
             $requirements = [];
             $definitionRequirements = $definition->getRequirements();
@@ -72,7 +100,7 @@ class GetTechTree
                 ];
             }
 
-            $buildingItems[] = [
+            $item = [
                 'type' => 'building',
                 'key' => $definition->getKey(),
                 'label' => $definition->getLabel(),
@@ -80,14 +108,29 @@ class GetTechTree
                 'image' => $definition->getImage(),
                 'requires' => $requirements,
             ];
-        }
-        usort($buildingItems, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
-        $categories[] = [
-            'key' => 'buildings',
-            'label' => 'Bâtiments',
-            'items' => $buildingItems,
-        ];
 
+            $categoryKey = $buildingCategoryMap[$definition->getKey()] ?? 'infrastructure';
+            $buildingsByCategory[$categoryKey][] = $item;
+        }
+
+        $buildingCategories = [];
+        foreach ($buildingCategoryLabels as $categoryKey => $label) {
+            $items = $buildingsByCategory[$categoryKey] ?? [];
+            if ($items === []) {
+                continue;
+            }
+
+            usort($items, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
+
+            $buildingCategories[] = [
+                'key' => 'buildings-' . $categoryKey,
+                'label' => $label,
+                'items' => $items,
+            ];
+        }
+
+
+        $shipCategories = [];
         foreach ($this->shipCatalog->groupedByCategory() as $category => $data) {
             $shipItems = [];
             foreach ($data['items'] as $definition) {
@@ -115,13 +158,18 @@ class GetTechTree
                 ];
             }
 
-            $categories[] = [
+            if ($shipItems === []) {
+                continue;
+            }
+
+            $shipCategories[] = [
                 'key' => 'ship-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($category)),
                 'label' => $category,
                 'items' => $shipItems,
             ];
         }
 
+        $researchCategories = [];
         $labDefinition = $this->buildingCatalog->get('research_lab');
         foreach ($this->researchCatalog->groupedByCategory() as $category => $data) {
             $items = [];
@@ -164,7 +212,11 @@ class GetTechTree
                 ];
             }
 
-            $categories[] = [
+            if ($items === []) {
+                continue;
+            }
+
+            $researchCategories[] = [
                 'key' => 'research-' . preg_replace('/[^a-z0-9]+/i', '-', strtolower($category)),
                 'label' => $category,
                 'items' => $items,
@@ -172,7 +224,23 @@ class GetTechTree
         }
 
         return [
-            'categories' => $categories,
+            'groups' => [
+                [
+                    'key' => 'buildings',
+                    'label' => 'Bâtiments',
+                    'categories' => $buildingCategories,
+                ],
+                [
+                    'key' => 'ships',
+                    'label' => 'Vaisseaux',
+                    'categories' => $shipCategories,
+                ],
+                [
+                    'key' => 'research',
+                    'label' => 'Recherches',
+                    'categories' => $researchCategories,
+                ],
+            ],
             'buildingLevels' => $buildingLevels,
         ];
     }

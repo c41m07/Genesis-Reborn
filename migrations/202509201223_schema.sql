@@ -3,25 +3,27 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-DROP VIEW IF EXISTS users;
-DROP TABLE IF EXISTS events;
-DROP TABLE IF EXISTS player_pve_runs;
-DROP TABLE IF EXISTS fleet_ships;
-DROP TABLE IF EXISTS fleets;
-DROP TABLE IF EXISTS ships;
-DROP TABLE IF EXISTS player_technologies;
-DROP TABLE IF EXISTS technologies;
-DROP TABLE IF EXISTS planet_buildings;
-DROP TABLE IF EXISTS buildings;
-DROP TABLE IF EXISTS planets;
-DROP TABLE IF EXISTS resources;
-DROP TABLE IF EXISTS players;
-DROP TABLE IF EXISTS pve_missions;
+# CREATE DATABASE IF NOT EXISTS genesis_reborn DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# DROP VIEW IF EXISTS users;
+# DROP TABLE IF EXISTS events;
+# DROP TABLE IF EXISTS player_pve_runs;
+# DROP TABLE IF EXISTS fleet_ships;
+# DROP TABLE IF EXISTS fleets;
+# DROP TABLE IF EXISTS ships;
+# DROP TABLE IF EXISTS player_technologies;
+# DROP TABLE IF EXISTS technologies;
+# DROP TABLE IF EXISTS planet_buildings;
+# DROP TABLE IF EXISTS buildings;
+# DROP TABLE IF EXISTS planets;
+# DROP TABLE IF EXISTS resources;
+# DROP TABLE IF EXISTS players;
+# DROP TABLE IF EXISTS pve_missions;
 
 -- legacy tables from previous prototype
-DROP TABLE IF EXISTS build_queue;
-DROP TABLE IF EXISTS planet_fleet;
-DROP TABLE IF EXISTS planet_research;
+# DROP TABLE IF EXISTS build_queue;
+# DROP TABLE IF EXISTS planet_fleet;
+# DROP TABLE IF EXISTS planet_research;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

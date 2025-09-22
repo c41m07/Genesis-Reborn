@@ -1,0 +1,48 @@
+image: jakzal/phpqa:php8.3-alpine
+variables:
+    VERSION_IMAGE: "$CI_REGISTRY_IMAGE/app:v1.0.0-alpha"
+    DEPLOY_IMAGE: "$CI_REGISTRY_IMAGE/app:latest"
+
+stages:
+    - InstallEnvironment
+    - BuildAndPushImage
+
+# Limiter l'exécution aux push et merge request sur main
+workflow:
+    rules:
+        -   if: '$CI_COMMIT_BRANCH == "main"'
+        -   if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"'
+        -   when: never
+
+# Etape d'installation des dépendances
+install-dependencies:
+    stage: InstallEnvironment
+    script:
+        - composer install --ignore-platform-req=ext-amqp --ignore-platform-req=ext-xsl --dev
+    artifacts:
+        paths:
+            - vendor/
+        expire_in: 1 hour
+    rules:
+        -   if: '$CI_COMMIT_BRANCH == "main"'
+
+# Build et Push de l'image Docker
+docker-app-build-push:
+    stage: BuildAndPushImage
+    image: docker:latest
+    services:
+        - docker:dind
+    variables:
+        DOCKER_DRIVER: overlay2
+    before_script:
+        - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    script:
+        - docker manifest inspect $VERSION_IMAGE > /dev/null 2>&1 && echo "Image déjà existante, skip build" && exit 0
+        - docker build -t $VERSION_IMAGE -f docker/php/prod/Dockerfile .
+        - docker push $VERSION_IMAGE
+        - docker tag $VERSION_IMAGE $DEPLOY_IMAGE
+        - docker push $DEPLOY_IMAGE
+    rules:
+        -   if: '$CI_COMMIT_BRANCH == "main"'
+#    dependencies:
+#        - build-version
