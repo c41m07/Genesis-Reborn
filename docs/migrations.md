@@ -21,23 +21,20 @@ Le système de migration de Genesis Reborn permet d'appliquer des changements de
 ```bash
 # Migration sécurisée (recommandée)
 composer db:migrate
-
-# Script legacy (utilise le nouveau système en interne)
-composer db:create
 ```
 
 ## Structure des migrations
 
 Les fichiers de migration sont dans `/migrations/` avec le format:
 ```
-YYYYMMDD_description.sql
+YYYYMMDDHHII_description.sql
 ```
 
 ### Migrations critiques
 
-- `20250920_migration_tracking.sql` - Table de suivi des migrations
-- `20250920_schema_safe.sql` - Schéma non-destructif (CREATE IF NOT EXISTS)
-- `20250920_schema.sql` - **DEPRECATED** - Version destructive (DROP TABLE)
+- `202509201200_migration_tracking.sql` - Table de suivi des migrations
+- `202509201200_schema_safe.sql` - Schéma non-destructif (CREATE IF NOT EXISTS)
+- `202509201200_schema.sql` - **DEPRECATED** - Version destructive (DROP TABLE)
 
 ## Fonctionnement
 
@@ -97,9 +94,9 @@ tools/db/
 └── create-database.php # Legacy (délègue à migrate.php)
 
 migrations/
-├── 20250920_migration_tracking.sql  # Table de suivi
-├── 20250920_schema_safe.sql         # Schéma sécurisé
-├── 20250920_schema.sql              # Legacy destructif
+├── 202509201200_migration_tracking.sql  # Table de suivi
+├── 202509201200_schema_safe.sql         # Schéma sécurisé
+├── 202509201200_schema.sql              # Legacy destructif
 └── [autres migrations...]           # Migrations incrémentales
 ```
 

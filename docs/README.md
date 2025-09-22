@@ -119,7 +119,6 @@ composer dump-autoload --optimize
 npm install
 
 # Base de données
-composer db:create    # Legacy script (uses new migration system internally)  
 composer db:migrate   # Recommended: Safe incremental migrations
 
 # QA & tests
