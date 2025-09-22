@@ -32,7 +32,7 @@ RUN rm -rf /var/www/html/.env
 RUN rm -rf /var/www/html/.github
 RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --no-interaction && \
     npm install -g npm@latest &&  \
-    npm install && \
+    npm install
 RUN chown -R www-data:www-data /var/www/html
 
 WORKDIR /var/www/html/
