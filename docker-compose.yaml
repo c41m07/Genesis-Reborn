@@ -1,0 +1,33 @@
+networks:
+    backend:
+    traefik_network:
+        name: traefik_network
+        external: true
+
+services:
+    app:
+        container_name: ${PROJECT_IDENTIFIER}_app
+        build: docker/php/dev
+        volumes:
+            - ./:/var/www/html
+        networks:
+            - backend
+            - traefik_network
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.${PROJECT_IDENTIFIER}-app.entrypoints=web"
+            - "traefik.http.routers.${PROJECT_IDENTIFIER}-app.rule=Host(`${TRAEFIK_URL_APP}`)"
+            - "traefik.http.services.${PROJECT_IDENTIFIER}-app.loadbalancer.server.port=80"
+            - "traefik.docker.network=traefik_network"
+
+    database:
+        image: mariadb:11.7.2
+        container_name: ${PROJECT_IDENTIFIER}_database
+        environment:
+            MARIADB_ROOT_PASSWORD: ${DB_PASS}
+        volumes:
+            - ./mariadb:/var/lib/mysql
+        networks:
+            - backend
+        ports:
+            - "${DB_PORT}:${DB_PORT}"
