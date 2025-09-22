@@ -146,10 +146,10 @@ npm run svgo:build
 - Les File de construction sont simultanées et les objets dans la file "tourne" en simultanée au lieu d'attendre la 
   fin du premier objet avant de commencer le suivant.
 - Onglet flottes : ne permet pas de gérer les flottes du joueur actuellement et est juste un calculateur de carburant.
-- regrouper les type dans tech-tree.php par des super-type (batiments, recherches, vaisseaux) afin d'améliorer la 
-  lisibilité
+- ~~regrouper les type dans tech-tree.php par des super-type (batiments, recherches, vaisseaux) afin d'améliorer la 
+  lisibilité~~
 - Journal et Profil: Refonte complete à faire.
-- Aficher moins de détails sur la carte galactique et permettre d'envoyer des flottes sur une planète en cliquant 
+- ~~Aficher moins de détails sur la carte galactique et~~ permettre d'envoyer des flottes sur une planète en cliquant 
   dessus.
 - Rajouter des info sur dashboard pour les mouvement de flottes ou autre interaction.
 ---
