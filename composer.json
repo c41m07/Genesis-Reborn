@@ -27,7 +27,8 @@
         "test": "phpunit",
         "cs": "./vendor/bin/php-cs-fixer fix --diff",
         "stan": "phpstan analyse src --level=5 --memory-limit=256M",
-        "db:create": "php tools/db/create-database.php"
+        "db:create": "php tools/db/create-database.php",
+        "db:migrate": "php tools/db/migrate.php"
     },
     "config": {
         "sort-packages": true
