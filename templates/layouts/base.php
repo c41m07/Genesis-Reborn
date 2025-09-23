@@ -74,6 +74,7 @@ $menuCategories = [
             'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
             'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
             'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
+            'changelog' => ['label' => 'Changelog', 'path' => '/changelog', 'icon' => 'tech'],
         ],
     ],
 ];
