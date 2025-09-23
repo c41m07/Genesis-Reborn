@@ -32,7 +32,7 @@ ob_start();
     </section>
 
     <section class="tech-tree" data-base-url="<?= htmlspecialchars($baseUrl, ENT_QUOTES) ?>">
-        <div class="tech-tree__layout">
+        <div class="tech-tree col-12">
             <!-- Barre latérale: liste des versions -->
             <aside class="tech-tree__sidebar">
                 <?php if (!empty($changelog)): ?>

@@ -1,16 +1,19 @@
 [
   {
-    "version": "test json1",
-    "date": "2025-09-23",
+    "version": "Va0.0.1",
+    "date": "22-09-2025",
     "changes": [
-      "test json1 du contenue"
-    ]
-  },
-  {
-    "version": "test json2",
-    "date": "2025-10-05",
-    "changes": [
-      "test json2 du contenue"
+      "- Lancement de la version solo complète avec filtrage des entités par joueur connecté.",
+      "- Refonte MVC avec front controller unique, routeur interne et séparation Domain/Application/Infrastructure/Templates/Config.",
+      "- Mise en place de l'authentification complète : inscription, connexion, déconnexion et protection CSRF sur les formulaires POST.",
+      "- Gestion avancée des colonies : construction de bâtiments, files d'attente, calculs de coûts et d'énergie.",
+      "- Système de recherches avec catalogue, prérequis et files indépendantes par planète.",
+      "- Chantier spatial opérationnel : production navale, gestion du carburant, calculs d'ETA et planification de missions.",
+      "- Suivi de la progression via le tableau de bord et le journal des événements PvE.",
+      "- Design system consolidé avec tokens CSS, sprite d'icônes SVG et pipeline d'optimisation des assets.",
+      "- Service de sessions applicatives encapsulé offrant flash messages, gestion sécurisée et injection via interface.",
+      "- Outils de qualité intégrés : tests PHPUnit, analyse statique PHPStan et norme de code via PHP-CS-Fixer."
     ]
   }
+
 ]
