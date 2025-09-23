@@ -3,19 +3,34 @@
 namespace App\Controller;
 
 use App\Infrastructure\Http\Response;
+use App\Infrastructure\Http\ViewRenderer;
+use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\Session\FlashBag;
+use App\Infrastructure\Security\CsrfTokenManager;
 
 class ChangeLogController extends AbstractController
 {
-    /**
-     * Point d’entrée de la page changelog.
-     * Charge les données du journal des versions et renvoie la vue associée.
-     */
+    public function __construct(
+        ViewRenderer $renderer,
+        SessionInterface $session,
+        FlashBag $flashBag,
+        CsrfTokenManager $csrfTokenManager,
+        string $baseUrl
+    ) {
+        parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
+    }
+
     public function index(): Response
     {
-        // Chemin corrigé vers le JSON hébergé en public/
+        // Vérifie que l’utilisateur est connecté
+        $userId = $this->getUserId();
+        if (!$userId) {
+            return $this->redirect($this->baseUrl . '/login');
+        }
+
+        // Lecture du fichier JSON
         $filePath = dirname(__DIR__, 3) . '/public/data/changelog.json';
         $changelogData = [];
-
         if (is_readable($filePath)) {
             try {
                 $json = file_get_contents($filePath);
@@ -23,26 +38,28 @@ class ChangeLogController extends AbstractController
                 if (is_array($decoded)) {
                     $changelogData = $decoded;
                 }
-            } catch (\Throwable $e) {
-                // En cas d'erreur JSON, on ignore et on affiche un état vide.
-                $changelogData = [];
+            } catch (\Throwable) {
+                // En cas d’erreur JSON, on garde un tableau vide
             }
         }
 
-        // Rendu de la vue. Adaptez le chemin du template à votre structure.
+        // Passage des variables à la vue, y compris currentUserId
         return $this->render('pages/changelog/index.php', [
-            'changelog' => $changelogData,
-            'title'     => 'Journal des versions',
-            'baseUrl'   => $this->baseUrl,
+            'title'         => 'Journal des versions',
+            'changelog'     => $changelogData,
+            'baseUrl'       => $this->baseUrl,
+            'activeSection' => 'changelog',
+            'currentUserId' => $userId,
+            'flashes'       => $this->flashBag->consume(),
+            'csrf_logout'   => $this->generateCsrfToken('logout'),
         ]);
     }
 
     public function api(): Response
     {
-        // Lecture robuste et unique du même fichier
+        // Lecture identique du JSON pour l’API
         $filePath = dirname(__DIR__, 3) . '/public/data/changelog.json';
         $data = [];
-
         if (is_readable($filePath)) {
             try {
                 $json = file_get_contents($filePath);
@@ -50,8 +67,8 @@ class ChangeLogController extends AbstractController
                 if (is_array($decoded)) {
                     $data = $decoded;
                 }
-            } catch (\Throwable $e) {
-                $data = [];
+            } catch (\Throwable) {
+                // On ignore l’erreur et renvoie un tableau vide
             }
         }
 

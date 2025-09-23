@@ -1,21 +1,16 @@
 [
   {
-    "version": "Va0.0.1",
+    "version": "test json1",
     "date": "2025-09-23",
     "changes": [
-      "Première version stable",
-      "Mise en place de l'interface empire (Vue impériale, menu planètes, gestion de flotte)",
-      "Système de bâtiments et de recherche",
-      "Introduction de l'arbre technologique",
-      "Création du profil joueur et système d'authentification"
+      "test json1 du contenue"
     ]
   },
   {
-    "version": "Va0.0.2",
+    "version": "test json2",
     "date": "2025-10-05",
     "changes": [
-      "Améliorations de performance",
-      "Corrections de bugs mineurs"
+      "test json2 du contenue"
     ]
   }
 ]
