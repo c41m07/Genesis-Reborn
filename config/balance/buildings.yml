@@ -10,7 +10,7 @@ metal_mine:
   prod_growth: 1.15
   energy_use_base: 10
   energy_use_growth: 1.1
-  energy_use_linear: true
+  energy_use_linear: false
   affects: metal
   image: assets/svg/illustrations/buildings/metal-mine.svg
   requires:
@@ -28,7 +28,7 @@ crystal_mine:
   prod_growth: 1.15
   energy_use_base: 15
   energy_use_growth: 1.1
-  energy_use_linear: true
+  energy_use_linear: false
   affects: crystal
   image: assets/svg/illustrations/buildings/crystal-mine.svg
   requires:
@@ -116,7 +116,7 @@ hydrogen_plant:
   prod_growth: 1.15
   energy_use_base: 20
   energy_use_growth: 1.1
-  energy_use_linear: true
+  energy_use_linear: false
   affects: hydrogen
   image: assets/svg/illustrations/buildings/hydrogen-plant.svg
   requires:
