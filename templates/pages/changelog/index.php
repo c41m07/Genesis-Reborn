@@ -54,7 +54,8 @@ ob_start();
                             </summary>
                             <ul class="tech-section__list tech-section__list--nested">
                                 <?php foreach ($changes as $change): ?>
-                                    <li><?= htmlspecialchars($change, ENT_QUOTES) ?></li>
+                                    <li class ="tech-node-link tech-node-link"><?= htmlspecialchars($change,
+                                                ENT_QUOTES) ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         </details>
