@@ -20,6 +20,7 @@ Ce dépôt applique des standards cohérents entre le PHP, le JavaScript et le C
 ## Chaîne de commandes
 ```bash
 # PHP
+composer update   
 composer install
 composer cs        # vérifie le formatage
 composer cs:fix    # corrige le formatage
@@ -32,6 +33,9 @@ npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
 npm run fmt        # Vérifie le formatage Prettier
 npm run svgo       # Optimise les SVG
+
+# Dev server
+php -S localhost:8000 -t public
 ```
 
 ## Scripts inline supprimés
