@@ -54,7 +54,7 @@ ob_start();
                             </summary>
                             <ul class="tech-section__list tech-section__list--nested">
                                 <?php foreach ($changes as $change): ?>
-                                    <li class ="tech-requirement is-met"><?= htmlspecialchars($change,
+                                    <li class =""><?= htmlspecialchars($change,
                                                 ENT_QUOTES) ?></li>
                                 <?php endforeach; ?>
                             </ul>
