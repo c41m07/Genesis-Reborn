@@ -242,6 +242,7 @@ class ShipyardController extends AbstractController
             'label' => $definition->getLabel(),
             'canBuild' => (bool) ($entry['canBuild'] ?? false),
             'affordable' => (bool) ($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
             'requirements' => [
                 'ok' => (bool) ($requirements['ok'] ?? false),
                 'missing' => $missing,

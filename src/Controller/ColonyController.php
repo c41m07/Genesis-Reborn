@@ -249,6 +249,7 @@ class ColonyController extends AbstractController
             'level' => (int) ($entry['level'] ?? 0),
             'canUpgrade' => (bool) ($entry['canUpgrade'] ?? false),
             'affordable' => (bool) ($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
             'cost' => array_map(static fn ($value) => (int) $value, $entry['cost'] ?? []),
             'time' => (int) ($entry['time'] ?? 0),
             'baseTime' => (int) ($entry['baseTime'] ?? 0),

@@ -86,16 +86,22 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
 
     const card = document.querySelector('[data-building-card="metal_mine"]');
     assert(card?.classList.contains('is-locked'));
-    assert(!card?.classList.contains('is-unaffordable'));
 
     const subtitle = card?.querySelector('.panel__subtitle');
     assert.equal(subtitle?.textContent, 'Niveau actuel 3');
 
-    const costList = card?.querySelector('.building-card__sections .resource-list');
+    let costList = card?.querySelector('.building-card__sections .resource-list');
     assert.ok(costList?.textContent?.includes('150'));
     assert.ok(costList?.textContent?.includes('75'));
     assert.ok(costList?.textContent?.includes('2 min'));
     assert.ok(costList?.innerHTML?.includes('(base 3 min)'));
+
+    const metalCost = costList?.querySelector('[data-resource="metal"]');
+    const crystalCost = costList?.querySelector('[data-resource="crystal"]');
+    const timeCost = costList?.querySelector('[data-resource="time"]');
+    assert(metalCost && !metalCost.classList.contains('resource-list__item--missing'));
+    assert(crystalCost && !crystalCost.classList.contains('resource-list__item--missing'));
+    assert.equal(timeCost?.getAttribute('data-resource'), 'time');
 
     const effectsDetails = card?.querySelector('[data-building-effects]');
     assert(effectsDetails instanceof HTMLElement);
@@ -112,6 +118,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
     const button = card?.querySelector('button[type="submit"]');
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Conditions non remplies');
+    assert(!button?.classList.contains('button--resource-warning'));
 
     updateBuildingCard({
         key: 'metal_mine',
@@ -125,14 +132,22 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
         consumption: {},
         storage: { current: {}, next: {}, delta: {} },
         requirements: { ok: true, missing: [] },
+        missingResources: { metal: 40, crystal: 20 },
     });
 
-    assert(card?.classList.contains('is-unaffordable'));
     const effectsAfter = card?.querySelector('[data-building-effects]');
     assert(effectsAfter instanceof HTMLElement);
     assert.equal(effectsAfter?.hasAttribute('open'), false);
+
+    costList = card?.querySelector('.building-card__sections .resource-list');
+    const updatedMetalCost = costList?.querySelector('[data-resource="metal"]');
+    const updatedCrystalCost = costList?.querySelector('[data-resource="crystal"]');
+    assert(updatedMetalCost?.classList.contains('resource-list__item--missing'));
+    assert(updatedCrystalCost?.classList.contains('resource-list__item--missing'));
+
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Ressources insuffisantes');
+    assert(button?.classList.contains('button--resource-warning'));
 
     const levelDisplay = document.querySelector('[data-building-level="metal_mine"]');
     assert.equal(levelDisplay?.textContent, 'Niveau 3');
@@ -184,7 +199,6 @@ test('updateResearchCard syncs progress, costs and availability', () => {
 
     const card = document.querySelector('[data-research-card="energy_tech"]');
     assert(card && !card.classList.contains('is-locked'));
-    assert(!card?.classList.contains('is-unaffordable'));
 
     const badge = card?.querySelector('.panel__badge');
     assert.equal(badge?.textContent, 'Niveau 2 / 5');
@@ -196,11 +210,15 @@ test('updateResearchCard syncs progress, costs and availability', () => {
     const progressWidth = progress instanceof HTMLElement ? progress.style.width : null;
     assert.equal(progressWidth, '40%');
 
-    const costList = card?.querySelector('.tech-card__section .resource-list');
+    let costList = card?.querySelector('.tech-card__section .resource-list');
     assert.ok(costList?.textContent?.includes('100'));
     assert.ok(costList?.textContent?.includes('50'));
     assert.ok(costList?.textContent?.includes('3 min'));
     assert.ok(costList?.innerHTML?.includes('(base 4 min)'));
+    const metalCost = costList?.querySelector('[data-resource="metal"]');
+    const crystalCost = costList?.querySelector('[data-resource="crystal"]');
+    assert(metalCost && !metalCost.classList.contains('resource-list__item--missing'));
+    assert(crystalCost && !crystalCost.classList.contains('resource-list__item--missing'));
 
     const requirements = card?.querySelector('.tech-card__requirements');
     assert.equal(requirements, null);
@@ -208,6 +226,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
     const button = card?.querySelector('button[type="submit"]');
     assert.equal(button?.disabled, false);
     assert.equal(button?.textContent, 'Lancer la recherche');
+    assert(!button?.classList.contains('button--resource-warning'));
 
     updateResearchCard({
         key: 'energy_tech',
@@ -220,11 +239,17 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         requirements: { ok: true, missing: [] },
         canResearch: false,
         affordable: false,
+        missingResources: { metal: 50, crystal: 25 },
     });
 
-    assert(card?.classList.contains('is-unaffordable'));
+    costList = card?.querySelector('.tech-card__section .resource-list');
+    const updatedMetalCost = costList?.querySelector('[data-resource="metal"]');
+    const updatedCrystalCost = costList?.querySelector('[data-resource="crystal"]');
+    assert(updatedMetalCost?.classList.contains('resource-list__item--missing'));
+    assert(updatedCrystalCost?.classList.contains('resource-list__item--missing'));
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Ressources insuffisantes');
+    assert(button?.classList.contains('button--resource-warning'));
 
     updateResearchCard({
         key: 'energy_tech',
@@ -242,6 +267,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         },
         canResearch: false,
         affordable: true,
+        missingResources: {},
     });
 
     const requirementsAfter = card?.querySelector('.tech-card__requirements');
@@ -249,14 +275,22 @@ test('updateResearchCard syncs progress, costs and availability', () => {
     assert.ok(requirementsAfter?.textContent?.includes('Laboratoire'));
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Pré-requis manquants');
-    assert(!card?.classList.contains('is-unaffordable'));
+    assert(!button?.classList.contains('button--resource-warning'));
 });
 
 test('updateShipCard toggles availability and requirements', () => {
     document.body.innerHTML = `
         <article class="panel ship-card is-locked" data-ship-card="fighter">
             <div class="panel__body ship-card__body">
-                <div class="ship-card__content"></div>
+                <div class="ship-card__content">
+                    <div class="ship-card__section ship-card__section--costs">
+                        <ul class="resource-list">
+                            <li class="resource-list__item" data-resource="metal"><span>100</span></li>
+                            <li class="resource-list__item" data-resource="crystal"><span>50</span></li>
+                            <li class="resource-list__item resource-list__item--time" data-resource="time"><span>2 min</span></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             <footer class="panel__footer ship-card__footer">
                 <form data-async="queue">
@@ -276,7 +310,6 @@ test('updateShipCard toggles availability and requirements', () => {
 
     const card = document.querySelector('[data-ship-card="fighter"]');
     assert(card && !card.classList.contains('is-locked'));
-    assert(!card?.classList.contains('is-unaffordable'));
 
     const input = card?.querySelector('input[name="quantity"]');
     assert.equal(input?.disabled, false);
@@ -284,18 +317,31 @@ test('updateShipCard toggles availability and requirements', () => {
     const button = card?.querySelector('button[type="submit"]');
     assert.equal(button?.disabled, false);
     assert.equal(button?.textContent, 'Construire');
+    assert(!button?.classList.contains('button--resource-warning'));
+
+    const costList = card?.querySelector('.ship-card__section--costs .resource-list');
+    const metalCost = costList?.querySelector('[data-resource="metal"]');
+    const crystalCost = costList?.querySelector('[data-resource="crystal"]');
+    assert(metalCost && !metalCost.classList.contains('resource-list__item--missing'));
+    assert(crystalCost && !crystalCost.classList.contains('resource-list__item--missing'));
 
     updateShipCard({
         key: 'fighter',
         canBuild: false,
         requirements: { ok: true, missing: [] },
         affordable: false,
+        missingResources: { metal: 100, crystal: 50 },
     });
 
-    assert(card?.classList.contains('is-unaffordable'));
     assert.equal(input?.disabled, true);
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Ressources insuffisantes');
+    assert(button?.classList.contains('button--resource-warning'));
+
+    const updatedMetalCost = card?.querySelector('[data-resource="metal"]');
+    const updatedCrystalCost = card?.querySelector('[data-resource="crystal"]');
+    assert(updatedMetalCost?.classList.contains('resource-list__item--missing'));
+    assert(updatedCrystalCost?.classList.contains('resource-list__item--missing'));
 
     updateShipCard({
         key: 'fighter',
@@ -307,13 +353,19 @@ test('updateShipCard toggles availability and requirements', () => {
             ],
         },
         affordable: true,
+        missingResources: {},
     });
 
     assert(card?.classList.contains('is-locked'));
-    assert(!card?.classList.contains('is-unaffordable'));
     assert.equal(input?.disabled, true);
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Pré-requis manquants');
+    assert(!button?.classList.contains('button--resource-warning'));
+
+    const normalizedMetalCost = card?.querySelector('[data-resource="metal"]');
+    const normalizedCrystalCost = card?.querySelector('[data-resource="crystal"]');
+    assert(normalizedMetalCost && !normalizedMetalCost.classList.contains('resource-list__item--missing'));
+    assert(normalizedCrystalCost && !normalizedCrystalCost.classList.contains('resource-list__item--missing'));
 
     const requirements = card?.querySelector('.ship-card__requirements');
     assert.ok(requirements);

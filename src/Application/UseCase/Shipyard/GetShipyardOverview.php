@@ -49,6 +49,7 @@ class GetShipyardOverview
      *             buildTime: int,
      *             baseBuildTime: int,
      *             affordable: bool,
+     *             missingResources: array<string, int>,
      *         }>
      *     }>,
      *     shipyardBonus: float
@@ -106,7 +107,8 @@ class GetShipyardOverview
             foreach ($data['items'] as $definition) {
                 $requirements = $this->checkRequirements($definition->getRequiresResearch(), $researchLevels, $catalogMap);
                 $cost = $definition->getBaseCost();
-                $isAffordable = $this->canAfford($planet, $cost);
+                $missingResources = $this->calculateMissingResources($planet, $cost);
+                $isAffordable = $missingResources === [];
                 $canBuild = $shipyardLevel > 0 && $requirements['ok'] && !$queueLimitReached && $isAffordable;
 
                 $buildTime = $this->buildingCalculator->applyShipBuildSpeedBonus(
@@ -122,6 +124,7 @@ class GetShipyardOverview
                     'buildTime' => $buildTime,
                     'baseBuildTime' => $definition->getBuildTime(),
                     'affordable' => $isAffordable,
+                    'missingResources' => $missingResources,
                 ];
             }
 
@@ -179,9 +182,13 @@ class GetShipyardOverview
 
     /**
      * @param array<string, int> $cost
+     *
+     * @return array<string, int>
      */
-    private function canAfford(\App\Domain\Entity\Planet $planet, array $cost): bool
+    private function calculateMissingResources(\App\Domain\Entity\Planet $planet, array $cost): array
     {
+        $missing = [];
+
         foreach ($cost as $resource => $amount) {
             if ($amount <= 0) {
                 continue;
@@ -194,11 +201,16 @@ class GetShipyardOverview
                 default => null,
             };
 
-            if ($current === null || $current < $amount) {
-                return false;
+            if ($current === null) {
+                continue;
+            }
+
+            $difference = (int) $amount - $current;
+            if ($difference > 0) {
+                $missing[$resource] = $difference;
             }
         }
 
-        return true;
+        return $missing;
     }
 }

@@ -66,6 +66,7 @@ class GetBuildingsOverview
      *         baseTime: int,
      *         canUpgrade: bool,
      *         affordable: bool,
+     *         missingResources: array<string, int>,
      *         requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>},
      *         production: array{resource: string, current: int, next: int, delta: int},
      *         consumption: array<string, array{current: int, next: int, delta: int}>,
@@ -157,7 +158,8 @@ class GetBuildingsOverview
                     return $missing;
                 }, $requirements['missing']);
             }
-            $isAffordable = $this->canAfford($planet, $cost);
+            $missingResources = $this->calculateMissingResources($planet, $cost);
+            $isAffordable = $missingResources === [];
             $canUpgrade = !$queueLimitReached && $requirements['ok'] && $isAffordable;
 
             $currentProduction = $this->calculator->productionAt($definition, $currentLevel);
@@ -233,6 +235,7 @@ class GetBuildingsOverview
                 'requirements' => $requirements,
                 'canUpgrade' => $canUpgrade,
                 'affordable' => $isAffordable,
+                'missingResources' => $missingResources,
                 'production' => [
                     'resource' => $definition->getAffects(),
                     'current' => $currentProduction,
@@ -292,9 +295,13 @@ class GetBuildingsOverview
 
     /**
      * @param array<string, int> $cost
+     *
+     * @return array<string, int>
      */
-    private function canAfford(\App\Domain\Entity\Planet $planet, array $cost): bool
+    private function calculateMissingResources(\App\Domain\Entity\Planet $planet, array $cost): array
     {
+        $missing = [];
+
         foreach ($cost as $resource => $amount) {
             if ($amount <= 0) {
                 continue;
@@ -307,11 +314,16 @@ class GetBuildingsOverview
                 default => null,
             };
 
-            if ($current === null || $current < $amount) {
-                return false;
+            if ($current === null) {
+                continue;
+            }
+
+            $difference = (int) $amount - $current;
+            if ($difference > 0) {
+                $missing[$resource] = $difference;
             }
         }
 
-        return true;
+        return $missing;
     }
 }

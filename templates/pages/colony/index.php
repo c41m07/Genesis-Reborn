@@ -154,12 +154,10 @@ ob_start();
                     $requirementsOk = (bool) ($requirements['ok'] ?? true);
                     $canUpgrade = (bool) ($building['canUpgrade'] ?? false);
                     $affordable = (bool) ($building['affordable'] ?? false);
+                    $missingResources = array_map(static fn ($value) => (int) $value, $building['missingResources'] ?? []);
                     $statusClasses = [];
                     if (!$canUpgrade) {
                         $statusClasses[] = 'is-locked';
-                    }
-                    if (!$affordable && $requirementsOk) {
-                        $statusClasses[] = 'is-unaffordable';
                     }
                     $status = trim(implode(' ', $statusClasses));
                     $imagePath = $definition->getImage();
@@ -182,6 +180,7 @@ ob_start();
                             $resourceLabels,
                             $icon,
                             $requirementsPanel,
+                            $missingResources
                         ): void {
                             $bonuses = $building['bonuses'] ?? [];
                             echo '<div class="building-card__sections">';
@@ -189,14 +188,19 @@ ob_start();
                             echo '<h3>Prochaine amélioration</h3>';
                             echo '<ul class="resource-list">';
                             foreach ($building['cost'] as $resource => $amount) {
-                                echo '<li>';
-                                echo $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
+                                $resourceKey = (string) $resource;
+                                $classes = ['resource-list__item'];
+                                if (($missingResources[$resourceKey] ?? 0) > 0) {
+                                    $classes[] = 'resource-list__item--missing';
+                                }
+                                echo '<li class="' . implode(' ', $classes) . '" data-resource="' . htmlspecialchars($resourceKey) . '">';
+                                echo $icon($resourceKey, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
                                 echo '<span>' . format_number((int) $amount) . '</span>';
                                 echo '</li>';
                             }
                             $buildTime = (int) ($building['time'] ?? 0);
                             $baseBuildTime = (int) ($building['baseTime'] ?? $buildTime);
-                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
+                            echo '<li class="resource-list__item resource-list__item--time" data-resource="time">' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
                             if ($baseBuildTime !== $buildTime) {
                                 echo ' <small>(base ' . htmlspecialchars(format_duration($baseBuildTime)) . ')</small>';
                             }
@@ -398,7 +402,11 @@ ob_start();
                                 $label = 'Conditions non remplies';
                             }
                             $disabled = $canUpgrade ? '' : ' disabled';
-                            echo '<button class="button button--primary" type="submit"' . $disabled . '>' . $label . '</button>';
+                            $buttonClasses = 'button button--primary';
+                            if ($requirementsOk && !$affordable) {
+                                $buttonClasses .= ' button--resource-warning';
+                            }
+                            echo '<button class="' . $buttonClasses . '" type="submit"' . $disabled . '>' . $label . '</button>';
                             echo '</form>';
                         },
                     ]) ?>
