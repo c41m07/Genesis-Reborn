@@ -250,6 +250,7 @@ class ResearchController extends AbstractController
             ],
             'canResearch' => (bool) ($entry['canResearch'] ?? false),
             'affordable' => (bool) ($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
         ];
     }
 

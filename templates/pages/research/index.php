@@ -96,12 +96,10 @@ ob_start();
                     $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
                     $requirementsOk = (bool) ($requirements['ok'] ?? true);
                     $affordable = (bool) ($item['affordable'] ?? false);
+                    $missingResources = array_map(static fn ($value) => (int) $value, $item['missingResources'] ?? []);
                     $statusClasses = [];
                     if (!$canResearch) {
                         $statusClasses[] = 'is-locked';
-                    }
-                    if (!$affordable && $requirementsOk) {
-                        $statusClasses[] = 'is-unaffordable';
                     }
                     $status = trim(implode(' ', $statusClasses));
                     $imagePath = $definition->getImage();
@@ -124,7 +122,8 @@ ob_start();
                             $baseUrl,
                             $icon,
                             $requirementsPanel,
-                            $requirements
+                            $requirements,
+                            $missingResources
                         ): void {
 
                             echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
@@ -136,11 +135,21 @@ ob_start();
                             echo '<h3>Prochaine amélioration</h3>';
                             echo '<ul class="resource-list">';
                             foreach ($item['nextCost'] as $resource => $amount) {
-                                echo '<li>' . $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . format_number((int) $amount) . '</span></li>';
+                                $resourceKey = (string) $resource;
+                                $classes = ['resource-list__item'];
+                                if (($missingResources[$resourceKey] ?? 0) > 0) {
+                                    $classes[] = 'resource-list__item--missing';
+                                }
+                                echo '<li class="' . implode(' ', $classes) . '" data-resource="' . htmlspecialchars($resourceKey) . '">'
+                                    . $icon($resourceKey, ['baseUrl' => $baseUrl, 'class' => 'icon-sm'])
+                                    . '<span>' . format_number((int) $amount) . '</span>'
+                                    . '</li>';
                             }
                             $nextTime = (int) ($item['nextTime'] ?? 0);
                             $nextBaseTime = (int) ($item['nextBaseTime'] ?? $nextTime);
-                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($nextTime));
+                            echo '<li class="resource-list__item resource-list__item--time" data-resource="time">'
+                                . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm'])
+                                . '<span>' . htmlspecialchars(format_duration($nextTime));
                             if ($nextBaseTime !== $nextTime) {
                                 echo ' <small>(base ' . htmlspecialchars(format_duration($nextBaseTime)) . ')</small>';
                             }
@@ -195,7 +204,11 @@ ob_start();
                                 $label = 'Pré-requis manquants';
                             }
                             $disabled = $canResearch ? '' : ' disabled';
-                            echo '<button class="button button--primary" type="submit"' . $disabled . '>' . $label . '</button>';
+                            $buttonClasses = 'button button--primary';
+                            if ($requirementsOk && !$affordable) {
+                                $buttonClasses .= ' button--resource-warning';
+                            }
+                            echo '<button class="' . $buttonClasses . '" type="submit"' . $disabled . '>' . $label . '</button>';
                             echo '</form>';
                         },
                     ]) ?>
