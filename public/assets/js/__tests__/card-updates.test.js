@@ -49,9 +49,13 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
                             <li><svg class="icon icon-sm" aria-hidden="true"><use href="${spriteUrl}#icon-time"></use></svg><span>10 s</span></li>
                         </ul>
                     </div>
-                    <div class="building-card__block">
-                        <h3>Effets</h3>
-                    </div>
+                    <details class="building-card__details" data-building-effects>
+                        <summary class="building-card__details-summary">
+                            <span class="building-card__details-title">Effets</span>
+                            <span class="building-card__details-chevron" aria-hidden="true"></span>
+                        </summary>
+                        <div class="building-card__details-content"></div>
+                    </details>
                 </div>
             </div>
             <footer class="panel__footer">
@@ -82,6 +86,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
 
     const card = document.querySelector('[data-building-card="metal_mine"]');
     assert(card?.classList.contains('is-locked'));
+    assert(!card?.classList.contains('is-unaffordable'));
 
     const subtitle = card?.querySelector('.panel__subtitle');
     assert.equal(subtitle?.textContent, 'Niveau actuel 3');
@@ -92,6 +97,14 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
     assert.ok(costList?.textContent?.includes('2 min'));
     assert.ok(costList?.innerHTML?.includes('(base 3 min)'));
 
+    const effectsDetails = card?.querySelector('[data-building-effects]');
+    assert(effectsDetails instanceof HTMLElement);
+    assert.equal(effectsDetails?.hasAttribute('open'), false);
+    const effectsSummary = effectsDetails?.querySelector('.building-card__details-summary');
+    assert.ok(effectsSummary?.textContent?.includes('Effets'));
+    const effectsContent = effectsDetails?.querySelector('.building-card__details-content');
+    assert.ok(effectsContent?.textContent?.includes('Production actuelle'));
+
     const requirements = card?.querySelector('.building-card__requirements');
     assert.ok(requirements);
     assert.ok(requirements?.textContent?.includes('Laboratoire de recherche'));
@@ -99,6 +112,27 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
     const button = card?.querySelector('button[type="submit"]');
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Conditions non remplies');
+
+    updateBuildingCard({
+        key: 'metal_mine',
+        level: 3,
+        canUpgrade: false,
+        affordable: false,
+        cost: { metal: 150, crystal: 75 },
+        time: 120,
+        baseTime: 180,
+        production: { resource: 'metal', current: 30, next: 40 },
+        consumption: {},
+        storage: { current: {}, next: {}, delta: {} },
+        requirements: { ok: true, missing: [] },
+    });
+
+    assert(card?.classList.contains('is-unaffordable'));
+    const effectsAfter = card?.querySelector('[data-building-effects]');
+    assert(effectsAfter instanceof HTMLElement);
+    assert.equal(effectsAfter?.hasAttribute('open'), false);
+    assert.equal(button?.disabled, true);
+    assert.equal(button?.textContent, 'Ressources insuffisantes');
 
     const levelDisplay = document.querySelector('[data-building-level="metal_mine"]');
     assert.equal(levelDisplay?.textContent, 'Niveau 3');
@@ -145,10 +179,12 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         nextBaseTime: 240,
         requirements: { ok: true, missing: [] },
         canResearch: true,
+        affordable: true,
     });
 
     const card = document.querySelector('[data-research-card="energy_tech"]');
     assert(card && !card.classList.contains('is-locked'));
+    assert(!card?.classList.contains('is-unaffordable'));
 
     const badge = card?.querySelector('.panel__badge');
     assert.equal(badge?.textContent, 'Niveau 2 / 5');
@@ -181,6 +217,23 @@ test('updateResearchCard syncs progress, costs and availability', () => {
         nextCost: { metal: 100, crystal: 50 },
         nextTime: 180,
         nextBaseTime: 240,
+        requirements: { ok: true, missing: [] },
+        canResearch: false,
+        affordable: false,
+    });
+
+    assert(card?.classList.contains('is-unaffordable'));
+    assert.equal(button?.disabled, true);
+    assert.equal(button?.textContent, 'Ressources insuffisantes');
+
+    updateResearchCard({
+        key: 'energy_tech',
+        level: 2,
+        maxLevel: 5,
+        progress: 0.4,
+        nextCost: { metal: 100, crystal: 50 },
+        nextTime: 180,
+        nextBaseTime: 240,
         requirements: {
             ok: false,
             missing: [
@@ -188,6 +241,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
             ],
         },
         canResearch: false,
+        affordable: true,
     });
 
     const requirementsAfter = card?.querySelector('.tech-card__requirements');
@@ -195,6 +249,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
     assert.ok(requirementsAfter?.textContent?.includes('Laboratoire'));
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Pré-requis manquants');
+    assert(!card?.classList.contains('is-unaffordable'));
 });
 
 test('updateShipCard toggles availability and requirements', () => {
@@ -216,10 +271,12 @@ test('updateShipCard toggles availability and requirements', () => {
         key: 'fighter',
         canBuild: true,
         requirements: { ok: true, missing: [] },
+        affordable: true,
     });
 
     const card = document.querySelector('[data-ship-card="fighter"]');
     assert(card && !card.classList.contains('is-locked'));
+    assert(!card?.classList.contains('is-unaffordable'));
 
     const input = card?.querySelector('input[name="quantity"]');
     assert.equal(input?.disabled, false);
@@ -231,15 +288,29 @@ test('updateShipCard toggles availability and requirements', () => {
     updateShipCard({
         key: 'fighter',
         canBuild: false,
+        requirements: { ok: true, missing: [] },
+        affordable: false,
+    });
+
+    assert(card?.classList.contains('is-unaffordable'));
+    assert.equal(input?.disabled, true);
+    assert.equal(button?.disabled, true);
+    assert.equal(button?.textContent, 'Ressources insuffisantes');
+
+    updateShipCard({
+        key: 'fighter',
+        canBuild: false,
         requirements: {
             ok: false,
             missing: [
                 { label: 'Recherche X', current: 0, level: 1 },
             ],
         },
+        affordable: true,
     });
 
     assert(card?.classList.contains('is-locked'));
+    assert(!card?.classList.contains('is-unaffordable'));
     assert.equal(input?.disabled, true);
     assert.equal(button?.disabled, true);
     assert.equal(button?.textContent, 'Pré-requis manquants');

@@ -325,10 +325,15 @@ const renderBuildingSections = (building = {}) => {
     }
 
     const effectsHtml = `
-        <div class="building-card__block">
-            <h3>Effets</h3>
-            ${effectsParts.join('')}
-        </div>
+        <details class="building-card__details" data-building-effects>
+            <summary class="building-card__details-summary">
+                <span class="building-card__details-title">Effets</span>
+                <span class="building-card__details-chevron" aria-hidden="true"></span>
+            </summary>
+            <div class="building-card__details-content">
+                ${effectsParts.join('')}
+            </div>
+        </details>
     `;
 
     const requirements = building.requirements ?? null;
@@ -663,7 +668,13 @@ const updateBuildingCard = (building) => {
         return;
     }
 
-    card.classList.toggle('is-locked', !building.canUpgrade);
+    const canUpgrade = Boolean(building.canUpgrade);
+    const requirementsOk = Boolean(building.requirements?.ok);
+    const isAffordable = building.affordable === undefined ? true : Boolean(building.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
+    card.classList.toggle('is-locked', !canUpgrade);
+    card.classList.toggle('is-unaffordable', isUnaffordable);
 
     const subtitle = card.querySelector('.panel__subtitle');
     if (subtitle) {
@@ -678,9 +689,14 @@ const updateBuildingCard = (building) => {
 
     const button = card.querySelector('form[data-async] button[type="submit"]');
     if (button) {
-        const canUpgrade = Boolean(building.canUpgrade);
         button.disabled = !canUpgrade;
-        button.textContent = canUpgrade ? 'Améliorer' : 'Conditions non remplies';
+        if (canUpgrade) {
+            button.textContent = 'Améliorer';
+        } else if (isUnaffordable) {
+            button.textContent = 'Ressources insuffisantes';
+        } else {
+            button.textContent = 'Conditions non remplies';
+        }
     }
 
     updateBuildingLevelDisplays(building);
@@ -702,7 +718,12 @@ const updateResearchCard = (research) => {
     }
 
     const canResearch = Boolean(research.canResearch);
+    const requirementsOk = Boolean(research.requirements?.ok);
+    const isAffordable = research.affordable === undefined ? true : Boolean(research.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
     card.classList.toggle('is-locked', !canResearch);
+    card.classList.toggle('is-unaffordable', isUnaffordable);
 
     const badge = card.querySelector('.panel__badge');
     if (badge) {
@@ -751,7 +772,13 @@ const updateResearchCard = (research) => {
     const button = card.querySelector('form[data-async] button[type="submit"]');
     if (button) {
         button.disabled = !canResearch;
-        button.textContent = canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';
+        if (canResearch) {
+            button.textContent = 'Lancer la recherche';
+        } else if (isUnaffordable) {
+            button.textContent = 'Ressources insuffisantes';
+        } else {
+            button.textContent = 'Pré-requis manquants';
+        }
     }
 };
 
@@ -771,7 +798,12 @@ const updateShipCard = (ship) => {
     }
 
     const canBuild = Boolean(ship.canBuild);
+    const requirementsOk = Boolean(ship.requirements?.ok);
+    const isAffordable = ship.affordable === undefined ? true : Boolean(ship.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
     card.classList.toggle('is-locked', !canBuild);
+    card.classList.toggle('is-unaffordable', isUnaffordable);
 
     const requirementsHtml = renderShipRequirements(ship.requirements ?? null);
     const existingRequirements = card.querySelector('.ship-card__requirements');
@@ -795,7 +827,13 @@ const updateShipCard = (ship) => {
     const button = card.querySelector('form[data-async] button[type="submit"]');
     if (button) {
         button.disabled = !canBuild;
-        button.textContent = canBuild ? 'Construire' : 'Pré-requis manquants';
+        if (canBuild) {
+            button.textContent = 'Construire';
+        } else if (isUnaffordable) {
+            button.textContent = 'Ressources insuffisantes';
+        } else {
+            button.textContent = 'Pré-requis manquants';
+        }
     }
 };
 

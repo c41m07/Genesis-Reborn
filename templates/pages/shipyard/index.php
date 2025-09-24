@@ -104,7 +104,17 @@ ob_start();
                     $canBuild = (bool) ($item['canBuild'] ?? false);
                     $buildTime = (int) ($item['buildTime'] ?? $definition->getBuildTime());
                     $baseBuildTime = (int) ($item['baseBuildTime'] ?? $definition->getBuildTime());
-                    $status = $canBuild ? '' : 'is-locked';
+                    $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
+                    $requirementsOk = (bool) ($requirements['ok'] ?? true);
+                    $affordable = (bool) ($item['affordable'] ?? false);
+                    $statusClasses = [];
+                    if (!$canBuild) {
+                        $statusClasses[] = 'is-locked';
+                    }
+                    if (!$affordable && $requirementsOk) {
+                        $statusClasses[] = 'is-unaffordable';
+                    }
+                    $status = trim(implode(' ', $statusClasses));
                     $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
@@ -126,6 +136,7 @@ ob_start();
                             $baseUrl,
                             $icon,
                             $requirementsPanel,
+                            $requirements
                         ): void {
                             echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
 
@@ -159,7 +170,6 @@ ob_start();
                             echo '</ul>';
                             echo '</div>';
 
-                            $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
                             if (!($requirements['ok'] ?? true)) {
                                 $requirementItems = [];
                                 foreach ($requirements['missing'] as $missing) {
@@ -189,12 +199,26 @@ ob_start();
                             }
                             echo '</div>';
                         },
-                        'footer' => static function () use ($baseUrl, $definition, $csrf_shipyard, $selectedPlanetId, $canBuild): void {
+                        'footer' => static function () use (
+                            $baseUrl,
+                            $definition,
+                            $csrf_shipyard,
+                            $selectedPlanetId,
+                            $canBuild,
+                            $requirementsOk,
+                            $affordable
+                        ): void {
                             echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
                             echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_shipyard) . '">';
                             echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
                             echo '<label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '></label>';
-                            $label = $canBuild ? 'Construire' : 'Pré-requis manquants';
+                            if ($canBuild) {
+                                $label = 'Construire';
+                            } elseif ($requirementsOk && !$affordable) {
+                                $label = 'Ressources insuffisantes';
+                            } else {
+                                $label = 'Pré-requis manquants';
+                            }
                             echo '<button class="button button--primary" type="submit"' . ($canBuild ? '' : ' disabled') . '>' . $label . '</button>';
                             echo '</form>';
                         },
