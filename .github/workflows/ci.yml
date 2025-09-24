@@ -24,11 +24,9 @@ jobs:
       - name: Validate composer configuration
         run: composer validate --strict
       - name: Run PHP CS Fixer (dry run)
-        run: |
-          vendor/bin/php-cs-fixer fix src --rules=@PSR12 --dry-run --diff
-          vendor/bin/php-cs-fixer fix tests --rules=@PSR12 --dry-run --diff
+        run: composer cs
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyse src --level=5
+        run: composer stan
       - name: Run PHPUnit
         run: composer test
 
