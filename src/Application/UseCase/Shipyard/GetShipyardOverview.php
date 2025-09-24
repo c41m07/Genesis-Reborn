@@ -39,7 +39,18 @@ class GetShipyardOverview
      *     fleet: array<string, int>,
      *     fleetSummary: array<int, array{key: string, label: string, quantity: int}>,
      *     queue: array{count: int, jobs: array<int, array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array{definition: \App\Domain\Entity\ShipDefinition, requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}, canBuild: bool, buildTime: int, baseBuildTime: int}>>,
+     *     categories: array<int, array{
+     *         label: string,
+     *         image: string,
+     *         items: array<int, array{
+     *             definition: \App\Domain\Entity\ShipDefinition,
+     *             requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>},
+     *             canBuild: bool,
+     *             buildTime: int,
+     *             baseBuildTime: int,
+     *             affordable: bool,
+     *         }>
+     *     }>,
      *     shipyardBonus: float
      * }
      */
@@ -94,7 +105,9 @@ class GetShipyardOverview
             $items = [];
             foreach ($data['items'] as $definition) {
                 $requirements = $this->checkRequirements($definition->getRequiresResearch(), $researchLevels, $catalogMap);
-                $canBuild = $shipyardLevel > 0 && $requirements['ok'] && !$queueLimitReached;
+                $cost = $definition->getBaseCost();
+                $isAffordable = $this->canAfford($planet, $cost);
+                $canBuild = $shipyardLevel > 0 && $requirements['ok'] && !$queueLimitReached && $isAffordable;
 
                 $buildTime = $this->buildingCalculator->applyShipBuildSpeedBonus(
                     $this->shipyardDefinition,
@@ -108,6 +121,7 @@ class GetShipyardOverview
                     'canBuild' => $canBuild,
                     'buildTime' => $buildTime,
                     'baseBuildTime' => $definition->getBuildTime(),
+                    'affordable' => $isAffordable,
                 ];
             }
 
@@ -161,5 +175,30 @@ class GetShipyardOverview
             'ok' => empty($missing),
             'missing' => $missing,
         ];
+    }
+
+    /**
+     * @param array<string, int> $cost
+     */
+    private function canAfford(\App\Domain\Entity\Planet $planet, array $cost): bool
+    {
+        foreach ($cost as $resource => $amount) {
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $current = match ($resource) {
+                'metal' => $planet->getMetal(),
+                'crystal' => $planet->getCrystal(),
+                'hydrogen' => $planet->getHydrogen(),
+                default => null,
+            };
+
+            if ($current === null || $current < $amount) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

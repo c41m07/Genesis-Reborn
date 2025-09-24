@@ -249,6 +249,7 @@ class ResearchController extends AbstractController
                 'missing' => $missing,
             ],
             'canResearch' => (bool) ($entry['canResearch'] ?? false),
+            'affordable' => (bool) ($entry['affordable'] ?? false),
         ];
     }
 

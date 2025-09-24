@@ -241,6 +241,7 @@ class ShipyardController extends AbstractController
             'key' => $definition->getKey(),
             'label' => $definition->getLabel(),
             'canBuild' => (bool) ($entry['canBuild'] ?? false),
+            'affordable' => (bool) ($entry['affordable'] ?? false),
             'requirements' => [
                 'ok' => (bool) ($requirements['ok'] ?? false),
                 'missing' => $missing,
