@@ -104,7 +104,15 @@ ob_start();
                     $canBuild = (bool) ($item['canBuild'] ?? false);
                     $buildTime = (int) ($item['buildTime'] ?? $definition->getBuildTime());
                     $baseBuildTime = (int) ($item['baseBuildTime'] ?? $definition->getBuildTime());
-                    $status = $canBuild ? '' : 'is-locked';
+                    $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
+                    $requirementsOk = (bool) ($requirements['ok'] ?? true);
+                    $affordable = (bool) ($item['affordable'] ?? false);
+                    $missingResources = array_map(static fn ($value) => (int) $value, $item['missingResources'] ?? []);
+                    $statusClasses = [];
+                    if (!$canBuild) {
+                        $statusClasses[] = 'is-locked';
+                    }
+                    $status = trim(implode(' ', $statusClasses));
                     $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
@@ -126,6 +134,8 @@ ob_start();
                             $baseUrl,
                             $icon,
                             $requirementsPanel,
+                            $requirements,
+                            $missingResources
                         ): void {
                             echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
 
@@ -146,12 +156,17 @@ ob_start();
                             echo '<h3>Coût de production</h3>';
                             echo '<ul class="resource-list">';
                             foreach ($definition->getBaseCost() as $resource => $amount) {
-                                echo '<li>';
-                                echo $icon((string) $resource, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
+                                $resourceKey = (string) $resource;
+                                $classes = ['resource-list__item'];
+                                if (($missingResources[$resourceKey] ?? 0) > 0) {
+                                    $classes[] = 'resource-list__item--missing';
+                                }
+                                echo '<li class="' . implode(' ', $classes) . '" data-resource="' . htmlspecialchars($resourceKey) . '">';
+                                echo $icon($resourceKey, ['baseUrl' => $baseUrl, 'class' => 'icon-sm']);
                                 echo '<span>' . format_number((int) $amount) . '</span>';
                                 echo '</li>';
                             }
-                            echo '<li>' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
+                            echo '<li class="resource-list__item resource-list__item--time" data-resource="time">' . $icon('time', ['baseUrl' => $baseUrl, 'class' => 'icon-sm']) . '<span>' . htmlspecialchars(format_duration($buildTime));
                             if ($baseBuildTime !== $buildTime) {
                                 echo ' <small>(base ' . htmlspecialchars(format_duration($baseBuildTime)) . ')</small>';
                             }
@@ -159,7 +174,6 @@ ob_start();
                             echo '</ul>';
                             echo '</div>';
 
-                            $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
                             if (!($requirements['ok'] ?? true)) {
                                 $requirementItems = [];
                                 foreach ($requirements['missing'] as $missing) {
@@ -189,13 +203,31 @@ ob_start();
                             }
                             echo '</div>';
                         },
-                        'footer' => static function () use ($baseUrl, $definition, $csrf_shipyard, $selectedPlanetId, $canBuild): void {
+                        'footer' => static function () use (
+                            $baseUrl,
+                            $definition,
+                            $csrf_shipyard,
+                            $selectedPlanetId,
+                            $canBuild,
+                            $requirementsOk,
+                            $affordable
+                        ): void {
                             echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int) $selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
                             echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string) $csrf_shipyard) . '">';
                             echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
                             echo '<label class="ship-card__quantity"><span>Quantité</span><input type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '></label>';
-                            $label = $canBuild ? 'Construire' : 'Pré-requis manquants';
-                            echo '<button class="button button--primary" type="submit"' . ($canBuild ? '' : ' disabled') . '>' . $label . '</button>';
+                            if ($canBuild) {
+                                $label = 'Construire';
+                            } elseif ($requirementsOk && !$affordable) {
+                                $label = 'Ressources insuffisantes';
+                            } else {
+                                $label = 'Pré-requis manquants';
+                            }
+                            $buttonClasses = 'button button--primary';
+                            if ($requirementsOk && !$affordable) {
+                                $buttonClasses .= ' button--resource-warning';
+                            }
+                            echo '<button class="' . $buttonClasses . '" type="submit"' . ($canBuild ? '' : ' disabled') . '>' . $label . '</button>';
                             echo '</form>';
                         },
                     ]) ?>

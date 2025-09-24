@@ -105,13 +105,28 @@ const metricValueClass = (value) => {
     return 'metric-line__value metric-line__value--neutral';
 };
 
-const renderCostList = (cost = {}, time = 0, baseTime = null) => {
+const renderCostList = (cost = {}, time = 0, baseTime = null, missingResources = {}) => {
     const items = [];
+
+    const normalizedMissing = {};
+    if (missingResources && typeof missingResources === 'object') {
+        Object.entries(missingResources).forEach(([resource, value]) => {
+            const numeric = Number(value);
+            if (Number.isFinite(numeric) && numeric > 0) {
+                normalizedMissing[String(resource)] = numeric;
+            }
+        });
+    }
 
     if (cost && typeof cost === 'object') {
         Object.entries(cost).forEach(([resource, amount]) => {
+            const key = String(resource);
+            const classes = ['resource-list__item'];
+            if ((normalizedMissing[key] ?? 0) > 0) {
+                classes.push('resource-list__item--missing');
+            }
             items.push(`
-                <li>${createIcon(resource)}<span>${formatNumber(Number(amount) || 0)}</span></li>
+                <li class="${classes.join(' ')}" data-resource="${escapeHtml(key)}">${createIcon(key)}<span>${formatNumber(Number(amount) || 0)}</span></li>
             `);
         });
     }
@@ -132,7 +147,7 @@ const renderCostList = (cost = {}, time = 0, baseTime = null) => {
         : '';
 
     items.push(`
-        <li>${createIcon('time')}<span>${timeLabel}${baseLabel}</span></li>
+        <li class="resource-list__item resource-list__item--time" data-resource="time">${createIcon('time')}<span>${timeLabel}${baseLabel}</span></li>
     `);
 
     return `<ul class="resource-list">${items.join('')}</ul>`;
@@ -284,7 +299,12 @@ const renderBuildingSections = (building = {}) => {
     const costHtml = `
         <div class="building-card__block">
             <h3>Prochaine amélioration</h3>
-            ${renderCostList(building.cost ?? {}, building.time ?? 0, building.baseTime ?? null)}
+            ${renderCostList(
+                building.cost ?? {},
+                building.time ?? 0,
+                building.baseTime ?? null,
+                building.missingResources ?? {},
+            )}
         </div>
     `;
 
@@ -325,10 +345,15 @@ const renderBuildingSections = (building = {}) => {
     }
 
     const effectsHtml = `
-        <div class="building-card__block">
-            <h3>Effets</h3>
-            ${effectsParts.join('')}
-        </div>
+        <details class="building-card__details" data-building-effects>
+            <summary class="building-card__details-summary">
+                <span class="building-card__details-title">Effets</span>
+                <span class="building-card__details-chevron" aria-hidden="true"></span>
+            </summary>
+            <div class="building-card__details-content">
+                ${effectsParts.join('')}
+            </div>
+        </details>
     `;
 
     const requirements = building.requirements ?? null;
@@ -663,7 +688,12 @@ const updateBuildingCard = (building) => {
         return;
     }
 
-    card.classList.toggle('is-locked', !building.canUpgrade);
+    const canUpgrade = Boolean(building.canUpgrade);
+    const requirementsOk = Boolean(building.requirements?.ok);
+    const isAffordable = building.affordable === undefined ? true : Boolean(building.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
+    card.classList.toggle('is-locked', !canUpgrade);
 
     const subtitle = card.querySelector('.panel__subtitle');
     if (subtitle) {
@@ -677,11 +707,17 @@ const updateBuildingCard = (building) => {
     }
 
     const button = card.querySelector('form[data-async] button[type="submit"]');
-    if (button) {
-        const canUpgrade = Boolean(building.canUpgrade);
-        button.disabled = !canUpgrade;
-        button.textContent = canUpgrade ? 'Améliorer' : 'Conditions non remplies';
-    }
+        if (button) {
+            button.disabled = !canUpgrade;
+            if (canUpgrade) {
+                button.textContent = 'Améliorer';
+            } else if (isUnaffordable) {
+                button.textContent = 'Ressources insuffisantes';
+            } else {
+                button.textContent = 'Conditions non remplies';
+            }
+            button.classList.toggle('button--resource-warning', isUnaffordable);
+        }
 
     updateBuildingLevelDisplays(building);
 };
@@ -702,6 +738,10 @@ const updateResearchCard = (research) => {
     }
 
     const canResearch = Boolean(research.canResearch);
+    const requirementsOk = Boolean(research.requirements?.ok);
+    const isAffordable = research.affordable === undefined ? true : Boolean(research.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
     card.classList.toggle('is-locked', !canResearch);
 
     const badge = card.querySelector('.panel__badge');
@@ -732,6 +772,7 @@ const updateResearchCard = (research) => {
             research.nextCost ?? {},
             research.nextTime ?? 0,
             research.nextBaseTime ?? null,
+            research.missingResources ?? {},
         )}`;
     }
 
@@ -751,7 +792,14 @@ const updateResearchCard = (research) => {
     const button = card.querySelector('form[data-async] button[type="submit"]');
     if (button) {
         button.disabled = !canResearch;
-        button.textContent = canResearch ? 'Lancer la recherche' : 'Pré-requis manquants';
+        if (canResearch) {
+            button.textContent = 'Lancer la recherche';
+        } else if (isUnaffordable) {
+            button.textContent = 'Ressources insuffisantes';
+        } else {
+            button.textContent = 'Pré-requis manquants';
+        }
+        button.classList.toggle('button--resource-warning', isUnaffordable);
     }
 };
 
@@ -771,6 +819,10 @@ const updateShipCard = (ship) => {
     }
 
     const canBuild = Boolean(ship.canBuild);
+    const requirementsOk = Boolean(ship.requirements?.ok);
+    const isAffordable = ship.affordable === undefined ? true : Boolean(ship.affordable);
+    const isUnaffordable = requirementsOk && !isAffordable;
+
     card.classList.toggle('is-locked', !canBuild);
 
     const requirementsHtml = renderShipRequirements(ship.requirements ?? null);
@@ -792,10 +844,43 @@ const updateShipCard = (ship) => {
         quantityInput.disabled = !canBuild;
     }
 
+    const normalizedMissing = {};
+    if (ship.missingResources && typeof ship.missingResources === 'object') {
+        Object.entries(ship.missingResources).forEach(([resource, value]) => {
+            const numeric = Number(value);
+            if (Number.isFinite(numeric) && numeric > 0) {
+                normalizedMissing[String(resource)] = numeric;
+            }
+        });
+    }
+
+    const costItems = card.querySelectorAll('.ship-card__section--costs .resource-list [data-resource]');
+    costItems.forEach((item) => {
+        if (!(item instanceof HTMLElement)) {
+            return;
+        }
+
+        const resource = item.getAttribute('data-resource') ?? '';
+        if (!resource || resource === 'time') {
+            item.classList.remove('resource-list__item--missing');
+            return;
+        }
+
+        const isMissing = (normalizedMissing[resource] ?? 0) > 0;
+        item.classList.toggle('resource-list__item--missing', isMissing);
+    });
+
     const button = card.querySelector('form[data-async] button[type="submit"]');
     if (button) {
         button.disabled = !canBuild;
-        button.textContent = canBuild ? 'Construire' : 'Pré-requis manquants';
+        if (canBuild) {
+            button.textContent = 'Construire';
+        } else if (isUnaffordable) {
+            button.textContent = 'Ressources insuffisantes';
+        } else {
+            button.textContent = 'Pré-requis manquants';
+        }
+        button.classList.toggle('button--resource-warning', isUnaffordable);
     }
 };
 

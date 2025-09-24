@@ -25,6 +25,7 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
+use App\Controller\ChangeLogController;
 use App\Domain\Battle\DTO\AttackingFleetDTO;
 use App\Domain\Battle\DTO\DefendingFleetDTO;
 use App\Domain\Battle\DTO\FleetBattleResultDTO;
@@ -429,4 +430,15 @@ return function (Container $container): void {
         $c->get(CsrfTokenManager::class),
         $c->getParameter('app.base_url')
     ));
+
+
+    $container->set(ChangeLogController::class, fn (Container $c) => new ChangeLogController(
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+
 };

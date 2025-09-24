@@ -32,7 +32,23 @@ class GetResearchOverview
      *     buildingLevels: array<string, int>,
      *     researchLevels: array<string, int>,
      *     queue: array{count: int, jobs: array<int, array{research: string, label: string, targetLevel: int, endsAt: \DateTimeImmutable, remaining: int}>},
-     *     categories: array<int, array{label: string, image: string, items: array<int, array<string, mixed>>}>,
+     *     categories: array<int, array{
+     *         label: string,
+     *         image: string,
+     *         items: array<int, array{
+     *             definition: \App\Domain\Entity\ResearchDefinition,
+     *             level: int,
+     *             maxLevel: int,
+     *             progress: float,
+     *             nextCost: array<string, int>,
+     *             nextTime: int,
+     *             nextBaseTime: int,
+     *             requirements: array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>},
+     *             canResearch: bool,
+     *             affordable: bool,
+     *             missingResources: array<string, int>,
+     *         }>
+     *     }>,
      *     totals: array{completedLevels: int, unlockedResearch: int, highestLevel: int}
      * }
      */
@@ -95,10 +111,17 @@ class GetResearchOverview
 
                 $maxLevel = $definition->getMaxLevel();
                 $hasLevelRoom = $maxLevel === 0 || $targetLevel <= $maxLevel;
+                $missingResources = $this->calculateMissingResources(
+                    $planet->getMetal(),
+                    $planet->getCrystal(),
+                    $planet->getHydrogen(),
+                    $nextCost
+                );
+                $isAffordable = $missingResources === [];
                 $canResearch = !$queueLimitReached
                     && $hasLevelRoom
                     && $requirements['ok']
-                    && $this->canAfford($planet->getMetal(), $planet->getCrystal(), $planet->getHydrogen(), $nextCost);
+                    && $isAffordable;
 
                 $items[] = [
                     'definition' => $definition,
@@ -110,6 +133,8 @@ class GetResearchOverview
                     'nextBaseTime' => $nextBaseTime,
                     'requirements' => $requirements,
                     'canResearch' => $canResearch,
+                    'affordable' => $isAffordable,
+                    'missingResources' => $missingResources,
                 ];
             }
 
@@ -145,9 +170,13 @@ class GetResearchOverview
 
     /**
      * @param array<string, int> $cost
+     *
+     * @return array<string, int>
      */
-    private function canAfford(int $metal, int $crystal, int $hydrogen, array $cost): bool
+    private function calculateMissingResources(int $metal, int $crystal, int $hydrogen, array $cost): array
     {
+        $missing = [];
+
         foreach ($cost as $resource => $amount) {
             if ($amount <= 0) {
                 continue;
@@ -160,11 +189,16 @@ class GetResearchOverview
                 default => null,
             };
 
-            if ($current === null || $current < $amount) {
-                return false;
+            if ($current === null) {
+                continue;
+            }
+
+            $difference = (int) $amount - $current;
+            if ($difference > 0) {
+                $missing[$resource] = $difference;
             }
         }
 
-        return true;
+        return $missing;
     }
 }

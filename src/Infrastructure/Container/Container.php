@@ -44,6 +44,8 @@ class Container
         return isset($this->definitions[$id]) || array_key_exists($id, $this->services);
     }
 
+
+
     public function getParameter(string $name, mixed $default = null): mixed
     {
         return $this->parameters[$name] ?? $default;
@@ -53,4 +55,6 @@ class Container
     {
         $this->parameters[$name] = $value;
     }
+
+
 }
