@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Infrastructure\Http\Kernel;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Session\SessionInterface;

@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCase\Building;
 
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
-use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
+use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Battle\DTO;
 
 final class FleetBattleRoundDTO
@@ -24,6 +26,12 @@ final class FleetBattleRoundDTO
      */
     private array $defenderRemaining;
 
+    /**
+     * @param array<string, int|float> $attackerLosses
+     * @param array<string, int|float> $defenderLosses
+     * @param array<string, int|float> $attackerRemaining
+     * @param array<string, int|float> $defenderRemaining
+     */
     public function __construct(
         private readonly int $round,
         array $attackerLosses,

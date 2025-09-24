@@ -242,6 +242,6 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
         </footer>
     </div>
 </div>
-<script type="module" src="<?= htmlspecialchars($asset('assets/js/app.js'), ENT_QUOTES) ?>"></script>
+<script type="module" src="<?= htmlspecialchars($asset('assets/js/app.js'), ENT_QUOTES) ?>" defer></script>
 </body>
 </html>

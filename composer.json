@@ -26,10 +26,11 @@
     },
     "scripts": {
         "test": "phpunit",
-        "cs": "./vendor/bin/php-cs-fixer fix --diff",
-        "stan": "phpstan analyse src --level=5 --memory-limit=256M",
+        "cs": "php ./vendor/bin/php-cs-fixer fix --dry-run --diff --using-cache=no",
+        "stan": "phpstan analyse --configuration=phpstan.neon --memory-limit=512M",
         "db:create": "php tools/db/create-database.php",
-        "db:migrate": "php tools/db/migrate.php"
+        "db:migrate": "php tools/db/migrate.php",
+        "cs:fix": "php ./vendor/bin/php-cs-fixer fix --diff"
     },
     "config": {
         "sort-packages": true

@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Http;
 
 class Response
 {
+    /**
+     * @var array<string, string>
+     */
     private array $headers = [];
 
     public function __construct(

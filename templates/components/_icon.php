@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/helpers.php';
 
 return static function (string $name, array $options = []): string {

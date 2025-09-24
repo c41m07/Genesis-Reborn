@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'minimum_speed_modifier' => 0.01,
     'maximum_discount' => 0.95,

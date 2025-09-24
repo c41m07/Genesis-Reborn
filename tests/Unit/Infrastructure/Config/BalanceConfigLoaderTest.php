@@ -9,8 +9,8 @@ use App\Infrastructure\Config\BalanceConfigLoader;
 use App\Infrastructure\Config\BuildingConfig;
 use App\Infrastructure\Config\ShipConfig;
 use App\Infrastructure\Config\TechnologyConfig;
-use RuntimeException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class BalanceConfigLoaderTest extends TestCase
 {

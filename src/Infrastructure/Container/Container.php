@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Container;
 
 use InvalidArgumentException;
 
 class Container
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $parameters;
 
     /** @var array<string, callable(self): mixed> */
@@ -14,6 +19,9 @@ class Container
     /** @var array<string, mixed> */
     private array $services = [];
 
+    /**
+     * @param array<string, mixed> $parameters
+     */
     public function __construct(array $parameters = [])
     {
         $this->parameters = $parameters;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Application\Service\ProcessShipBuildQueue;
@@ -9,9 +11,9 @@ use App\Domain\Entity\ShipDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
-use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 use DateTimeInterface;
 use RuntimeException;
@@ -81,7 +83,7 @@ class ShipyardController extends AbstractController
             'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
         ];
 
-        if (!($facilityStatuses['shipyard'] ?? false)) {
+        if (!$facilityStatuses['shipyard']) {
             $message = 'Le chantier spatial n’est pas disponible sur cette planète.';
             if ($request->wantsJson()) {
                 return $this->json([
@@ -165,6 +167,8 @@ class ShipyardController extends AbstractController
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
      *
      * Je mets la file de production au propre pour les réponses JSON.
+     *
+     * @return array{count: int, jobs: list<array{ship: string, label: string, quantity: int, remaining: int, endsAt: null|string}>}
      */
     private function formatShipQueue(array $queue): array
     {
@@ -190,6 +194,8 @@ class ShipyardController extends AbstractController
      * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
      *
      * Ce helper me retrouve une entrée de vaisseau dans le catalogue préparé.
+     *
+     * @return array<string, mixed>|null
      */
     private function findShipEntry(array $categories, string $key): ?array
     {
@@ -213,6 +219,15 @@ class ShipyardController extends AbstractController
      * @param array{definition: ShipDefinition, requirements?: array<string, mixed>, canBuild?: bool} $entry
      *
      * Je renvoie un format simplifié pour le front après une création.
+     *
+     * @return array{
+     *     key: string,
+     *     label: string,
+     *     canBuild: bool,
+     *     affordable: bool,
+     *     missingResources: array<string, int>,
+     *     requirements: array{ok: bool, missing: list<array{type: string, key: string, label: string, level: int, current: int}>}
+     * }
      */
     private function normalizeShipEntry(array $entry): array
     {

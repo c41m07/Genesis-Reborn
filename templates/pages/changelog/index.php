@@ -55,7 +55,7 @@ ob_start();
                             <ul class="tech-section__list tech-section__list--nested">
                                 <?php foreach ($changes as $change): ?>
                                     <li class =""><?= htmlspecialchars($change,
-                                                ENT_QUOTES) ?></li>
+                                        ENT_QUOTES) ?></li>
                                 <?php endforeach; ?>
                             </ul>
                         </details>

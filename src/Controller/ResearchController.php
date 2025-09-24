@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Application\Service\ProcessResearchQueue;
@@ -9,9 +11,9 @@ use App\Domain\Entity\ResearchDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
-use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 use DateTimeInterface;
 use RuntimeException;
@@ -81,7 +83,7 @@ class ResearchController extends AbstractController
             'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
         ];
 
-        if (!($facilityStatuses['research_lab'] ?? false)) {
+        if (!$facilityStatuses['research_lab']) {
             $message = 'Le laboratoire de recherche n’est pas disponible sur cette planète.';
             if ($request->wantsJson()) {
                 return $this->json([
@@ -163,6 +165,8 @@ class ResearchController extends AbstractController
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
      *
      * Je prépare les jobs pour que le front affiche la file correctement.
+     *
+     * @return array{count: int, jobs: list<array{research: string, label: string, targetLevel: int, remaining: int, endsAt: null|string}>}
      */
     private function formatResearchQueue(array $queue): array
     {
@@ -188,6 +192,8 @@ class ResearchController extends AbstractController
      * @param array<int, array{items?: array<int, array<string, mixed>>}> $categories
      *
      * Ce helper me sert à retrouver la fiche recherche demandée.
+     *
+     * @return array<string, mixed>|null
      */
     private function findResearchEntry(array $categories, string $key): ?array
     {
@@ -211,6 +217,21 @@ class ResearchController extends AbstractController
      * @param array{definition: ResearchDefinition, level?: int, maxLevel?: int, progress?: float, nextCost?: array<string, int>, nextTime?: int, requirements?: array<string, mixed>, canResearch?: bool} $entry
      *
      * Je nettoie la structure pour la réponse JSON lorsque l’action réussit.
+     *
+     * @return array{
+     *     key: string,
+     *     label: string,
+     *     level: int,
+     *     maxLevel: int,
+     *     progress: float,
+     *     nextCost: array<string, int>,
+     *     nextTime: int,
+     *     nextBaseTime: int,
+     *     requirements: array{ok: bool, missing: list<array{type: string, key: string, label: string, level: int, current: int}>},
+     *     canResearch: bool,
+     *     affordable: bool,
+     *     missingResources: array<string, int>
+     * }
      */
     private function normalizeResearchEntry(array $entry): array
     {

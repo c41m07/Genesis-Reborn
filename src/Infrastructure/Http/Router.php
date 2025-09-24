@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Http;
 
 use RuntimeException;
 
 class Router
 {
-    /** @var array<int, array{method: string, path: string, regex: string, handler: array{0: string, 1: string}}>} */
+    /**
+     * @var array<int, array{method: string, path: string, regex: string, handler: array{0: string, 1: string}}>
+     */
     private array $routes = [];
 
+    /**
+     * @param array{0: string, 1: string} $handler
+     */
     public function add(string $method, string $path, array $handler): void
     {
         $pattern = preg_replace('#\{([a-zA-Z_][a-zA-Z0-9_]*)\}#', '(?P<$1>[^/]+)', $path);
