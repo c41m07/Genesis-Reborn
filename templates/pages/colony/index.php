@@ -114,17 +114,23 @@ ob_start();
                 $robotBonusDisplay = $formatPercent($robotFactoryBonus);
                 echo '<p class="metric-line"><span class="metric-line__label">Bonus de construction</span><span class="metric-line__value metric-line__value--positive">-' . htmlspecialchars($robotBonusDisplay) . ' %</span></p>';
             }
-            echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
+            echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '" data-server-now="' . time() . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';
             } else {
                 echo '<ul class="queue-list">';
                 foreach ($queue['jobs'] as $job) {
                     $label = $job['label'] ?? $job['building'] ?? '';
-                    echo '<li class="queue-list__item">';
+                    $endTime = null;
+                    if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
+                        $endTime = $job['endsAt']->getTimestamp();
+                    } elseif (isset($job['remaining'])) {
+                        $endTime = time() + max(0, (int) $job['remaining']);
+                    }
+                    echo '<li class="queue-list__item' . ($endTime ? '" data-endtime="' . (int) $endTime . '"' : '"') . '>';
                     echo '<div><strong>' . htmlspecialchars((string) $label) . '</strong><span>Niveau ' . format_number((int) ($job['targetLevel'] ?? 0)) . '</span></div>';
                     echo '<div class="queue-list__timing">';
-                    echo '<span>Termine dans ' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span>';
+                    echo '<span><span class="countdown">' . htmlspecialchars(format_duration((int) ($job['remaining'] ?? 0))) . '</span></span>';
                     if (!empty($job['endsAt']) && $job['endsAt'] instanceof \DateTimeImmutable) {
                         echo '<time datetime="' . $job['endsAt']->format('c') . '">' . $job['endsAt']->format('d/m H:i') . '</time>';
                     }
@@ -415,6 +421,42 @@ ob_start();
         </section>
     <?php endforeach; ?>
 <?php endif; ?>
+<script>
+(function () {
+    function pad(n){ return n < 10 ? '0' + n : '' + n; }
+    function fmt(s){
+        s = Math.max(0, s|0);
+        var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+        return h > 0 ? (h + ':' + pad(m) + ':' + pad(sec)) : (pad(m) + ':' + pad(sec));
+    }
+    function initCountdowns(scope){
+        var blocks = (scope || document).querySelectorAll('.queue-block[data-server-now]');
+        blocks.forEach(function(block){
+            var serverNow = parseInt(block.getAttribute('data-server-now'), 10);
+            if (!serverNow) serverNow = Math.floor(Date.now()/1000);
+            var offset = serverNow - Math.floor(Date.now()/1000);
+            function tick(){
+                var now = Math.floor(Date.now()/1000) + offset;
+                block.querySelectorAll('.queue-list__item[data-endtime]').forEach(function(item){
+                    var end = parseInt(item.getAttribute('data-endtime'), 10);
+                    if (!end) return;
+                    var diff = end - now;
+                    if (diff <= 0){
+                        item.remove();
+                        return;
+                    }
+                    var target = item.querySelector('.countdown');
+                    if (target) target.textContent = fmt(diff);
+                });
+            }
+            tick();
+            setInterval(tick, 1000);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function(){ initCountdowns(document); });
+})();
+</script>
+
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../../layouts/base.php';

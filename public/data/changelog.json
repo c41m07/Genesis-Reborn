@@ -14,6 +14,22 @@
       "- Service de sessions applicatives encapsulé offrant flash messages, gestion sécurisée et injection via interface.",
       "- Outils de qualité intégrés : tests PHPUnit, analyse statique PHPStan et norme de code via PHP-CS-Fixer."
     ]
+  },
+  {
+    "version": "Va0.0.1a",
+    "date": "24-09-2025",
+    "changes": [
+      "- DB/CLI: correctifs sur la commande `db:migrate` et mise en place d’un système de migrations sécurisé pour éviter les effacements de base.",
+      "- Files d’attente: garantie d’un ordonnancement séquentiel des jobs en PDO.",
+      "- Tech tree: refactor des données en hiérarchie groupée + ajustement de l’état par défaut.",
+      "- Docs: nettoyage du README (retrait de tâches obsolètes).",
+      "- UI: mise en évidence rouge et bouton « Ressources insuffisantes » pour bâtiments, recherches et chantier spatial.",
+      "- UI: la section « Effets » des cartes bâtiments devient réductible (toggle).",
+      "- Balance: passage de `energy_use_linear` à `false` pour les bâtiments de production (coût énergétique exponentiel aux niveaux élevés, plus doux aux niveaux bas).",
+      "- Front: corrections successives des classes CSS dans les listes de prérequis technologiques (nettoyage et harmonisation).",
+      "- API/Docs: documentation des champs d’« affordability » exposés dans le payload.",
+      "- Changelog: ajout du contrôleur/vue de changelog + amélioration du JSON et de la gestion de session côté ChangeLogController.",
+      "- CI/Sécu: simplification des commandes CI et ajout du package d’avis de sécurité Composer."
+    ]
   }
-
 ]
