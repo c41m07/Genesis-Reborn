@@ -138,7 +138,9 @@ ob_start();
                     <?php $groupKey = (string) ($group['key'] ?? ''); ?>
                     <?php $groupLabel = (string) ($group['label'] ?? ''); ?>
                     <?php $categories = $group['categories'] ?? []; ?>
-                    <?php if (empty($categories)) { continue; } ?>
+                    <?php if (empty($categories)) {
+                        continue;
+                    } ?>
                     <details class="tech-section tech-section--group" data-tech-group="<?= htmlspecialchars($groupKey) ?>">
                         <summary class="tech-section__summary">
                             <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
@@ -149,7 +151,9 @@ ob_start();
                                 <?php $categoryKey = (string) ($category['key'] ?? ''); ?>
                                 <?php $categoryLabel = (string) ($category['label'] ?? ''); ?>
                                 <?php $items = $category['items'] ?? []; ?>
-                                <?php if (empty($items)) { continue; } ?>
+                                <?php if (empty($items)) {
+                                    continue;
+                                } ?>
                                 <details class="tech-subsection" data-tech-category="<?= htmlspecialchars($categoryKey) ?>">
                                     <summary class="tech-subsection__summary">
                                         <span class="tech-subsection__title" role="heading" aria-level="3"><?= htmlspecialchars($categoryLabel) ?></span>

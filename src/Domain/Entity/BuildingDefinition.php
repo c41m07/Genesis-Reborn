@@ -1,16 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Entity;
 
 class BuildingDefinition
 {
-    /** @param array<string, int> $baseCost */
-    /** @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements */
-    /** @param array{base?: float, growth?: float, linear?: bool, max?: float} $shipBuildSpeedBonus */
-    /** @param array<string, mixed> $researchSpeedBonus */
-    /** @param array<string, array{base: float, growth: float}> $storage */
-    /** @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep */
-    /** @param array<string, mixed> $constructionSpeedBonus */
+    /**
+     * @param array<string, int> $baseCost
+     * @param array{buildings?: array<string, int>, research?: array<string, int>} $requirements
+     * @param array{base?: float, growth?: float, linear?: bool, max?: float} $shipBuildSpeedBonus
+     * @param array<string, mixed> $researchSpeedBonus
+     * @param array<string, array{base: float, growth: float}> $storage
+     * @param array<string, array{base?: float, growth?: float, linear?: bool}> $upkeep
+     * @param array<string, mixed> $constructionSpeedBonus
+     */
     public function __construct(
         private readonly string $key,
         private readonly string $label,

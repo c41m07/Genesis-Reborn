@@ -145,7 +145,9 @@ ob_start();
     ]) ?>
 
     <?php foreach ($categories as $category): ?>
-        <?php if (empty($category['items'])) { continue; } ?>
+        <?php if (empty($category['items'])) {
+            continue;
+        } ?>
         <section class="content-section">
             <header class="content-section__header">
                 <h2><?= htmlspecialchars($category['label']) ?></h2>
@@ -421,41 +423,7 @@ ob_start();
         </section>
     <?php endforeach; ?>
 <?php endif; ?>
-<script>
-(function () {
-    function pad(n){ return n < 10 ? '0' + n : '' + n; }
-    function fmt(s){
-        s = Math.max(0, s|0);
-        var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
-        return h > 0 ? (h + ':' + pad(m) + ':' + pad(sec)) : (pad(m) + ':' + pad(sec));
-    }
-    function initCountdowns(scope){
-        var blocks = (scope || document).querySelectorAll('.queue-block[data-server-now]');
-        blocks.forEach(function(block){
-            var serverNow = parseInt(block.getAttribute('data-server-now'), 10);
-            if (!serverNow) serverNow = Math.floor(Date.now()/1000);
-            var offset = serverNow - Math.floor(Date.now()/1000);
-            function tick(){
-                var now = Math.floor(Date.now()/1000) + offset;
-                block.querySelectorAll('.queue-list__item[data-endtime]').forEach(function(item){
-                    var end = parseInt(item.getAttribute('data-endtime'), 10);
-                    if (!end) return;
-                    var diff = end - now;
-                    if (diff <= 0){
-                        item.remove();
-                        return;
-                    }
-                    var target = item.querySelector('.countdown');
-                    if (target) target.textContent = fmt(diff);
-                });
-            }
-            tick();
-            setInterval(tick, 1000);
-        });
-    }
-    document.addEventListener('DOMContentLoaded', function(){ initCountdowns(document); });
-})();
-</script>
+
 
 <?php
 $content = ob_get_clean();

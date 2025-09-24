@@ -16,7 +16,7 @@ class MigrationSystemTest extends TestCase
 
         $criticalMigrations = [
             '20250920_migration_tracking.sql',
-            '20250920_schema_safe.sql'
+            '20250920_schema_safe.sql',
         ];
 
         foreach ($criticalMigrations as $migration) {
@@ -32,7 +32,7 @@ class MigrationSystemTest extends TestCase
 
         $scripts = [
             'migrate.php',
-            'create-database.php'
+            'create-database.php',
         ];
 
         foreach ($scripts as $script) {

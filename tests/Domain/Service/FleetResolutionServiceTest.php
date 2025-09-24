@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Domain\Service;
 
 use App\Domain\Battle\DTO\AttackingFleetDTO;

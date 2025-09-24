@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Controller\AuthController;
+use App\Controller\ChangeLogController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
@@ -11,7 +14,6 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
-use App\Controller\ChangeLogController;
 use App\Infrastructure\Http\Router;
 
 return function (Router $router): void {

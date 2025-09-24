@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Integration;
 
 use App\Application\Service\ProcessBuildQueue;
@@ -30,11 +32,11 @@ use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Config\BuildingConfig;
 use App\Infrastructure\Config\ShipConfig;
 use App\Infrastructure\Config\TechnologyConfig;
-use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Http\ViewRenderer;
+use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Security\CsrfTokenManager;
 use DateTimeImmutable;
 use PDO;

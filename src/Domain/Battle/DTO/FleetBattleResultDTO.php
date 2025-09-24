@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Battle\DTO;
 
 final class FleetBattleResultDTO
@@ -21,6 +23,11 @@ final class FleetBattleResultDTO
      */
     private array $rounds;
 
+    /**
+     * @param array<string, int|float> $attackerRemaining
+     * @param array<string, int|float> $defenderRemaining
+     * @param array<int, FleetBattleRoundDTO> $rounds
+     */
     public function __construct(
         string $winner,
         array $attackerRemaining,

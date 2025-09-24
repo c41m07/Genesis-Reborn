@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Service;
 
 use App\Domain\Entity\BuildingDefinition;
@@ -193,6 +195,7 @@ class BuildingCalculator
     /**
      * @param array<string, int> $buildingLevels
      * @param array<string, int> $researchLevels
+     * @param array<string, array{label: string}> $researchCatalog
      *
      * @return array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}
      */

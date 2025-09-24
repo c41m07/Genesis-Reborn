@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Application\UseCase\Auth\LoginUser;
@@ -7,9 +9,9 @@ use App\Application\UseCase\Auth\LogoutUser;
 use App\Application\UseCase\Auth\RegisterUser;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
-use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 
 class AuthController extends AbstractController

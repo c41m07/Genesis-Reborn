@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
@@ -15,6 +17,7 @@ use App\Application\UseCase\Research\StartResearch;
 use App\Application\UseCase\Shipyard\BuildShips;
 use App\Application\UseCase\Shipyard\GetShipyardOverview;
 use App\Controller\AuthController;
+use App\Controller\ChangeLogController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
@@ -25,7 +28,6 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
-use App\Controller\ChangeLogController;
 use App\Domain\Battle\DTO\AttackingFleetDTO;
 use App\Domain\Battle\DTO\DefendingFleetDTO;
 use App\Domain\Battle\DTO\FleetBattleResultDTO;
@@ -57,8 +59,8 @@ use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\PhpSession;
 use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Http\ViewRenderer;
-use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoBuildingStateRepository;
+use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoFleetRepository;
 use App\Infrastructure\Persistence\PdoPlanetRepository;
 use App\Infrastructure\Persistence\PdoPlayerStatsRepository;

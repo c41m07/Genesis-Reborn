@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Http;
 
 class Route
 {
-    /** @param array<string,string> $parameters */
+    /**
+     * @param array{0: string, 1: string} $handler
+     * @param array<string, string> $parameters
+     */
     public function __construct(
         private readonly string $method,
         private readonly string $path,

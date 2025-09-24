@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCase\Research;
 
 use App\Application\Service\ProcessResearchQueue;

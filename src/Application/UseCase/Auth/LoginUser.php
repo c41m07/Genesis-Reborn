@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCase\Auth;
 
 use App\Domain\Repository\UserRepositoryInterface;

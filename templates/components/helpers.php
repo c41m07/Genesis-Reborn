@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 if (!function_exists('format_duration')) {
     function format_duration(int $seconds): string
     {
