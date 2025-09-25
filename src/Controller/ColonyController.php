@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Application\Service\ProcessBuildQueue;
@@ -9,9 +11,9 @@ use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
-use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 use DateTimeInterface;
 use RuntimeException;
@@ -147,6 +149,8 @@ class ColonyController extends AbstractController
      * @param array{jobs?: array<int, array<string, mixed>>} $queue
      *
      * Je transforme ici la file brute pour que la vue soit facile à lire.
+     *
+     * @return array{count: int, jobs: list<array{building: string, label: string, targetLevel: int, remaining: int, endsAt: null|string}>}
      */
     private function formatBuildQueue(array $queue): array
     {
@@ -172,6 +176,8 @@ class ColonyController extends AbstractController
      * @param array<int, array{definition?: mixed}> $buildings
      *
      * Ce petit helper me permet de retrouver le bâtiment ciblé par sa clé.
+     *
+     * @return array<string, mixed>|null
      */
     private function findBuildingEntry(array $buildings, string $key): ?array
     {
@@ -193,6 +199,23 @@ class ColonyController extends AbstractController
      * @param array{definition: BuildingDefinition, level?: int, canUpgrade?: bool, cost?: array<string, int>, time?: int, production?: array<string, mixed>, consumption?: array<string, array<string, int>>, storage?: array<string, array<string, int>>, requirements?: array<string, mixed>} $entry
      *
      * Je normalise les infos du bâtiment pour que le front puisse les exploiter tranquille.
+     *
+     * @return array{
+     *     key: string,
+     *     label: string,
+     *     image: string|null,
+     *     level: int,
+     *     canUpgrade: bool,
+     *     affordable: bool,
+     *     missingResources: array<string, int>,
+     *     cost: array<string, int>,
+     *     time: int,
+     *     baseTime: int,
+     *     production: array{resource: string, current: int, next: int, delta: int},
+     *     consumption: array<string, array{current: int, next: int, delta: int}>,
+     *     storage: array{current: array<string, int>, next: array<string, int>, delta: array<string, int>},
+     *     requirements: array{ok: bool, missing: list<array{type: string, key: string, label: string, level: int, current: int}>}
+     * }
      */
     private function normalizeBuildingEntry(array $entry): array
     {

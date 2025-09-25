@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Domain\Entity\Planet;
@@ -382,9 +384,12 @@ class GalaxyController extends AbstractController
 
         usort($players, static fn (array $a, array $b): int => $b['production'] <=> $a['production']);
 
-        return array_values($players);
+        return $players;
     }
 
+    /**
+     * @return array{key: string, label: string, tone: string}
+     */
     private function resolvePlayerStatus(int $planets, int $inactive, int $strong): array
     {
         if ($planets > 0 && $inactive >= $planets) {
@@ -398,6 +403,9 @@ class GalaxyController extends AbstractController
         return ['key' => 'active', 'label' => 'Actif', 'tone' => 'neutral'];
     }
 
+    /**
+     * @param array<string, string> $options
+     */
     private function sanitizeViewMode(string $value, array $options): string
     {
         $value = strtolower(trim($value));

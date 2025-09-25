@@ -1,13 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Http;
 
 use App\Infrastructure\Http\Session\Session;
 
 class Request
 {
+    /**
+     * @var array<string, mixed>
+     */
     private array $attributes = [];
 
+    /**
+     * @param array<string, mixed> $query
+     * @param array<string, mixed> $body
+     * @param array<string, string> $headers
+     */
     public function __construct(
         private readonly string $method,
         private readonly string $path,
@@ -86,11 +96,17 @@ class Request
         return $this->path;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getQueryParams(): array
     {
         return $this->query;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getBodyParams(): array
     {
         return $this->body;
@@ -121,6 +137,9 @@ class Request
         return $this->attributes[$key] ?? $default;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getAttributes(): array
     {
         return $this->attributes;
@@ -150,6 +169,9 @@ class Request
         return $requestedWith === 'xmlhttprequest';
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getHeaders(): array
     {
         return $this->headers;

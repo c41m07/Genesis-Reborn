@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller;
 
 use App\Domain\Entity\Planet;
 use App\Infrastructure\Http\Response;
-use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\SessionInterface;
+use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
 use RuntimeException;
 
@@ -21,6 +23,9 @@ abstract class AbstractController
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $parameters
+     */
     protected function render(string $template, array $parameters = [], int $status = 200): Response
     {
         $content = $this->renderer->render($template, $parameters);
@@ -28,6 +33,9 @@ abstract class AbstractController
         return new Response($content, $status);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function json(array $data, int $status = 200): Response
     {
         try {
@@ -74,6 +82,9 @@ abstract class AbstractController
         return $this->csrfTokenManager->isTokenValid($id, $token);
     }
 
+    /**
+     * @return array<string, array{value: int, perHour: int, capacity: int}>
+     */
     protected function formatResourceSnapshot(Planet $planet): array
     {
         return [

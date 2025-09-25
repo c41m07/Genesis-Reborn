@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Service;
 
 use App\Domain\Battle\DTO\AttackingFleetDTO;
@@ -127,11 +129,11 @@ class FleetResolutionService
             $currentAttackerStrength = $this->calculateFleetStrength($attackerFleet);
             $currentDefenderStrength = $this->calculateFleetStrength($defenderFleet);
 
-            if (!$attackerRetreated && $attackerRetreatThreshold > 0.0 && $currentAttackerStrength <= $initialAttackerStrength * $attackerRetreatThreshold) {
+            if ($attackerRetreatThreshold > 0.0 && $currentAttackerStrength <= $initialAttackerStrength * $attackerRetreatThreshold) {
                 $attackerRetreated = true;
             }
 
-            if (!$defenderRetreated && $defenderRetreatThreshold > 0.0 && $currentDefenderStrength <= $initialDefenderStrength * $defenderRetreatThreshold) {
+            if ($defenderRetreatThreshold > 0.0 && $currentDefenderStrength <= $initialDefenderStrength * $defenderRetreatThreshold) {
                 $defenderRetreated = true;
             }
 
@@ -391,6 +393,8 @@ class FleetResolutionService
     }
 
     /**
+     * @param array<string, array{quantity: int|float|string}> $fleet
+     *
      * @return array<string, int>
      */
     private function extractQuantities(array $fleet): array
@@ -430,6 +434,7 @@ class FleetResolutionService
 
     /**
      * @param array<string, array<int, string>> $priorities
+     * @param array<int, string> $defaultPriority
      * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $defenderFleet
      *
      * @return array<int, string>

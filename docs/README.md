@@ -114,6 +114,7 @@ tests (PHPUnit)
 ## Installation & commandes
 ```bash
 # Dépendances
+composer update
 composer install
 composer dump-autoload --optimize
 npm install
@@ -143,8 +144,8 @@ npm run svgo:build
 ## Bugs connus & TODO
 - Génération procédurale des planètes encore simplifiée : les coordonnées et caractéristiques n'impactent pas la production.
 - Colonisation multi-planètes et transferts de ressources en transit encore à implémenter côté backend et interface.
-- Les File de construction sont simultanées et les objets dans la file "tourne" en simultanée au lieu d'attendre la 
-  fin du premier objet avant de commencer le suivant.
+- ~~Les File de construction sont simultanées et les objets dans la file "tourne" en simultanée au lieu d'attendre la 
+  fin du premier objet avant de commencer le suivant.~~
 - Onglet flottes : ne permet pas de gérer les flottes du joueur actuellement et est juste un calculateur de carburant.
 - ~~regrouper les type dans tech-tree.php par des super-type (batiments, recherches, vaisseaux) afin d'améliorer la 
   lisibilité~~

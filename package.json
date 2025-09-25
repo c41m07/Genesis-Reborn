@@ -6,15 +6,21 @@
     "svgo:build": "svgo -f public/assets/svg/icons -o public/assets/svg/icons --config=tools/svgo.config.mjs && node tools/build-sprite.mjs",
     "dev": "vite",
     "build": "vite build",
-    "lint:js": "eslint \"public/assets/js/**/*.js\"",
+    "lint:js": "node ./tools/run-eslint.cjs \"public/assets/js/**/*.js\"",
     "lint:css": "stylelint \"public/assets/css/**/*.css\"",
-    "lint": "npm run lint:js && npm run lint:css"
+    "lint": "npm run lint:js && npm run lint:css",
+    "fmt": "prettier --check \"public/assets/js/**/*.js\" \"public/assets/css/**/*.css\"",
+    "svgo": "svgo -f public/assets/svg --config=.svgo.yml",
+    "check": "npm run lint:js && npm run lint:css && npm run fmt"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
     "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
     "globals": "^15.9.0",
     "jsdom": "^27.0.0",
+    "prettier": "^3.3.3",
     "stylelint": "^16.8.1",
     "stylelint-config-standard": "^36.0.0",
     "svgo": "^3.0.2",

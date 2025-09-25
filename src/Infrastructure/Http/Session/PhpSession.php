@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Http\Session;
 
 class PhpSession extends Session
@@ -10,7 +12,7 @@ class PhpSession extends Session
             session_start();
         }
 
-        if (!isset($_SESSION) || !is_array($_SESSION)) {
+        if (!isset($_SESSION)) {
             $_SESSION = [];
         }
 

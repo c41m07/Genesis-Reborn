@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Config;
 
 use App\Domain\Config\BalanceConfig;
@@ -254,7 +256,7 @@ final class BalanceConfigLoader
 
     /**
      * @param array<string, mixed> $config
-     * @param string|string[]      $keys
+     * @param string|string[] $keys
      */
     private function extractMode(array $config, string|array $keys, string $default): string
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\UseCase\Building;
 
 use App\Application\Service\ProcessBuildQueue;
@@ -146,7 +148,7 @@ class GetBuildingsOverview
             $requirements = $this->calculator->checkRequirements($definition, $levels, $researchLevels, $researchCatalogMap);
             if (!empty($requirements['missing'])) {
                 $requirements['missing'] = array_map(function (array $missing): array {
-                    if (($missing['type'] ?? '') === 'building') {
+                    if ($missing['type'] === 'building') {
                         try {
                             $definition = $this->catalog->get($missing['key']);
                             $missing['label'] = $definition->getLabel();
@@ -256,7 +258,10 @@ class GetBuildingsOverview
         foreach ($buildings as $entry) {
             $definition = $entry['definition'];
             $categoryKey = self::BUILDING_CATEGORY_MAP[$definition->getKey()] ?? 'infrastructure';
-            $metadata = self::CATEGORY_METADATA[$categoryKey] ?? self::CATEGORY_METADATA['infrastructure'];
+            $metadata = self::CATEGORY_METADATA['infrastructure'];
+            if (array_key_exists($categoryKey, self::CATEGORY_METADATA)) {
+                $metadata = self::CATEGORY_METADATA[$categoryKey];
+            }
 
             if (!isset($categories[$categoryKey])) {
                 $categories[$categoryKey] = [
