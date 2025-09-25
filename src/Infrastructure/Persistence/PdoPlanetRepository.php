@@ -6,6 +6,7 @@ namespace App\Infrastructure\Persistence;
 
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Infrastructure\Config\BalanceGlobals;
 use DateTimeImmutable;
 use PDO;
 use PDOException;
@@ -13,7 +14,7 @@ use RuntimeException;
 
 class PdoPlanetRepository implements PlanetRepositoryInterface
 {
-    public function __construct(private readonly PDO $pdo)
+    public function __construct(private readonly PDO $pdo, private readonly BalanceGlobals $balanceGlobals)
     {
     }
 
@@ -70,19 +71,17 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
                 return $this->hydrate($row);
             }
 
-            $diameter = 12000;
-            $temperatureMin = -20;
-            $temperatureMax = 40;
+            $initialResources = $this->balanceGlobals->getInitialResources();
+            $initialMetal = $initialResources['metal'] ?? 0;
+            $initialCrystal = $initialResources['crystal'] ?? 0;
+            $initialHydrogen = $initialResources['hydrogen'] ?? 0;
+            $initialEnergy = $initialResources['energy'] ?? 0;
 
-            $initialMetal = 1000;
-            $initialCrystal = 1000;
-            $initialHydrogen = 1000;
-            $initialEnergy = 0;
-
-            $metalCapacity = 1000;
-            $crystalCapacity = 1000;
-            $hydrogenCapacity = 1000;
-            $energyCapacity = 1000;
+            $initialCapacities = $this->balanceGlobals->getInitialCapacities();
+            $metalCapacity = $initialCapacities['metal'] ?? 0;
+            $crystalCapacity = $initialCapacities['crystal'] ?? 0;
+            $hydrogenCapacity = $initialCapacities['hydrogen'] ?? 0;
+            $energyCapacity = $initialCapacities['energy'] ?? 0;
 
             $now = new DateTimeImmutable('now');
             $statement = $this->pdo->prepare(
@@ -92,11 +91,23 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
 
             $maxAttempts = 1000;
             $planetId = null;
+            $minPosition = $this->balanceGlobals->getHomeworldMinPosition();
+            $maxPosition = $this->balanceGlobals->getHomeworldMaxPosition();
 
             for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
                 $galaxy = random_int(1, 9);
                 $system = random_int(1, 9);
-                $position = random_int(1, 9);
+                $position = random_int($minPosition, $maxPosition);
+
+                $baseStats = $this->balanceGlobals->getHomeworldBaseStats($position);
+
+                $diameter = $this->randomizeValue($baseStats['diameter'], $this->balanceGlobals->getHomeworldVariation('diameter'));
+                $temperatureMin = $this->randomizeValue($baseStats['temperature_min'], $this->balanceGlobals->getHomeworldVariation('temperature_min'));
+                $temperatureMax = $this->randomizeValue($baseStats['temperature_max'], $this->balanceGlobals->getHomeworldVariation('temperature_max'));
+
+                if ($temperatureMin > $temperatureMax) {
+                    [$temperatureMin, $temperatureMax] = [$temperatureMax, $temperatureMin];
+                }
 
                 try {
                     $statement->execute([
@@ -220,5 +231,32 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             (int) ($data['energy_capacity'] ?? 0),
             isset($data['last_resource_tick']) ? new DateTimeImmutable($data['last_resource_tick']) : null
         );
+    }
+
+    private function randomizeValue(int $base, float $variation): int
+    {
+        if ($variation <= 0.0 || $base === 0) {
+            return $base;
+        }
+
+        $variation = max(0.0, $variation);
+        $minMultiplier = 1.0 - $variation;
+        $maxMultiplier = 1.0 + $variation;
+
+        if ($minMultiplier > $maxMultiplier) {
+            [$minMultiplier, $maxMultiplier] = [$maxMultiplier, $minMultiplier];
+        }
+
+        $scale = 1000;
+        $min = (int) round($minMultiplier * $scale);
+        $max = (int) round($maxMultiplier * $scale);
+
+        if ($min === $max) {
+            return (int) round($base * $min / $scale);
+        }
+
+        $multiplier = random_int($min, $max) / $scale;
+
+        return (int) round($base * $multiplier);
     }
 }
