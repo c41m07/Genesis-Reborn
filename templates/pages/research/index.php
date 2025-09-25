@@ -15,7 +15,6 @@ require_once __DIR__ . '/../../components/helpers.php';
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $categories = $overview['categories'] ?? [];
-$labLevel = (int) ($overview['labLevel'] ?? 0);
 $labBonus = (float) ($overview['labBonus'] ?? 0.0);
 $assetBase = rtrim($baseUrl, '/');
 
@@ -48,9 +47,8 @@ ob_start();
     <?= $card([
         'title' => 'Recherches en cours',
         'subtitle' => 'Suivi des programmes scientifiques actifs',
-        'body' => static function () use ($queue, $labLevel, $labBonus): void {
+        'body' => static function () use ($queue, $labBonus): void {
             $emptyMessage = 'Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.';
-            echo '<p class="metric-line"><span class="metric-line__label">Niveau du laboratoire</span><span class="metric-line__value">' . format_number($labLevel) . '</span></p>';
             if ($labBonus > 0) {
                 $bonusPercent = $labBonus * 100;
                 $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');

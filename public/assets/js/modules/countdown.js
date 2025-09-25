@@ -4,6 +4,7 @@ import { formatNumber } from './format.js';
 import SELECTORS from './selectors.js';
 
 const contexts = new WeakMap();
+const countdownContainers = new WeakMap();
 let listenersRegistered = false;
 
 const cssEscape = (value) => {
@@ -81,6 +82,16 @@ const destroyBlock = (block) => {
   contexts.delete(block);
 };
 
+const destroyCountdownContainer = (container) => {
+  const context = countdownContainers.get(container);
+  if (!context) {
+    return;
+  }
+
+  window.clearInterval(context.timerId);
+  countdownContainers.delete(container);
+};
+
 const tickBlock = (block) => {
   const context = contexts.get(block);
   if (!context) {
@@ -119,6 +130,29 @@ const tickBlock = (block) => {
   updateQueueSummary(block, activeItems);
 };
 
+const tickCountdownContainer = (container) => {
+  const context = countdownContainers.get(container);
+  if (!context) {
+    return;
+  }
+
+  if (!container.isConnected) {
+    destroyCountdownContainer(container);
+    return;
+  }
+
+  const now = context.clock.now();
+  const remaining = context.target - now;
+  const countdown = container.querySelector(SELECTORS.countdown);
+  if (countdown) {
+    countdown.textContent = formatCountdown(remaining);
+  }
+
+  if (remaining <= 0) {
+    destroyCountdownContainer(container);
+  }
+};
+
 const setupBlock = (block) => {
   if (!(block instanceof HTMLElement)) {
     return;
@@ -136,15 +170,42 @@ const setupBlock = (block) => {
   tickBlock(block);
 };
 
+const setupCountdownContainer = (container) => {
+  if (!(container instanceof HTMLElement)) {
+    return;
+  }
+
+  if (countdownContainers.has(container)) {
+    return;
+  }
+
+  const target = toSeconds(container.getAttribute('data-endtime'), 0);
+  if (!target) {
+    return;
+  }
+
+  const serverNow = toSeconds(container.getAttribute('data-server-now'), target);
+  const clock = createServerClock(serverNow);
+  const timerId = window.setInterval(() => tickCountdownContainer(container), 1000);
+  countdownContainers.set(container, { clock, target, timerId });
+  tickCountdownContainer(container);
+};
+
 export const init = (root = document) => {
   qsa(SELECTORS.queueBlock, root).forEach((block) => {
     setupBlock(block);
+  });
+  qsa(SELECTORS.countdownContainer, root).forEach((container) => {
+    setupCountdownContainer(container);
   });
 };
 
 export const destroy = (root = document) => {
   qsa(SELECTORS.queueBlock, root).forEach((block) => {
     destroyBlock(block);
+  });
+  qsa(SELECTORS.countdownContainer, root).forEach((container) => {
+    destroyCountdownContainer(container);
   });
 };
 

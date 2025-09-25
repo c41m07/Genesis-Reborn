@@ -17,6 +17,9 @@ class Planet
         private int $system,
         private int $position,
         private string $name,
+        private int $diameter,
+        private int $temperatureMin,
+        private int $temperatureMax,
         private int $metal,
         private int $crystal,
         private int $hydrogen,
@@ -47,6 +50,21 @@ class Planet
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getDiameter(): int
+    {
+        return $this->diameter;
+    }
+
+    public function getTemperatureMin(): int
+    {
+        return $this->temperatureMin;
+    }
+
+    public function getTemperatureMax(): int
+    {
+        return $this->temperatureMax;
     }
 
     public function getGalaxy(): int
