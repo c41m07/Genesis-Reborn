@@ -37,9 +37,7 @@ $robotFactorySummary = $overview['robotFactory'] ?? [
     'level' => (int) ($levels['robot_factory'] ?? 0),
     'bonus' => 0.0,
 ];
-$workerFactoryLevel = (int) ($workerFactorySummary['level'] ?? 0);
 $workerFactoryBonus = max(0.0, (float) ($workerFactorySummary['bonus'] ?? 0.0));
-$robotFactoryLevel = (int) ($robotFactorySummary['level'] ?? 0);
 $robotFactoryBonus = max(0.0, (float) ($robotFactorySummary['bonus'] ?? 0.0));
 
 ob_start();
@@ -75,44 +73,25 @@ ob_start();
             $queue,
             $queueCount,
             $queueLimit,
-            $workerFactoryLevel,
             $workerFactoryBonus,
-            $robotFactoryLevel,
             $robotFactoryBonus
         ): void {
             $emptyMessage = 'Aucune amélioration n’est programmée. Lancez une construction pour développer votre colonie.';
             $limitValue = $queueLimit > 0 ? format_number($queueLimit) : '—';
-            $workerLabel = $workerFactoryLevel > 0
-                ? 'Niveau ' . format_number($workerFactoryLevel)
-                : 'Non construit';
-            $workerClass = $workerFactoryLevel > 0
-                ? 'metric-line__value metric-line__value--positive'
-                : 'metric-line__value metric-line__value--neutral';
-            $robotLabel = $robotFactoryLevel > 0
-                ? 'Niveau ' . format_number($robotFactoryLevel)
-                : 'Non construit';
-            $robotClass = $robotFactoryLevel > 0
-                ? 'metric-line__value metric-line__value--positive'
-                : 'metric-line__value metric-line__value--neutral';
             $formatPercent = static function (float $value): string {
                 $percent = $value * 100;
                 $formatted = number_format($percent, 1);
 
                 return rtrim(rtrim($formatted, '0'), '.');
             };
+            $totalBonus = $workerFactoryBonus + $robotFactoryBonus;
 
             echo '<div class="queue-card" data-queue-wrapper="buildings" data-queue-limit="' . max(0, (int) $queueLimit) . '">';
             echo '<p class="metric-line"><span class="metric-line__label">Améliorations en file</span>';
             echo '<span class="metric-line__value"><span data-queue-count>' . format_number($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
-            echo '<p class="metric-line"><span class="metric-line__label">Complexe d’ouvriers</span><span class="' . $workerClass . '" data-building-level="worker_factory">' . htmlspecialchars($workerLabel) . '</span></p>';
-            if ($workerFactoryBonus > 0.0) {
-                $workerBonusDisplay = $formatPercent($workerFactoryBonus);
-                echo '<p class="metric-line"><span class="metric-line__label">Bonus de construction</span><span class="metric-line__value metric-line__value--positive">-' . htmlspecialchars($workerBonusDisplay) . ' %</span></p>';
-            }
-            echo '<p class="metric-line"><span class="metric-line__label">Chantier robotique</span><span class="' . $robotClass . '" data-building-level="robot_factory">' . htmlspecialchars($robotLabel) . '</span></p>';
-            if ($robotFactoryBonus > 0.0) {
-                $robotBonusDisplay = $formatPercent($robotFactoryBonus);
-                echo '<p class="metric-line"><span class="metric-line__label">Bonus de construction</span><span class="metric-line__value metric-line__value--positive">-' . htmlspecialchars($robotBonusDisplay) . ' %</span></p>';
+            if ($totalBonus > 0.0) {
+                $totalBonusDisplay = $formatPercent($totalBonus);
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive"> +' . htmlspecialchars($totalBonusDisplay) . ' % </span></p>';
             }
             echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '" data-server-now="' . time() . '">';
             if (($queue['count'] ?? 0) === 0) {

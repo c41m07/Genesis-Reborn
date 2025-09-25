@@ -3,6 +3,7 @@ export const SELECTORS = {
   queueList: '.queue-list',
   queueItem: '.queue-list__item[data-endtime]',
   countdown: '.countdown',
+  countdownContainer: '[data-countdown-container][data-endtime]',
   emptyState: '.empty-state',
   queueWrapper: '[data-queue-wrapper]',
   queueCount: '[data-queue-count]',

@@ -20,7 +20,7 @@ export const getResourceLabel = (key) => {
   return RESOURCE_LABELS[normalized] ?? normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
-export const SPRITE_URL = new URL('../svg/sprite.svg', import.meta.url).toString();
+export const SPRITE_URL = new URL('../../svg/sprite.svg', import.meta.url).toString();
 
 export const escapeHtml = (value) =>
   String(value ?? '')

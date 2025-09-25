@@ -53,6 +53,7 @@ use App\Domain\Service\ResourceEffectFactory;
 use App\Domain\Service\ResourceTickService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Config\BalanceConfigLoader;
+use App\Infrastructure\Config\BalanceGlobals;
 use App\Infrastructure\Container\Container;
 use App\Infrastructure\Database\ConnectionFactory;
 use App\Infrastructure\Http\Session\FlashBag;
@@ -94,6 +95,7 @@ return function (Container $container): void {
     $container->set(BalanceConfigLoader::class, fn () => new BalanceConfigLoader(__DIR__ . '/balance'));
 
     $container->set(BalanceConfig::class, fn (Container $c) => $c->get(BalanceConfigLoader::class)->getBalanceConfig());
+    $container->set(BalanceGlobals::class, fn (Container $c) => $c->get(BalanceConfigLoader::class)->getGlobals());
 
     $container->set(BuildingCatalog::class, function (Container $c) {
         return new BuildingCatalog($c->get(BalanceConfigLoader::class)->getBuildingConfigs());
@@ -174,7 +176,10 @@ return function (Container $container): void {
     });
 
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
-    $container->set(PlanetRepositoryInterface::class, fn (Container $c) => new PdoPlanetRepository($c->get(\PDO::class)));
+    $container->set(PlanetRepositoryInterface::class, fn (Container $c) => new PdoPlanetRepository(
+        $c->get(\PDO::class),
+        $c->get(BalanceGlobals::class)
+    ));
     $container->set(PlayerStatsRepositoryInterface::class, fn (Container $c) => new PdoPlayerStatsRepository($c->get(\PDO::class)));
     $container->set(BuildingStateRepositoryInterface::class, fn (Container $c) => new PdoBuildingStateRepository($c->get(\PDO::class)));
     $container->set(BuildQueueRepositoryInterface::class, fn (Container $c) => new PdoBuildQueueRepository($c->get(\PDO::class)));

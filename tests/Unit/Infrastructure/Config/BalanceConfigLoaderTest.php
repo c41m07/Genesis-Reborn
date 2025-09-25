@@ -74,4 +74,26 @@ final class BalanceConfigLoaderTest extends TestCase
         $this->expectException(RuntimeException::class);
         $loader->getBuildingConfigs();
     }
+
+    public function testGetGlobalsExposesHomeworldConfiguration(): void
+    {
+        $globals = $this->loader->getGlobals();
+
+        self::assertSame(1, $globals->getHomeworldMinPosition());
+        self::assertSame(16, $globals->getHomeworldMaxPosition());
+
+        $positionEight = $globals->getHomeworldBaseStats(8);
+        self::assertSame(12000, $positionEight['diameter']);
+        self::assertSame(-20, $positionEight['temperature_min']);
+        self::assertSame(40, $positionEight['temperature_max']);
+
+        self::assertSame(0.1, $globals->getHomeworldVariation('diameter'));
+        self::assertSame(0.1, $globals->getHomeworldVariation('temperature_min'));
+        self::assertSame(0.1, $globals->getHomeworldVariation('temperature_max'));
+
+        $fallback = $globals->getHomeworldBaseStats(99);
+        self::assertSame(12000, $fallback['diameter']);
+        self::assertSame(-20, $fallback['temperature_min']);
+        self::assertSame(40, $fallback['temperature_max']);
+    }
 }
