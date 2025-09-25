@@ -97,14 +97,14 @@ ob_start();
                         <?php $buildJob = $queues['buildings']['next'] ?? null; ?>
                         <?php
                         $buildEndTime = null;
-                        if ($buildJob) {
-                            if (!empty($buildJob['endsAt']) && $buildJob['endsAt'] instanceof \DateTimeImmutable) {
-                                $buildEndTime = $buildJob['endsAt']->getTimestamp();
-                            } elseif (isset($buildJob['remaining'])) {
-                                $buildEndTime = $serverNow + max(0, (int) $buildJob['remaining']);
-                            }
-                        }
-                        ?>
+if ($buildJob) {
+    if (!empty($buildJob['endsAt']) && $buildJob['endsAt'] instanceof \DateTimeImmutable) {
+        $buildEndTime = $buildJob['endsAt']->getTimestamp();
+    } elseif (isset($buildJob['remaining'])) {
+        $buildEndTime = $serverNow + max(0, (int) $buildJob['remaining']);
+    }
+}
+?>
                         <?php if (($queues['buildings']['count'] ?? 0) === 0 || !$buildJob): ?>
                             <p class="production-card__empty">Aucune amélioration planifiée.</p>
                         <?php else: ?>
@@ -126,15 +126,15 @@ ob_start();
                         <h3>Recherches</h3>
                         <?php $researchJob = $queues['research']['next'] ?? null; ?>
                         <?php
-                        $researchEndTime = null;
-                        if ($researchJob) {
-                            if (!empty($researchJob['endsAt']) && $researchJob['endsAt'] instanceof \DateTimeImmutable) {
-                                $researchEndTime = $researchJob['endsAt']->getTimestamp();
-                            } elseif (isset($researchJob['remaining'])) {
-                                $researchEndTime = $serverNow + max(0, (int) $researchJob['remaining']);
-                            }
-                        }
-                        ?>
+$researchEndTime = null;
+if ($researchJob) {
+    if (!empty($researchJob['endsAt']) && $researchJob['endsAt'] instanceof \DateTimeImmutable) {
+        $researchEndTime = $researchJob['endsAt']->getTimestamp();
+    } elseif (isset($researchJob['remaining'])) {
+        $researchEndTime = $serverNow + max(0, (int) $researchJob['remaining']);
+    }
+}
+?>
                         <?php if (($queues['research']['count'] ?? 0) === 0 || !$researchJob): ?>
                             <p class="production-card__empty">Aucune étude active pour le moment.</p>
                         <?php else: ?>
@@ -156,15 +156,15 @@ ob_start();
                         <h3>Chantier spatial</h3>
                         <?php $shipJob = $queues['shipyard']['next'] ?? null; ?>
                         <?php
-                        $shipEndTime = null;
-                        if ($shipJob) {
-                            if (!empty($shipJob['endsAt']) && $shipJob['endsAt'] instanceof \DateTimeImmutable) {
-                                $shipEndTime = $shipJob['endsAt']->getTimestamp();
-                            } elseif (isset($shipJob['remaining'])) {
-                                $shipEndTime = $serverNow + max(0, (int) $shipJob['remaining']);
-                            }
-                        }
-                        ?>
+$shipEndTime = null;
+if ($shipJob) {
+    if (!empty($shipJob['endsAt']) && $shipJob['endsAt'] instanceof \DateTimeImmutable) {
+        $shipEndTime = $shipJob['endsAt']->getTimestamp();
+    } elseif (isset($shipJob['remaining'])) {
+        $shipEndTime = $serverNow + max(0, (int) $shipJob['remaining']);
+    }
+}
+?>
                         <?php if (($queues['shipyard']['count'] ?? 0) === 0 || !$shipJob): ?>
                             <p class="production-card__empty">Aucune commande de vaisseau en file.</p>
                         <?php else: ?>

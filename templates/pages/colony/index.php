@@ -91,7 +91,7 @@ ob_start();
             echo '<span class="metric-line__value"><span data-queue-count>' . format_number($queueCount) . '</span> / <span data-queue-limit>' . htmlspecialchars($limitValue) . '</span></span></p>';
             if ($totalBonus > 0.0) {
                 $totalBonusDisplay = $formatPercent($totalBonus);
-                echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">( +' . htmlspecialchars($totalBonusDisplay) . ' % ) [cumul des 2]</span></p>';
+                echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive"> +' . htmlspecialchars($totalBonusDisplay) . ' % </span></p>';
             }
             echo '<div class="queue-block" data-queue="buildings" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-queue-limit="' . max(0, (int) $queueLimit) . '" data-server-now="' . time() . '">';
             if (($queue['count'] ?? 0) === 0) {

@@ -1,13 +1,13 @@
 initial_resources:
-  metal: 1000
-  crystal: 1000
-  hydrogen: 1000
-  energy: 0
+  metal: 2000
+  crystal: 2000
+  hydrogen: 2000
+  energy: 2000
 initial_capacities:
-  metal: 1000
-  crystal: 1000
-  hydrogen: 1000
-  energy: 1000
+  metal: 10000
+  crystal: 10000
+  hydrogen: 10000
+  energy: 10000
 homeworld:
   defaults:
     diameter: 12000
