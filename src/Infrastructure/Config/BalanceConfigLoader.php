@@ -49,7 +49,13 @@ final class BalanceConfigLoader
                 $initialCapacities = $data['initial_capacities'];
             }
 
-            $this->globals = new BalanceGlobals($initialResources, $initialCapacities);
+            $homeworld = [];
+
+            if (isset($data['homeworld']) && is_array($data['homeworld'])) {
+                $homeworld = $data['homeworld'];
+            }
+
+            $this->globals = new BalanceGlobals($initialResources, $initialCapacities, $homeworld);
         }
 
         return $this->globals;

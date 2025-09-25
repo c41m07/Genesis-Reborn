@@ -17,7 +17,6 @@ $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
 $fleet = $overview['fleet'] ?? [];
 $fleetSummary = $overview['fleetSummary'] ?? [];
 $categories = $overview['categories'] ?? [];
-$shipyardLevel = $overview['shipyardLevel'] ?? 0;
 $shipyardBonus = (float) ($overview['shipyardBonus'] ?? 0);
 $fleetCount = 0;
 if (!empty($fleetSummary)) {
@@ -59,15 +58,14 @@ ob_start();
     <?= $card([
         'title' => 'Commandes de vaisseaux',
         'subtitle' => 'Suivi des constructions orbitales',
-        'body' => static function () use ($queue, $shipyardLevel, $shipyardBonus, $fleetCount): void {
+        'body' => static function () use ($queue, $shipyardBonus, $fleetCount): void {
             $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
-            echo '<p class="metric-line"><span class="metric-line__label">Niveau du chantier</span><span class="metric-line__value">' . format_number((int) $shipyardLevel) . '</span></p>';
+            echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . format_number((int) $fleetCount) . ' unité(s)</span></p>';
             if ($shipyardBonus > 0) {
                 $bonusPercent = $shipyardBonus * 100;
                 $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');
                 echo '<p class="metric-line"><span class="metric-line__label">Bonus de vitesse</span><span class="metric-line__value metric-line__value--positive">+' . htmlspecialchars($bonusDisplay) . ' %</span></p>';
             }
-            echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . format_number((int) $fleetCount) . ' unité(s)</span></p>';
             echo '<div class="queue-block" data-queue="shipyard" data-empty="' . htmlspecialchars($emptyMessage, ENT_QUOTES) . '" data-server-now="' . time() . '">';
             if (($queue['count'] ?? 0) === 0) {
                 echo '<p class="empty-state">' . htmlspecialchars($emptyMessage) . '</p>';

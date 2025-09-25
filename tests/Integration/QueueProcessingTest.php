@@ -47,7 +47,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingUpgradeIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -100,7 +100,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchStartIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -147,7 +147,7 @@ class QueueProcessingTest extends TestCase
     public function testShipProductionIsQueuedAndProcessed(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 42, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 2],
@@ -210,7 +210,7 @@ class QueueProcessingTest extends TestCase
     public function testShipProductionDurationRespectsMinimumPerUnit(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 84, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 84, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 12],
@@ -263,7 +263,7 @@ class QueueProcessingTest extends TestCase
     public function testShipyardOverviewReflectsSpeedBonus(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 3],
@@ -345,7 +345,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueSequentialTargets(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 99, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 99, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -440,7 +440,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueRejectsWhenFull(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 77, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 77, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -482,7 +482,7 @@ class QueueProcessingTest extends TestCase
     public function testBuildingQueueAdvancesAfterCompletion(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 55, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 0, 'research_lab' => 2, 'shipyard' => 1],
@@ -526,7 +526,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchQueueSequentialTargets(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 11, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 11, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -568,7 +568,7 @@ class QueueProcessingTest extends TestCase
     public function testResearchQueueRejectsWhenFull(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 21, 1, 1, 1, 'Gaia', 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 21, 1, 1, 1, 'Gaia', 12000, -20, 40, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['research_lab' => 3],
@@ -611,7 +611,7 @@ class QueueProcessingTest extends TestCase
     {
         $lastTick = new DateTimeImmutable('-2 hours');
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 4000, 2000, 1000, 0, 0, 0, 0, 0, 200000, 200000, 200000, 5000, $lastTick),
+            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 12000, -20, 40, 4000, 2000, 1000, 0, 0, 0, 0, 0, 200000, 200000, 200000, 5000, $lastTick),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 3, 'solar_plant' => 3],
@@ -686,7 +686,7 @@ class QueueProcessingTest extends TestCase
     {
         $futureTick = new DateTimeImmutable('+1 hour');
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 0, 0, 0, 0, 0, 0, 0, 0, 500000, 500000, 500000, 500000, $futureTick),
+            1 => new Planet(1, 5, 1, 1, 1, 'Gaia', 12000, -20, 40, 0, 0, 0, 0, 0, 0, 0, 0, 500000, 500000, 500000, 500000, $futureTick),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['metal_mine' => 1, 'solar_plant' => 1],
@@ -764,7 +764,7 @@ class QueueProcessingTest extends TestCase
     public function testFleetLaunchAndReturnLifecycle(): void
     {
         $planetRepository = new InMemoryPlanetRepository([
-            1 => new Planet(1, 7, 1, 20, 7, 'Helios', 10000, 6000, 4000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
+            1 => new Planet(1, 7, 1, 20, 7, 'Helios', 12000, -20, 40, 10000, 6000, 4000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000, new DateTimeImmutable()),
         ]);
         $buildingStates = new InMemoryBuildingStateRepository([
             1 => ['shipyard' => 2],

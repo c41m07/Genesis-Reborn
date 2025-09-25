@@ -51,7 +51,7 @@ class RegisterUserTest extends TestCase
         self::assertGreaterThanOrEqual(1, $planet->getSystem());
         self::assertLessThanOrEqual(9, $planet->getSystem());
         self::assertGreaterThanOrEqual(1, $planet->getPosition());
-        self::assertLessThanOrEqual(9, $planet->getPosition());
+        self::assertLessThanOrEqual(16, $planet->getPosition());
     }
 }
 
@@ -129,8 +129,11 @@ class InMemoryPlanetRepository implements PlanetRepositoryInterface
             $userId,
             random_int(1, 9),
             random_int(1, 9),
-            random_int(1, 9),
+            random_int(1, 16),
             'Planète mère',
+            12000,
+            -20,
+            40,
             1000,
             1000,
             1000,

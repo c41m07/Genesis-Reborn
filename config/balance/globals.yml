@@ -1,10 +1,84 @@
 initial_resources:
-  metal: 1000
-  crystal: 1000
-  hydrogen: 1000
-  energy: 0
+  metal: 2000
+  crystal: 2000
+  hydrogen: 2000
+  energy: 2000
 initial_capacities:
-  metal: 1000
-  crystal: 1000
-  hydrogen: 1000
-  energy: 1000
+  metal: 10000
+  crystal: 10000
+  hydrogen: 10000
+  energy: 10000
+homeworld:
+  defaults:
+    diameter: 12000
+    temperature_min: -20
+    temperature_max: 40
+  min_position: 1
+  max_position: 16
+  variation_percent:
+    default: 0.1
+  positions:
+    1:
+      diameter: 7000
+      temperature_min: 180
+      temperature_max: 380
+    2:
+      diameter: 7600
+      temperature_min: 120
+      temperature_max: 320
+    3:
+      diameter: 8200
+      temperature_min: 80
+      temperature_max: 260
+    4:
+      diameter: 8800
+      temperature_min: 40
+      temperature_max: 200
+    5:
+      diameter: 9400
+      temperature_min: 10
+      temperature_max: 150
+    6:
+      diameter: 10000
+      temperature_min: -10
+      temperature_max: 110
+    7:
+      diameter: 11000
+      temperature_min: -15
+      temperature_max: 70
+    8:
+      diameter: 12000
+      temperature_min: -20
+      temperature_max: 40
+    9:
+      diameter: 11800
+      temperature_min: -40
+      temperature_max: 20
+    10:
+      diameter: 11200
+      temperature_min: -60
+      temperature_max: 0
+    11:
+      diameter: 10600
+      temperature_min: -90
+      temperature_max: -10
+    12:
+      diameter: 10000
+      temperature_min: -120
+      temperature_max: -40
+    13:
+      diameter: 9400
+      temperature_min: -150
+      temperature_max: -70
+    14:
+      diameter: 8800
+      temperature_min: -180
+      temperature_max: -90
+    15:
+      diameter: 8200
+      temperature_min: -210
+      temperature_max: -110
+    16:
+      diameter: 7600
+      temperature_min: -230
+      temperature_max: -130
