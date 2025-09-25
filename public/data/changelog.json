@@ -29,7 +29,12 @@
       "- Front: corrections successives des classes CSS dans les listes de prérequis technologiques (nettoyage et harmonisation).",
       "- API/Docs: documentation des champs d’« affordability » exposés dans le payload.",
       "- Changelog: ajout du contrôleur/vue de changelog + amélioration du JSON et de la gestion de session côté ChangeLogController.",
-      "- CI/Sécu: simplification des commandes CI et ajout du package d’avis de sécurité Composer."
+      "- CI/Sécu: simplification des commandes CI et ajout du package d’avis de sécurité Composer.",
+      "- Countdown: amélioration du script centralisé et suppression des versions inline dans les templates, avec mise à jour du README.",
+      "- PHPStan: corrections de typages et ajout du guide de maintenance pour la contribution.",
+      "- CI: mise à jour de la version phpstan et de l’URL source dans `composer.lock` + refactor global.",
+      "- CI/Composer: mise à jour des instructions de maintenance et ajout d’un serveur de développement pour faciliter les tests locaux."
+
     ]
   }
 ]
