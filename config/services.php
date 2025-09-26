@@ -440,6 +440,8 @@ return function (Container $container): void {
 
 
     $container->set(ChangeLogController::class, fn (Container $c) => new ChangeLogController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

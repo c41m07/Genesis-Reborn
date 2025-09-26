@@ -96,6 +96,19 @@ class FleetController extends AbstractController
             'shipyard' => ($buildingLevels['shipyard'] ?? 0) > 0,
         ];
 
+        if (!$facilityStatuses['shipyard']) {
+            $message = 'Pour gérer votre flotte, vous devez construire un chantier spatial.';
+            if ($request->wantsJson()) {
+                return $this->json([
+                    'sucess' => false,
+                    'message' => $message,
+                    'planetId' => $selectedId,
+                ], 403);
+            }
+            $this->addFlash('warning', $message);
+            return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
+        }
+
         $fleet = $this->fleets->getFleet($selectedId);
         $fleetShips = [];
         $availableShips = [];

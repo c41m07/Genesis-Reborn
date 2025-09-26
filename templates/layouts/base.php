@@ -202,7 +202,6 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                     <?php endforeach; ?>
                 </div>
                 <div class="topbar__actions">
-                    <a class="button button--ghost" href="<?= htmlspecialchars($assetBase) ?>/profile">Profil</a>
                     <?php if (!empty($csrf_logout)): ?>
                         <form method="post" action="<?= htmlspecialchars($assetBase) ?>/logout" class="logout-form">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_logout ?? '') ?>">

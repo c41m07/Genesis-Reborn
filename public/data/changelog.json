@@ -1,6 +1,6 @@
 [
   {
-    "version": "Va0.0.1",
+    "version": "Va0.0.1-alpha",
     "date": "22-09-2025",
     "changes": [
       "- Lancement de la version solo complète avec filtrage des entités par joueur connecté.",
@@ -16,7 +16,7 @@
     ]
   },
   {
-    "version": "Va0.0.2",
+    "version": "V0.0.2-alpha",
     "date": "24-09-2025",
     "changes": [
       "- DB/CLI: correctifs sur la commande `db:migrate` et mise en place d’un système de migrations sécurisé pour éviter les effacements de base.",
@@ -38,7 +38,7 @@
     ]
   },
   {
-    "version": "Va0.0.3",
+    "version": "Va0.0.3-alpha",
     "date": "25-09-2025",
     "changes": [
       "-Balance: Augmentation des stockage maximal a la création d'un nouveaux compte ( pas de retrocomptatibilité avec les ancien compte pour le moment )",
@@ -47,6 +47,16 @@
       "-Tableau de board: cartes de production affichent des compteurs temps réel partagés et la barre latérale présente désormais diamètre et températures de la planète sélectionnée."
 
 
+    ]
+  },
+  {
+    "version": "Va0.0.4-alpha",
+    "date": "26-09-2025",
+    "changes": [
+      "-UI: Suppression d’un doublon d’élément de menu et condition d’affichage clarifiée",
+      "-Securité: Protection d’accès de la page fleet (vérification de permission / rôle) via changelog",
+      "-Securité  : Guard/middleware d’autorisation pour l’accès à la page Flotte + redirection appropriée",
+      "-UI: Correction de l’affichage des prérequis pour les bâtiments et les recherches avec un sticking pour une meilleur lisibilité"
     ]
   }
 ]
