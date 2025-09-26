@@ -146,7 +146,7 @@ ob_start();
                             <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
                             <span class="tech-section__icon" aria-hidden="true"></span>
                         </summary>
-                        <div class="tech-section__groups">
+                        <div class="tech-section__groups ">
                             <?php foreach ($categories as $category): ?>
                                 <?php $categoryKey = (string) ($category['key'] ?? ''); ?>
                                 <?php $categoryLabel = (string) ($category['label'] ?? ''); ?>
@@ -191,9 +191,14 @@ ob_start();
                     </details>
                 <?php endforeach; ?>
             </aside>
-            <section class="tech-tree__details" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
-                <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
-            </section>
+<!--            <section class="tech-tree__details" id="tech-tree-detail" data-initial="--><?php //= htmlspecialchars($initialNodeId ?? '')?><!--" data-base-url="--><?php //= htmlspecialchars($baseUrl)?><!--">-->
+<!--                <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>-->
+<!--            </section>-->
+            <div class="tech-tree__details-column">
+                <section class="tech-tree__details tech-tree__details--sticky" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
+                    <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
+                </section>
+            </div>
         </div>
     </section>
     <script type="application/json" id="tech-tree-data"><?= $nodesJson ?></script>
