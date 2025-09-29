@@ -191,9 +191,6 @@ ob_start();
                     </details>
                 <?php endforeach; ?>
             </aside>
-<!--            <section class="tech-tree__details" id="tech-tree-detail" data-initial="--><?php //= htmlspecialchars($initialNodeId ?? '')?><!--" data-base-url="--><?php //= htmlspecialchars($baseUrl)?><!--">-->
-<!--                <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>-->
-<!--            </section>-->
             <div class="tech-tree__details-column">
                 <section class="tech-tree__details tech-tree__details--sticky" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
                     <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>

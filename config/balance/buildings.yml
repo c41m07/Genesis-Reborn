@@ -6,7 +6,7 @@ metal_mine:
   base_time: 20
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 100
+  prod_base: 200
   prod_growth: 1.15
   energy_use_base: 10
   energy_use_growth: 1.1
@@ -24,7 +24,7 @@ crystal_mine:
   base_time: 25
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 50
+  prod_base: 100
   prod_growth: 1.15
   energy_use_base: 15
   energy_use_growth: 1.1
@@ -61,7 +61,7 @@ fusion_reactor:
   base_time: 60
   growth_cost: 1.55
   growth_time: 1.6
-  prod_base: 320
+  prod_base: 200
   prod_growth: 1.18
   energy_use_base: 0
   energy_use_growth: 1.0
@@ -87,7 +87,7 @@ antimatter_reactor:
   base_time: 90
   growth_cost: 1.55
   growth_time: 1.6
-  prod_base: 800
+  prod_base: 400
   prod_growth: 1.2
   energy_use_base: 0
   energy_use_growth: 1.0
@@ -112,7 +112,7 @@ hydrogen_plant:
   base_time: 35
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 30
+  prod_base: 300
   prod_growth: 1.15
   energy_use_base: 20
   energy_use_growth: 1.1

@@ -2006,11 +2006,9 @@ main.workspace__content {
   min-height: 420px;
   display: flex;
   align-items: stretch;
+    width: 100%;
 }
 
-.tech-tree__details--sticky {
-  position: sticky;
-}
 
 .tech-detail {
   display: flex;
@@ -2123,7 +2121,7 @@ main.workspace__content {
 @media (min-width: 992px) {
     .tech-tree__details--sticky {
         position: sticky;
-        top: calc(var(--space-4) * 2 + 100px);
+        top: calc(var(--space-4) * 2 + 115px);
         max-height: calc(100vh - var(--space-4) * 2 - 100px - var(--space-5));
         overflow-y: auto;
         overflow-x: hidden;
@@ -2471,4 +2469,8 @@ main.workspace__content {
   main.workspace__content {
     padding-inline: var(--space-6);
   }
+}
+
+.float-end {
+    float: right !important;
 }

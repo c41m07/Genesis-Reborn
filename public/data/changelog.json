@@ -57,6 +57,7 @@
       "-Securité: Protection d’accès de la page fleet (vérification de permission / rôle) via changelog",
       "-Securité  : Guard/middleware d’autorisation pour l’accès à la page Flotte + redirection appropriée",
       "-UI: Correction de l’affichage des prérequis pour les bâtiments et les recherches avec un sticking pour une meilleur lisibilité"
+      
     ]
   }
 ]
