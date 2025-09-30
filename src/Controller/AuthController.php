@@ -18,13 +18,13 @@ class AuthController extends AbstractController
 {
     public function __construct(
         private readonly RegisterUser $registerUser,
-        private readonly LoginUser $loginUser,
-        private readonly LogoutUser $logoutUser,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly LoginUser    $loginUser,
+        private readonly LogoutUser   $logoutUser,
+        ViewRenderer                  $renderer,
+        SessionInterface              $session,
+        FlashBag                      $flashBag,
+        CsrfTokenManager              $csrfTokenManager,
+        string                        $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }

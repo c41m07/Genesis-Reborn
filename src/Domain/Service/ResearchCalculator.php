@@ -21,7 +21,7 @@ class ResearchCalculator
     {
         $costs = [];
         foreach ($definition->getBaseCost() as $resource => $baseCost) {
-            $costs[$resource] = (int) round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
+            $costs[$resource] = (int)round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
         }
 
         return $costs;
@@ -29,7 +29,7 @@ class ResearchCalculator
 
     public function nextTime(ResearchDefinition $definition, int $currentLevel, int $labLevel): int
     {
-        $baseDuration = (float) $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
+        $baseDuration = (float)$definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
         $bonus = $this->labSpeedBonus($labLevel);
         $speedMultiplier = 1.0 + $bonus;
 
@@ -37,7 +37,7 @@ class ResearchCalculator
             $baseDuration /= $speedMultiplier;
         }
 
-        return max(1, (int) round($baseDuration));
+        return max(1, (int)round($baseDuration));
     }
 
     public function labSpeedBonus(int $labLevel): float
@@ -66,9 +66,9 @@ class ResearchCalculator
      */
     public function checkRequirements(
         ResearchDefinition $definition,
-        array $researchLevels,
-        int $labLevel,
-        array $researchCatalog = []
+        array              $researchLevels,
+        int                $labLevel,
+        array              $researchCatalog = []
     ): array {
         $missing = [];
 
@@ -83,13 +83,13 @@ class ResearchCalculator
         }
 
         foreach ($definition->getRequires() as $key => $requiredLevel) {
-            $currentLevel = (int) ($researchLevels[$key] ?? 0);
+            $currentLevel = (int)($researchLevels[$key] ?? 0);
             if ($currentLevel < $requiredLevel) {
                 $missing[] = [
                     'type' => 'research',
                     'key' => $key,
                     'label' => $researchCatalog[$key]['label'] ?? $key,
-                    'level' => (int) $requiredLevel,
+                    'level' => (int)$requiredLevel,
                     'current' => $currentLevel,
                 ];
             }

@@ -9,10 +9,10 @@ use DateTimeImmutable;
 class BuildJob
 {
     public function __construct(
-        private readonly int $id,
-        private readonly int $planetId,
-        private readonly string $buildingKey,
-        private readonly int $targetLevel,
+        private readonly int               $id,
+        private readonly int               $planetId,
+        private readonly string            $buildingKey,
+        private readonly int               $targetLevel,
         private readonly DateTimeImmutable $endsAt
     ) {
     }

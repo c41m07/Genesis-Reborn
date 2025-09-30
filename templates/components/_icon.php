@@ -31,21 +31,21 @@ return static function (string $name, array $options = []): string {
             continue;
         }
 
-        $attributeKey = preg_replace('/[^a-z0-9_-]+/i', '', (string) $key);
+        $attributeKey = preg_replace('/[^a-z0-9_-]+/i', '', (string)$key);
         if ($attributeKey === '') {
             continue;
         }
 
-        $attributeString .= sprintf(' %s="%s"', $attributeKey, htmlspecialchars((string) $value, ENT_QUOTES));
+        $attributeString .= sprintf(' %s="%s"', $attributeKey, htmlspecialchars((string)$value, ENT_QUOTES));
     }
 
-    $iconName = (string) $name;
+    $iconName = (string)$name;
     $baseUrl = $options['baseUrl'] ?? null;
     $href = asset_url('assets/svg/sprite.svg#icon-' . $iconName, is_string($baseUrl) ? $baseUrl : null);
     $svg = sprintf('<svg%s><use href="%s"></use></svg>', $attributeString, htmlspecialchars($href, ENT_QUOTES));
 
     if ($label) {
-        $svg .= sprintf('<span class="visually-hidden">%s</span>', htmlspecialchars((string) $label, ENT_QUOTES));
+        $svg .= sprintf('<span class="visually-hidden">%s</span>', htmlspecialchars((string)$label, ENT_QUOTES));
     }
 
     return $svg;

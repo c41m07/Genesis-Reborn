@@ -22,14 +22,14 @@ class ResearchController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
-        private readonly GetResearchOverview $getOverview,
-        private readonly StartResearch $startResearch,
-        private readonly ProcessResearchQueue $researchQueueProcessor,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly GetResearchOverview       $getOverview,
+        private readonly StartResearch             $startResearch,
+        private readonly ProcessResearchQueue      $researchQueueProcessor,
+        ViewRenderer                               $renderer,
+        SessionInterface                           $session,
+        FlashBag                                   $flashBag,
+        CsrfTokenManager                           $csrfTokenManager,
+        string                                     $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -60,7 +60,7 @@ class ResearchController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {
@@ -117,7 +117,7 @@ class ResearchController extends AbstractController
                 $updated = $this->getOverview->execute($selectedId);
                 $planet = $updated['planet'];
                 $queue = $this->formatResearchQueue($updated['queue'] ?? []);
-                $researchKey = (string) ($data['research'] ?? '');
+                $researchKey = (string)($data['research'] ?? '');
                 $researchEntry = $this->findResearchEntry($updated['categories'] ?? [], $researchKey);
 
                 return $this->json([
@@ -174,10 +174,10 @@ class ResearchController extends AbstractController
 
         foreach ($queue['jobs'] ?? [] as $job) {
             $jobs[] = [
-                'research' => (string) ($job['research'] ?? ''),
-                'label' => (string) ($job['label'] ?? ''),
-                'targetLevel' => (int) ($job['targetLevel'] ?? 0),
-                'remaining' => (int) ($job['remaining'] ?? 0),
+                'research' => (string)($job['research'] ?? ''),
+                'label' => (string)($job['label'] ?? ''),
+                'targetLevel' => (int)($job['targetLevel'] ?? 0),
+                'remaining' => (int)($job['remaining'] ?? 0),
                 'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
             ];
         }
@@ -186,6 +186,11 @@ class ResearchController extends AbstractController
             'count' => count($jobs),
             'jobs' => $jobs,
         ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 
     /**
@@ -248,35 +253,30 @@ class ResearchController extends AbstractController
             }
 
             $missing[] = [
-                'type' => (string) ($item['type'] ?? ''),
-                'key' => (string) ($item['key'] ?? ''),
-                'label' => (string) ($item['label'] ?? ''),
-                'level' => (int) ($item['level'] ?? 0),
-                'current' => (int) ($item['current'] ?? 0),
+                'type' => (string)($item['type'] ?? ''),
+                'key' => (string)($item['key'] ?? ''),
+                'label' => (string)($item['label'] ?? ''),
+                'level' => (int)($item['level'] ?? 0),
+                'current' => (int)($item['current'] ?? 0),
             ];
         }
 
         return [
             'key' => $definition->getKey(),
             'label' => $definition->getLabel(),
-            'level' => (int) ($entry['level'] ?? 0),
-            'maxLevel' => (int) ($entry['maxLevel'] ?? 0),
-            'progress' => (float) ($entry['progress'] ?? 0.0),
-            'nextCost' => array_map(static fn ($value) => (int) $value, $entry['nextCost'] ?? []),
-            'nextTime' => (int) ($entry['nextTime'] ?? 0),
-            'nextBaseTime' => (int) ($entry['nextBaseTime'] ?? 0),
+            'level' => (int)($entry['level'] ?? 0),
+            'maxLevel' => (int)($entry['maxLevel'] ?? 0),
+            'progress' => (float)($entry['progress'] ?? 0.0),
+            'nextCost' => array_map(static fn ($value) => (int)$value, $entry['nextCost'] ?? []),
+            'nextTime' => (int)($entry['nextTime'] ?? 0),
+            'nextBaseTime' => (int)($entry['nextBaseTime'] ?? 0),
             'requirements' => [
-                'ok' => (bool) ($requirements['ok'] ?? false),
+                'ok' => (bool)($requirements['ok'] ?? false),
                 'missing' => $missing,
             ],
-            'canResearch' => (bool) ($entry['canResearch'] ?? false),
-            'affordable' => (bool) ($entry['affordable'] ?? false),
-            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
+            'canResearch' => (bool)($entry['canResearch'] ?? false),
+            'affordable' => (bool)($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int)$value, $entry['missingResources'] ?? []),
         ];
-    }
-
-    private function formatDateTime(mixed $value): ?string
-    {
-        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }

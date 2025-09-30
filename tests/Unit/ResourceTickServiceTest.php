@@ -15,15 +15,6 @@ class ResourceTickServiceTest extends TestCase
 {
     private ResourceTickService $service;
 
-    protected function setUp(): void
-    {
-        $basePath = dirname(__DIR__, 2) . '/config/balance';
-        $loader = new BalanceConfigLoader($basePath);
-        $effects = ResourceEffectFactory::fromBuildingConfig($loader->getBuildingConfigs());
-
-        $this->service = new ResourceTickService($effects, $loader->getBalanceConfig());
-    }
-
     public function testTickUpdatesResourcesForMultiplePlanets(): void
     {
         $lastTick = new DateTimeImmutable('2025-09-20 10:00:00');
@@ -229,5 +220,14 @@ class ResourceTickServiceTest extends TestCase
             'hydrogen' => 82800,
             'energy' => 5725,
         ], $upgradeTick['capacities']);
+    }
+
+    protected function setUp(): void
+    {
+        $basePath = dirname(__DIR__, 2) . '/config/balance';
+        $loader = new BalanceConfigLoader($basePath);
+        $effects = ResourceEffectFactory::fromBuildingConfig($loader->getBuildingConfigs());
+
+        $this->service = new ResourceTickService($effects, $loader->getBalanceConfig());
     }
 }

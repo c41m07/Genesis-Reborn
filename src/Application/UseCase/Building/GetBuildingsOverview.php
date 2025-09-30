@@ -42,14 +42,14 @@ class GetBuildingsOverview
     ];
 
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly BuildQueueRepositoryInterface $buildQueue,
-        private readonly BuildingCatalog $catalog,
-        private readonly BuildingCalculator $calculator,
-        private readonly ProcessBuildQueue $queueProcessor,
+        private readonly BuildQueueRepositoryInterface    $buildQueue,
+        private readonly BuildingCatalog                  $catalog,
+        private readonly BuildingCalculator               $calculator,
+        private readonly ProcessBuildQueue                $queueProcessor,
         private readonly ResearchStateRepositoryInterface $researchStates,
-        private readonly ResearchCatalog $researchCatalog
+        private readonly ResearchCatalog                  $researchCatalog
     ) {
     }
 
@@ -88,8 +88,8 @@ class GetBuildingsOverview
         }
 
         $levels = $this->buildingStates->getLevels($planet->getId());
-        $workerFactoryLevel = (int) ($levels['worker_factory'] ?? 0);
-        $robotFactoryLevel = (int) ($levels['robot_factory'] ?? 0);
+        $workerFactoryLevel = (int)($levels['worker_factory'] ?? 0);
+        $robotFactoryLevel = (int)($levels['robot_factory'] ?? 0);
         $workerFactoryBonus = 0.0;
         $robotFactoryBonus = 0.0;
 
@@ -323,7 +323,7 @@ class GetBuildingsOverview
                 continue;
             }
 
-            $difference = (int) $amount - $current;
+            $difference = (int)$amount - $current;
             if ($difference > 0) {
                 $missing[$resource] = $difference;
             }

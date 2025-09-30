@@ -31,8 +31,8 @@ class FlashBag
             foreach ($entries as $entry) {
                 if (is_array($entry) && isset($entry['type'], $entry['message'])) {
                     $messages[] = [
-                        'type' => (string) $entry['type'],
-                        'message' => (string) $entry['message'],
+                        'type' => (string)$entry['type'],
+                        'message' => (string)$entry['message'],
                     ];
                 }
             }

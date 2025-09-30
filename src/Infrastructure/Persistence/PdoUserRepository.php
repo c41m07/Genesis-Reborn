@@ -24,7 +24,7 @@ class PdoUserRepository implements UserRepositoryInterface
             return null;
         }
 
-        return new User((int) $row['id'], $row['email'], $row['password_hash'], $row['username']);
+        return new User((int)$row['id'], $row['email'], $row['password_hash'], $row['username']);
     }
 
     public function find(int $id): ?User
@@ -37,7 +37,7 @@ class PdoUserRepository implements UserRepositoryInterface
             return null;
         }
 
-        return new User((int) $row['id'], $row['email'], $row['password_hash'], $row['username']);
+        return new User((int)$row['id'], $row['email'], $row['password_hash'], $row['username']);
     }
 
     public function save(string $email, string $passwordHash, ?string $username = null): User
@@ -55,7 +55,7 @@ class PdoUserRepository implements UserRepositoryInterface
             'password' => $passwordHash,
         ]);
 
-        $id = (int) $this->pdo->lastInsertId();
+        $id = (int)$this->pdo->lastInsertId();
 
         return new User($id, $email, $passwordHash, $finalUsername);
     }
@@ -87,7 +87,7 @@ class PdoUserRepository implements UserRepositoryInterface
         $maxLength = 60;
 
         while ($this->usernameExists($candidate)) {
-            $suffixString = (string) $suffix;
+            $suffixString = (string)$suffix;
             $availableLength = max(1, $maxLength - strlen($suffixString));
             $candidate = substr($base, 0, $availableLength) . $suffixString;
             ++$suffix;
@@ -101,6 +101,6 @@ class PdoUserRepository implements UserRepositoryInterface
         $stmt = $this->pdo->prepare('SELECT 1 FROM players WHERE username = :username LIMIT 1');
         $stmt->execute(['username' => $username]);
 
-        return (bool) $stmt->fetchColumn();
+        return (bool)$stmt->fetchColumn();
     }
 }

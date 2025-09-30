@@ -29,13 +29,13 @@ class FleetNavigationService
      * @return array{distance: int, speed: int, travel_time: int, arrival_time: DateTimeImmutable, fuel: int}
      */
     public function plan(
-        array $origin,
-        array $destination,
-        array $composition,
-        array $shipStats,
+        array             $origin,
+        array             $destination,
+        array             $composition,
+        array             $shipStats,
         DateTimeInterface $departure,
-        array $modifiers = [],
-        float $speedFactor = 1.0
+        array             $modifiers = [],
+        float             $speedFactor = 1.0
     ): array {
         if ($composition === [] || array_sum($composition) <= 0) {
             throw new InvalidArgumentException('Fleet composition cannot be empty.');
@@ -55,13 +55,13 @@ class FleetNavigationService
             }
 
             $stats = $shipStats[$shipKey];
-            $speed = (int) $stats['speed'];
+            $speed = (int)$stats['speed'];
             if ($speed <= 0) {
                 throw new InvalidArgumentException(sprintf('Ship "%s" must have a speed greater than zero.', $shipKey));
             }
 
             $slowestSpeed = $slowestSpeed === null ? $speed : min($slowestSpeed, $speed);
-            $fuelPerDistance = (float) ($stats['fuel_per_distance'] ?? 0.0);
+            $fuelPerDistance = (float)($stats['fuel_per_distance'] ?? 0.0);
             $fuelConsumption += $fuelPerDistance * $distance * $quantity;
         }
 
@@ -69,22 +69,22 @@ class FleetNavigationService
             throw new InvalidArgumentException('Fleet must contain at least one ship with a quantity greater than zero.');
         }
 
-        $speedBonus = (float) ($modifiers['speed_bonus'] ?? 0.0);
+        $speedBonus = (float)($modifiers['speed_bonus'] ?? 0.0);
         $speedBonus = max(-0.9, $speedBonus);
-        $fuelReduction = (float) ($modifiers['fuel_reduction'] ?? 0.0);
+        $fuelReduction = (float)($modifiers['fuel_reduction'] ?? 0.0);
         $fuelReduction = max(0.0, min(0.95, $fuelReduction));
         $effectiveSpeed = $slowestSpeed * max(0.01, $speedFactor) * (1 + $speedBonus);
 
-        $travelSeconds = (int) max(1, ceil($distance / $effectiveSpeed * 3600));
+        $travelSeconds = (int)max(1, ceil($distance / $effectiveSpeed * 3600));
         $departureTime = DateTimeImmutable::createFromInterface($departure);
         $arrival = $departureTime->add(new DateInterval('PT' . $travelSeconds . 'S'));
 
         $fuelConsumption *= (1 - $fuelReduction);
-        $fuel = (int) max(0, ceil($fuelConsumption));
+        $fuel = (int)max(0, ceil($fuelConsumption));
 
         return [
-            'distance' => (int) round($distance),
-            'speed' => (int) round($effectiveSpeed),
+            'distance' => (int)round($distance),
+            'speed' => (int)round($effectiveSpeed),
             'travel_time' => $travelSeconds,
             'arrival_time' => $arrival,
             'fuel' => $fuel,
@@ -102,7 +102,7 @@ class FleetNavigationService
         $positionDistance = abs($destination['position'] - $origin['position']) * $this->positionDistance;
 
         if ($galaxyDistance === 0 && $systemDistance === 0 && $positionDistance === 0) {
-            return (float) $this->baseDistance;
+            return (float)$this->baseDistance;
         }
 
         return $galaxyDistance + $systemDistance + $positionDistance + $this->baseDistance;

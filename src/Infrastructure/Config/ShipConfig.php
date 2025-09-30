@@ -37,10 +37,10 @@ final class ShipConfig
     public function __construct(string $key, array $data)
     {
         $this->key = $key;
-        $this->label = (string) ($data['label'] ?? $key);
-        $this->category = (string) ($data['category'] ?? 'Divers');
-        $this->role = (string) ($data['role'] ?? '');
-        $this->description = (string) ($data['description'] ?? '');
+        $this->label = (string)($data['label'] ?? $key);
+        $this->category = (string)($data['category'] ?? 'Divers');
+        $this->role = (string)($data['role'] ?? '');
+        $this->description = (string)($data['description'] ?? '');
 
         $baseCost = $data['base_cost'] ?? [];
         if (!is_array($baseCost)) {
@@ -48,10 +48,10 @@ final class ShipConfig
         }
 
         foreach ($baseCost as $resource => $value) {
-            $this->baseCost[$resource] = (int) round((float) $value);
+            $this->baseCost[$resource] = (int)round((float)$value);
         }
 
-        $this->buildTime = (int) round((float) ($data['build_time'] ?? 0));
+        $this->buildTime = (int)round((float)($data['build_time'] ?? 0));
 
         $stats = $data['stats'] ?? [];
         if (!is_array($stats)) {
@@ -59,7 +59,7 @@ final class ShipConfig
         }
 
         foreach ($stats as $statKey => $value) {
-            $this->stats[$statKey] = (int) round((float) $value);
+            $this->stats[$statKey] = (int)round((float)$value);
         }
 
         $requiresResearch = $data['requires_research'] ?? [];
@@ -68,11 +68,11 @@ final class ShipConfig
         }
 
         foreach ($requiresResearch as $researchKey => $level) {
-            $this->requiresResearch[$researchKey] = max(0, (int) $level);
+            $this->requiresResearch[$researchKey] = max(0, (int)$level);
         }
 
         if (!empty($data['image'])) {
-            $this->image = (string) $data['image'];
+            $this->image = (string)$data['image'];
         }
     }
 

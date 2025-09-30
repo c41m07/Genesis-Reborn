@@ -10,7 +10,7 @@ propulsion_basic:
   growth_cost: 1.65
   growth_time: 1.6
   max_level: 10
-  requires: {  }
+  requires: { }
   requires_lab: 1
   image: assets/svg/illustrations/research/propulsion.svg
 life_support:
@@ -25,7 +25,7 @@ life_support:
   growth_cost: 1.6
   growth_time: 1.55
   max_level: 10
-  requires: {  }
+  requires: { }
   requires_lab: 1
   image: assets/svg/illustrations/research/engineering.svg
 miniaturisation:

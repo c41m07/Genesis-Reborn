@@ -14,7 +14,7 @@ use InvalidArgumentException;
 class FleetResolutionService
 {
     public function __construct(
-        private readonly ShipCatalog $shipCatalog,
+        private readonly ShipCatalog         $shipCatalog,
         private readonly BalanceConfigLoader $balanceConfigLoader
     ) {
     }
@@ -24,27 +24,27 @@ class FleetResolutionService
         $config = $this->balanceConfigLoader->all();
         $combatConfig = is_array($config['combat'] ?? null) ? $config['combat'] : [];
 
-        $maxRounds = max(1, (int) ($combatConfig['rounds'] ?? 1));
-        $minLossRatio = max(0.0, (float) ($combatConfig['min_losses_ratio'] ?? 0.0));
+        $maxRounds = max(1, (int)($combatConfig['rounds'] ?? 1));
+        $minLossRatio = max(0.0, (float)($combatConfig['min_losses_ratio'] ?? 0.0));
 
         $retreatConfig = is_array($combatConfig['retreat_threshold'] ?? null) ? $combatConfig['retreat_threshold'] : [];
-        $attackerRetreatThreshold = $this->clampRatio((float) ($retreatConfig['attacker'] ?? 0.0));
-        $defenderRetreatThreshold = $this->clampRatio((float) ($retreatConfig['defender'] ?? 0.0));
+        $attackerRetreatThreshold = $this->clampRatio((float)($retreatConfig['attacker'] ?? 0.0));
+        $defenderRetreatThreshold = $this->clampRatio((float)($retreatConfig['defender'] ?? 0.0));
 
         $statMultipliers = is_array($combatConfig['stat_multipliers'] ?? null) ? $combatConfig['stat_multipliers'] : [];
-        $attackStatMultiplier = max(0.0, (float) ($statMultipliers['attack'] ?? 1.0));
-        $hullPerDefense = max(0.0, (float) ($statMultipliers['hull_per_defense'] ?? 1.0));
-        $baseHull = max(0.0, (float) ($statMultipliers['base_hull'] ?? 0.0));
+        $attackStatMultiplier = max(0.0, (float)($statMultipliers['attack'] ?? 1.0));
+        $hullPerDefense = max(0.0, (float)($statMultipliers['hull_per_defense'] ?? 1.0));
+        $baseHull = max(0.0, (float)($statMultipliers['base_hull'] ?? 0.0));
 
         $attackMultipliers = is_array($combatConfig['attack_multipliers'] ?? null) ? $combatConfig['attack_multipliers'] : [];
-        $attackerDamageMultiplier = max(0.0, (float) ($attackMultipliers['attacker'] ?? 1.0));
-        $defenderDamageMultiplier = max(0.0, (float) ($attackMultipliers['defender'] ?? 1.0));
+        $attackerDamageMultiplier = max(0.0, (float)($attackMultipliers['attacker'] ?? 1.0));
+        $defenderDamageMultiplier = max(0.0, (float)($attackMultipliers['defender'] ?? 1.0));
 
         $targetPriorities = is_array($config['target_priorities'] ?? null) ? $config['target_priorities'] : [];
         $damageModifiers = is_array($config['damage_modifiers'] ?? null) ? $config['damage_modifiers'] : [];
 
         $defaultPriority = $this->sanitizePriorityList($targetPriorities['default'] ?? []);
-        $defaultDamageModifier = (float) ($combatConfig['default_damage_modifier'] ?? ($damageModifiers['default'] ?? 1.0));
+        $defaultDamageModifier = (float)($combatConfig['default_damage_modifier'] ?? ($damageModifiers['default'] ?? 1.0));
         if ($defaultDamageModifier <= 0.0) {
             $defaultDamageModifier = 1.0;
         }
@@ -166,6 +166,62 @@ class FleetResolutionService
         );
     }
 
+    private function clampRatio(float $value): float
+    {
+        if ($value <= 0.0) {
+            return 0.0;
+        }
+
+        if ($value >= 1.0) {
+            return 1.0;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param array<int, string> $priority
+     *
+     * @return array<int, string>
+     */
+    private function sanitizePriorityList(array $priority): array
+    {
+        $sanitized = [];
+        foreach ($priority as $entry) {
+            $entry = (string)$entry;
+            if ($entry === '') {
+                continue;
+            }
+
+            if (!in_array($entry, $sanitized, true)) {
+                $sanitized[] = $entry;
+            }
+        }
+
+        return $sanitized;
+    }
+
+    /**
+     * @param array<string, float> $modifiers
+     */
+    private function extractMultiplier(array $modifiers, string $type): float
+    {
+        $multiplierKey = $type . '_multiplier';
+        $bonusKey = $type . '_bonus';
+
+        if (array_key_exists($multiplierKey, $modifiers)) {
+            $value = (float)$modifiers[$multiplierKey];
+            return $value > 0.0 ? $value : 1.0;
+        }
+
+        if (array_key_exists($bonusKey, $modifiers)) {
+            $value = 1.0 + (float)$modifiers[$bonusKey];
+            return $value > 0.0 ? $value : 1.0;
+        }
+
+        return 1.0;
+    }
+
     /**
      * @param array<string, int> $composition
      *
@@ -176,7 +232,7 @@ class FleetResolutionService
         $fleet = [];
 
         foreach ($composition as $shipKey => $quantity) {
-            $quantity = (int) $quantity;
+            $quantity = (int)$quantity;
             if ($quantity <= 0) {
                 continue;
             }
@@ -188,8 +244,8 @@ class FleetResolutionService
             }
 
             $stats = $definition->getStats();
-            $attack = max(0.0, (float) ($stats['attaque'] ?? 0.0));
-            $defense = max(0.0, (float) ($stats['défense'] ?? 0.0));
+            $attack = max(0.0, (float)($stats['attaque'] ?? 0.0));
+            $defense = max(0.0, (float)($stats['défense'] ?? 0.0));
 
             $hull = ($baseHull + $defense * $hullPerDefense) * max(0.1, $hullMultiplier);
             $hull = max(1.0, $hull);
@@ -207,6 +263,38 @@ class FleetResolutionService
         ksort($fleet);
 
         return $fleet;
+    }
+
+    /**
+     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
+     */
+    private function hasUnits(array $fleet): bool
+    {
+        foreach ($fleet as $ship) {
+            if ($ship['quantity'] > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, array{quantity: int|float|string}> $fleet
+     *
+     * @return array<string, int>
+     */
+    private function extractQuantities(array $fleet): array
+    {
+        $quantities = [];
+
+        foreach ($fleet as $shipKey => $data) {
+            $quantities[$shipKey] = (int)$data['quantity'];
+        }
+
+        ksort($quantities);
+
+        return $quantities;
     }
 
     /**
@@ -234,20 +322,6 @@ class FleetResolutionService
         }
 
         return $total;
-    }
-
-    /**
-     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
-     */
-    private function hasUnits(array $fleet): bool
-    {
-        foreach ($fleet as $ship) {
-            if ($ship['quantity'] > 0) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -311,7 +385,7 @@ class FleetResolutionService
                 continue;
             }
 
-            $kills = (int) floor($damage / $hull);
+            $kills = (int)floor($damage / $hull);
             if ($kills <= 0) {
                 continue;
             }
@@ -320,116 +394,6 @@ class FleetResolutionService
         }
 
         return $losses;
-    }
-
-    /**
-     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
-     * @param array<string, int> $losses
-     */
-    private function applyLosses(array &$fleet, array $losses): void
-    {
-        foreach ($losses as $shipKey => $lost) {
-            if (!isset($fleet[$shipKey])) {
-                continue;
-            }
-
-            $fleet[$shipKey]['quantity'] = max(0, $fleet[$shipKey]['quantity'] - (int) $lost);
-        }
-    }
-
-    /**
-     * @param array<string, int> $losses
-     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
-     */
-    private function enforceMinimumLosses(array &$losses, int $unitsBefore, float $minLossRatio, array $fleet): void
-    {
-        if ($unitsBefore <= 0 || $minLossRatio <= 0.0) {
-            return;
-        }
-
-        $currentLosses = 0;
-        foreach ($losses as $value) {
-            $currentLosses += (int) $value;
-        }
-
-        $minimum = (int) ceil($unitsBefore * $minLossRatio);
-        if ($minimum <= $currentLosses) {
-            return;
-        }
-
-        $additional = min($minimum - $currentLosses, $unitsBefore);
-        if ($additional <= 0) {
-            return;
-        }
-
-        $keys = array_keys($fleet);
-        usort($keys, function (string $a, string $b) use ($fleet): int {
-            $compare = $fleet[$b]['hull'] <=> $fleet[$a]['hull'];
-            if ($compare === 0) {
-                return $fleet[$b]['quantity'] <=> $fleet[$a]['quantity'];
-            }
-
-            return $compare;
-        });
-
-        foreach ($keys as $key) {
-            if ($additional <= 0) {
-                break;
-            }
-
-            if (!isset($fleet[$key])) {
-                continue;
-            }
-
-            $available = $fleet[$key]['quantity'] - ($losses[$key] ?? 0);
-            if ($available <= 0) {
-                continue;
-            }
-
-            $take = min($available, $additional);
-            $losses[$key] = ($losses[$key] ?? 0) + $take;
-            $additional -= $take;
-        }
-    }
-
-    /**
-     * @param array<string, array{quantity: int|float|string}> $fleet
-     *
-     * @return array<string, int>
-     */
-    private function extractQuantities(array $fleet): array
-    {
-        $quantities = [];
-
-        foreach ($fleet as $shipKey => $data) {
-            $quantities[$shipKey] = (int) $data['quantity'];
-        }
-
-        ksort($quantities);
-
-        return $quantities;
-    }
-
-    /**
-     * @param array<int, string> $priority
-     *
-     * @return array<int, string>
-     */
-    private function sanitizePriorityList(array $priority): array
-    {
-        $sanitized = [];
-        foreach ($priority as $entry) {
-            $entry = (string) $entry;
-            if ($entry === '') {
-                continue;
-            }
-
-            if (!in_array($entry, $sanitized, true)) {
-                $sanitized[] = $entry;
-            }
-        }
-
-        return $sanitized;
     }
 
     /**
@@ -481,52 +445,88 @@ class FleetResolutionService
         if (isset($modifiers[$attackerKey]) && is_array($modifiers[$attackerKey])) {
             $specific = $modifiers[$attackerKey];
             if (array_key_exists($targetKey, $specific)) {
-                return max(0.0, (float) $specific[$targetKey]);
+                return max(0.0, (float)$specific[$targetKey]);
             }
 
             if (array_key_exists('default', $specific)) {
-                return max(0.0, (float) $specific['default']);
+                return max(0.0, (float)$specific['default']);
             }
         }
 
         if (array_key_exists('default', $modifiers)) {
-            return max(0.0, (float) $modifiers['default']);
+            return max(0.0, (float)$modifiers['default']);
         }
 
         return $default;
     }
 
-    private function clampRatio(float $value): float
+    /**
+     * @param array<string, int> $losses
+     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
+     */
+    private function enforceMinimumLosses(array &$losses, int $unitsBefore, float $minLossRatio, array $fleet): void
     {
-        if ($value <= 0.0) {
-            return 0.0;
+        if ($unitsBefore <= 0 || $minLossRatio <= 0.0) {
+            return;
         }
 
-        if ($value >= 1.0) {
-            return 1.0;
+        $currentLosses = 0;
+        foreach ($losses as $value) {
+            $currentLosses += (int)$value;
         }
 
-        return $value;
+        $minimum = (int)ceil($unitsBefore * $minLossRatio);
+        if ($minimum <= $currentLosses) {
+            return;
+        }
+
+        $additional = min($minimum - $currentLosses, $unitsBefore);
+        if ($additional <= 0) {
+            return;
+        }
+
+        $keys = array_keys($fleet);
+        usort($keys, function (string $a, string $b) use ($fleet): int {
+            $compare = $fleet[$b]['hull'] <=> $fleet[$a]['hull'];
+            if ($compare === 0) {
+                return $fleet[$b]['quantity'] <=> $fleet[$a]['quantity'];
+            }
+
+            return $compare;
+        });
+
+        foreach ($keys as $key) {
+            if ($additional <= 0) {
+                break;
+            }
+
+            if (!isset($fleet[$key])) {
+                continue;
+            }
+
+            $available = $fleet[$key]['quantity'] - ($losses[$key] ?? 0);
+            if ($available <= 0) {
+                continue;
+            }
+
+            $take = min($available, $additional);
+            $losses[$key] = ($losses[$key] ?? 0) + $take;
+            $additional -= $take;
+        }
     }
 
     /**
-     * @param array<string, float> $modifiers
+     * @param array<string, array{key: string, label: string, quantity: int, attack: float, defense: float, hull: float}> $fleet
+     * @param array<string, int> $losses
      */
-    private function extractMultiplier(array $modifiers, string $type): float
+    private function applyLosses(array &$fleet, array $losses): void
     {
-        $multiplierKey = $type . '_multiplier';
-        $bonusKey = $type . '_bonus';
+        foreach ($losses as $shipKey => $lost) {
+            if (!isset($fleet[$shipKey])) {
+                continue;
+            }
 
-        if (array_key_exists($multiplierKey, $modifiers)) {
-            $value = (float) $modifiers[$multiplierKey];
-            return $value > 0.0 ? $value : 1.0;
+            $fleet[$shipKey]['quantity'] = max(0, $fleet[$shipKey]['quantity'] - (int)$lost);
         }
-
-        if (array_key_exists($bonusKey, $modifiers)) {
-            $value = 1.0 + (float) $modifiers[$bonusKey];
-            return $value > 0.0 ? $value : 1.0;
-        }
-
-        return 1.0;
     }
 }

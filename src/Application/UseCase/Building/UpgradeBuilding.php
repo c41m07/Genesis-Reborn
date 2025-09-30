@@ -16,13 +16,13 @@ use App\Domain\Service\BuildingCatalog;
 class UpgradeBuilding
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly BuildQueueRepositoryInterface $buildQueue,
-        private readonly PlayerStatsRepositoryInterface $playerStats,
+        private readonly BuildQueueRepositoryInterface    $buildQueue,
+        private readonly PlayerStatsRepositoryInterface   $playerStats,
         private readonly ResearchStateRepositoryInterface $researchStates,
-        private readonly BuildingCatalog $catalog,
-        private readonly BuildingCalculator $calculator
+        private readonly BuildingCatalog                  $catalog,
+        private readonly BuildingCalculator               $calculator
     ) {
     }
 
@@ -130,7 +130,7 @@ class UpgradeBuilding
         $total = 0;
         foreach ($cost as $amount) {
             if ($amount > 0) {
-                $total += (int) $amount;
+                $total += (int)$amount;
             }
         }
 

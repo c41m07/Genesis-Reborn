@@ -15,9 +15,9 @@ class GetTechTree
     public function __construct(
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
-        private readonly ResearchCatalog $researchCatalog,
-        private readonly BuildingCatalog $buildingCatalog,
-        private readonly ShipCatalog $shipCatalog
+        private readonly ResearchCatalog                  $researchCatalog,
+        private readonly BuildingCatalog                  $buildingCatalog,
+        private readonly ShipCatalog                      $shipCatalog
     ) {
     }
 
@@ -84,7 +84,7 @@ class GetTechTree
                     'type' => 'building',
                     'key' => $key,
                     'label' => $requiredDefinition->getLabel(),
-                    'required' => (int) $level,
+                    'required' => (int)$level,
                     'current' => $currentLevel,
                     'met' => $currentLevel >= $level,
                 ];
@@ -96,7 +96,7 @@ class GetTechTree
                     'type' => 'research',
                     'key' => $key,
                     'label' => $requiredDefinition->getLabel(),
-                    'required' => (int) $level,
+                    'required' => (int)$level,
                     'current' => $currentLevel,
                     'met' => $currentLevel >= $level,
                 ];
@@ -144,7 +144,7 @@ class GetTechTree
                         'type' => 'research',
                         'key' => $key,
                         'label' => $requiredDefinition->getLabel(),
-                        'required' => (int) $level,
+                        'required' => (int)$level,
                         'current' => $currentLevel,
                         'met' => $currentLevel >= $level,
                     ];
@@ -184,7 +184,7 @@ class GetTechTree
                         'type' => 'research',
                         'key' => $key,
                         'label' => $requiredDefinition->getLabel(),
-                        'required' => (int) $level,
+                        'required' => (int)$level,
                         'current' => $currentLevel,
                         'met' => $currentLevel >= $level,
                     ];

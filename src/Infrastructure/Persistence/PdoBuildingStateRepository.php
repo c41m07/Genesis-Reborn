@@ -23,7 +23,7 @@ class PdoBuildingStateRepository implements BuildingStateRepositoryInterface
         $levels = [];
 
         while ($row = $stmt->fetch()) {
-            $levels[$row['bkey']] = (int) $row['level'];
+            $levels[$row['bkey']] = (int)$row['level'];
         }
 
         return $levels;
@@ -55,7 +55,7 @@ class PdoBuildingStateRepository implements BuildingStateRepositoryInterface
             throw new RuntimeException('Planète introuvable pour la mise à jour des bâtiments.');
         }
 
-        return (int) $playerId;
+        return (int)$playerId;
     }
 
     private function getBuildingIdByKey(string $buildingKey): int
@@ -68,6 +68,6 @@ class PdoBuildingStateRepository implements BuildingStateRepositoryInterface
             throw new RuntimeException(sprintf('Bâtiment "%s" introuvable.', $buildingKey));
         }
 
-        return (int) $buildingId;
+        return (int)$buildingId;
     }
 }

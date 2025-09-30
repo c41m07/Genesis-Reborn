@@ -1,17 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <defs>
-    <linearGradient id="lab-bg" x1="15%" y1="10%" x2="85%" y2="90%">
-      <stop offset="0" stop-color="#3a2f6f"/>
-      <stop offset="1" stop-color="#171432"/>
-    </linearGradient>
-    <linearGradient id="lab-glow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0" stop-color="#9f8bff"/>
-      <stop offset="1" stop-color="#594bff"/>
-    </linearGradient>
-  </defs>
-  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#lab-bg)"/>
-  <path d="M34 28h28l8 14v22H26V42z" fill="#111428" opacity="0.55"/>
-  <path d="M34 24h28l8 14v22H26V38z" fill="url(#lab-glow)" opacity="0.9"/>
-  <circle cx="48" cy="44" r="10" fill="#e8e4ff" opacity="0.6"/>
-  <path d="M44 34h8v12l6 6H38l6-6z" fill="#1f1b3c" opacity="0.4"/>
+    <defs>
+        <linearGradient id="lab-bg" x1="15%" y1="10%" x2="85%" y2="90%">
+            <stop offset="0" stop-color="#3a2f6f"/>
+            <stop offset="1" stop-color="#171432"/>
+        </linearGradient>
+        <linearGradient id="lab-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0" stop-color="#9f8bff"/>
+            <stop offset="1" stop-color="#594bff"/>
+        </linearGradient>
+    </defs>
+    <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#lab-bg)"/>
+    <path d="M34 28h28l8 14v22H26V42z" fill="#111428" opacity="0.55"/>
+    <path d="M34 24h28l8 14v22H26V38z" fill="url(#lab-glow)" opacity="0.9"/>
+    <circle cx="48" cy="44" r="10" fill="#e8e4ff" opacity="0.6"/>
+    <path d="M44 34h8v12l6 6H38l6-6z" fill="#1f1b3c" opacity="0.4"/>
 </svg>

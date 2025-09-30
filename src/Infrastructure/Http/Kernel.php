@@ -11,7 +11,7 @@ use Throwable;
 class Kernel
 {
     public function __construct(
-        private readonly Router $router,
+        private readonly Router    $router,
         private readonly Container $container
     ) {
     }

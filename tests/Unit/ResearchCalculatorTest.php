@@ -14,25 +14,6 @@ class ResearchCalculatorTest extends TestCase
 
     private ResearchDefinition $definition;
 
-    protected function setUp(): void
-    {
-        $this->calculator = new ResearchCalculator(0.1);
-        $this->definition = new ResearchDefinition(
-            'hyperdrive',
-            'Propulsion hyperspatial',
-            'Propulsion',
-            'Accélère les déplacements interstellaires.',
-            ['metal' => 200, 'crystal' => 150, 'hydrogen' => 50],
-            120,
-            1.75,
-            1.6,
-            10,
-            ['propulsion_basic' => 3, 'weapon_light' => 2],
-            4,
-            '/assets/research/hyperdrive.png'
-        );
-    }
-
     public function testCheckRequirementsSatisfied(): void
     {
         $catalog = [
@@ -118,5 +99,24 @@ class ResearchCalculatorTest extends TestCase
 
         self::assertSame(0.75, $cappedCalculator->labSpeedBonus(5));
         self::assertSame(69, $cappedCalculator->nextTime($this->definition, 0, 5));
+    }
+
+    protected function setUp(): void
+    {
+        $this->calculator = new ResearchCalculator(0.1);
+        $this->definition = new ResearchDefinition(
+            'hyperdrive',
+            'Propulsion hyperspatial',
+            'Propulsion',
+            'Accélère les déplacements interstellaires.',
+            ['metal' => 200, 'crystal' => 150, 'hydrogen' => 50],
+            120,
+            1.75,
+            1.6,
+            10,
+            ['propulsion_basic' => 3, 'weapon_light' => 2],
+            4,
+            '/assets/research/hyperdrive.png'
+        );
     }
 }

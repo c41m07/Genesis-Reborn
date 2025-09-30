@@ -15,9 +15,9 @@ final class BalanceConfig
     private BalanceRoundingConfig $rounding;
 
     public function __construct(
-        float $minimumSpeedModifier = 0.01,
-        float $maximumDiscount = 0.95,
-        int $tickDurationSeconds = 3600,
+        float                  $minimumSpeedModifier = 0.01,
+        float                  $maximumDiscount = 0.95,
+        int                    $tickDurationSeconds = 3600,
         ?BalanceRoundingConfig $rounding = null,
     ) {
         $this->minimumSpeedModifier = max(0.0, $minimumSpeedModifier);

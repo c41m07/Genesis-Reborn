@@ -29,10 +29,10 @@ final class FleetBattleResultDTO
      * @param array<int, FleetBattleRoundDTO> $rounds
      */
     public function __construct(
-        string $winner,
-        array $attackerRemaining,
-        array $defenderRemaining,
-        array $rounds,
+        string                $winner,
+        array                 $attackerRemaining,
+        array                 $defenderRemaining,
+        array                 $rounds,
         private readonly bool $attackerRetreated,
         private readonly bool $defenderRetreated
     ) {
@@ -40,6 +40,60 @@ final class FleetBattleResultDTO
         $this->attackerRemaining = $this->sanitizeRemaining($attackerRemaining);
         $this->defenderRemaining = $this->sanitizeRemaining($defenderRemaining);
         $this->rounds = $this->sanitizeRounds($rounds);
+    }
+
+    private function sanitizeWinner(string $winner): string
+    {
+        $normalized = strtolower($winner);
+        $allowed = ['attacker', 'defender', 'draw'];
+
+        if (!in_array($normalized, $allowed, true)) {
+            return 'draw';
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<string, int|float> $values
+     *
+     * @return array<string, int>
+     */
+    private function sanitizeRemaining(array $values): array
+    {
+        $sanitized = [];
+
+        foreach ($values as $key => $value) {
+            $key = (string)$key;
+            $intValue = (int)$value;
+            if ($intValue < 0) {
+                $intValue = 0;
+            }
+
+            $sanitized[$key] = $intValue;
+        }
+
+        ksort($sanitized);
+
+        return $sanitized;
+    }
+
+    /**
+     * @param array<int, mixed> $rounds
+     *
+     * @return list<FleetBattleRoundDTO>
+     */
+    private function sanitizeRounds(array $rounds): array
+    {
+        $sanitized = [];
+
+        foreach ($rounds as $round) {
+            if ($round instanceof FleetBattleRoundDTO) {
+                $sanitized[] = $round;
+            }
+        }
+
+        return $sanitized;
     }
 
     public function getWinner(): string
@@ -84,59 +138,5 @@ final class FleetBattleResultDTO
     public function didDefenderRetreat(): bool
     {
         return $this->defenderRetreated;
-    }
-
-    private function sanitizeWinner(string $winner): string
-    {
-        $normalized = strtolower($winner);
-        $allowed = ['attacker', 'defender', 'draw'];
-
-        if (!in_array($normalized, $allowed, true)) {
-            return 'draw';
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * @param array<string, int|float> $values
-     *
-     * @return array<string, int>
-     */
-    private function sanitizeRemaining(array $values): array
-    {
-        $sanitized = [];
-
-        foreach ($values as $key => $value) {
-            $key = (string) $key;
-            $intValue = (int) $value;
-            if ($intValue < 0) {
-                $intValue = 0;
-            }
-
-            $sanitized[$key] = $intValue;
-        }
-
-        ksort($sanitized);
-
-        return $sanitized;
-    }
-
-    /**
-     * @param array<int, mixed> $rounds
-     *
-     * @return list<FleetBattleRoundDTO>
-     */
-    private function sanitizeRounds(array $rounds): array
-    {
-        $sanitized = [];
-
-        foreach ($rounds as $round) {
-            if ($round instanceof FleetBattleRoundDTO) {
-                $sanitized[] = $round;
-            }
-        }
-
-        return $sanitized;
     }
 }

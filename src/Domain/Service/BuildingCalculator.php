@@ -19,7 +19,7 @@ class BuildingCalculator
     {
         $costs = [];
         foreach ($definition->getBaseCost() as $resource => $baseCost) {
-            $costs[$resource] = (int) round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
+            $costs[$resource] = (int)round($baseCost * pow($definition->getGrowthCost(), $currentLevel));
         }
 
         return $costs;
@@ -33,239 +33,7 @@ class BuildingCalculator
         $baseTime = $definition->getBaseTime() * pow($definition->getGrowthTime(), $currentLevel);
         $modifier = $this->constructionTimeModifier($buildingLevels);
 
-        return (int) max(1, round($baseTime * $modifier));
-    }
-
-    public function productionAt(BuildingDefinition $definition, int $level): int
-    {
-        if ($level <= 0) {
-            return 0;
-        }
-
-        return (int) round($definition->getProductionBase() * pow($definition->getProductionGrowth(), $level - 1));
-    }
-
-    public function energyUseAt(BuildingDefinition $definition, int $level): int
-    {
-        if ($level <= 0) {
-            return 0;
-        }
-
-        $base = $definition->getEnergyUseBase();
-        $growth = $definition->getEnergyUseGrowth();
-        $value = $base * pow($growth, $level);
-
-        if ($definition->isEnergyUseLinear()) {
-            $value *= $level;
-        }
-
-        return (int) round($value);
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    public function storageAt(BuildingDefinition $definition, int $level): array
-    {
-        $storage = [];
-        if ($level <= 0) {
-            return $storage;
-        }
-
-        foreach ($definition->getStorageConfig() as $resource => $config) {
-            $base = (float) ($config['base'] ?? 0);
-            $growth = (float) ($config['growth'] ?? 1.0);
-            if ($base <= 0) {
-                continue;
-            }
-
-            $storage[$resource] = (int) round($base * pow($growth, $level - 1));
-        }
-
-        return $storage;
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    public function upkeepAt(BuildingDefinition $definition, int $level): array
-    {
-        $upkeep = [];
-        if ($level <= 0) {
-            return $upkeep;
-        }
-
-        foreach ($definition->getUpkeepConfig() as $resource => $config) {
-            $base = (float) ($config['base'] ?? 0.0);
-            if ($base <= 0.0) {
-                continue;
-            }
-
-            $growth = (float) ($config['growth'] ?? 1.0);
-            $value = $base * pow($growth, max(0, $level - 1));
-
-            if (!empty($config['linear'])) {
-                $value *= $level;
-            }
-
-            $upkeep[$resource] = (int) round($value);
-        }
-
-        return $upkeep;
-    }
-
-    public function shipBuildSpeedBonus(BuildingDefinition $definition, int $level): float
-    {
-        if ($level <= 0) {
-            return 0.0;
-        }
-
-        $config = $definition->getShipBuildSpeedBonusConfig();
-        if ($config === []) {
-            return 0.0;
-        }
-
-        $base = (float) ($config['base'] ?? 0.0);
-        if ($base <= 0.0) {
-            return 0.0;
-        }
-
-        $bonus = $base;
-        $growth = (float) ($config['growth'] ?? 1.0);
-        if ($level > 1 && $growth !== 1.0) {
-            $bonus *= pow($growth, $level - 1);
-        }
-
-        if (!empty($config['linear'])) {
-            $bonus *= $level;
-        }
-
-        if (isset($config['max'])) {
-            $max = (float) $config['max'];
-            if ($max > 0.0) {
-                $bonus = min($bonus, $max);
-            }
-        }
-
-        return max(0.0, $bonus);
-    }
-
-    public function applyShipBuildSpeedBonus(BuildingDefinition $definition, int $level, int $baseTime): int
-    {
-        if ($baseTime <= 0) {
-            return 1;
-        }
-
-        $bonus = $this->shipBuildSpeedBonus($definition, $level);
-        if ($bonus <= 0.0) {
-            return max(1, $baseTime);
-        }
-
-        $modifier = 1.0 + $bonus;
-        if ($modifier <= 0.0) {
-            return max(1, $baseTime);
-        }
-
-        $time = (int) floor($baseTime / $modifier);
-
-        return max(1, $time);
-    }
-
-    /**
-     * @return array<string, int>
-     */
-    public function cumulativeCost(BuildingDefinition $definition, int $targetLevel): array
-    {
-        $totals = [];
-        if ($targetLevel <= 0) {
-            return $totals;
-        }
-
-        foreach ($definition->getBaseCost() as $resource => $base) {
-            $sum = 0.0;
-            for ($i = 0; $i < $targetLevel; $i++) {
-                $sum += $base * pow($definition->getGrowthCost(), $i);
-            }
-            $totals[$resource] = (int) round($sum);
-        }
-
-        return $totals;
-    }
-
-    /**
-     * @param array<string, int> $buildingLevels
-     * @param array<string, int> $researchLevels
-     * @param array<string, array{label: string}> $researchCatalog
-     *
-     * @return array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}
-     */
-    public function checkRequirements(
-        BuildingDefinition $definition,
-        array $buildingLevels,
-        array $researchLevels,
-        array $researchCatalog = []
-    ): array {
-        $requirements = $definition->getRequirements();
-        $missing = [];
-
-        foreach ($requirements['buildings'] ?? [] as $key => $requiredLevel) {
-            $currentLevel = (int) ($buildingLevels[$key] ?? 0);
-            if ($currentLevel < $requiredLevel) {
-                $missing[] = [
-                    'type' => 'building',
-                    'key' => $key,
-                    'label' => $key,
-                    'level' => (int) $requiredLevel,
-                    'current' => $currentLevel,
-                ];
-            }
-        }
-
-        foreach ($requirements['research'] ?? [] as $key => $requiredLevel) {
-            $currentLevel = (int) ($researchLevels[$key] ?? 0);
-            $missing[] = $currentLevel < $requiredLevel ? [
-                'type' => 'research',
-                'key' => $key,
-                'label' => $researchCatalog[$key]['label'] ?? $key,
-                'level' => (int) $requiredLevel,
-                'current' => $currentLevel,
-            ] : null;
-        }
-
-        $missing = array_values(array_filter($missing));
-
-        return [
-            'ok' => empty($missing),
-            'missing' => $missing,
-        ];
-    }
-
-    public function constructionSpeedBonusAt(BuildingDefinition $definition, int $level): float
-    {
-        if ($level <= 0) {
-            return 0.0;
-        }
-
-        $config = $definition->getConstructionSpeedBonusConfig();
-        if ($config === []) {
-            return 0.0;
-        }
-
-        return $this->calculateCappedBonus($config, $level);
-    }
-
-    public function researchSpeedBonusAt(BuildingDefinition $definition, int $level): float
-    {
-        if ($level <= 0) {
-            return 0.0;
-        }
-
-        $config = $definition->getResearchSpeedBonusConfig();
-        if ($config === []) {
-            return 0.0;
-        }
-
-        return $this->calculateCappedBonus($config, $level);
+        return (int)max(1, round($baseTime * $modifier));
     }
 
     /**
@@ -296,6 +64,20 @@ class BuildingCalculator
         return max(0.01, $modifier);
     }
 
+    public function constructionSpeedBonusAt(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getConstructionSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        return $this->calculateCappedBonus($config, $level);
+    }
+
     /**
      * @param array<string, mixed> $config
      */
@@ -307,14 +89,14 @@ class BuildingCalculator
         }
 
         $bonus = 0.0;
-        $perLevel = (float) ($config['per_level'] ?? 0.0);
+        $perLevel = (float)($config['per_level'] ?? 0.0);
 
         if ($perLevel > 0.0) {
             $bonus = $perLevel * $level;
         } else {
-            $base = (float) ($config['base'] ?? 0.0);
-            $growth = (float) ($config['growth'] ?? 1.0);
-            $linear = (bool) ($config['linear'] ?? false);
+            $base = (float)($config['base'] ?? 0.0);
+            $growth = (float)($config['growth'] ?? 1.0);
+            $linear = (bool)($config['linear'] ?? false);
 
             if ($linear) {
                 for ($i = 1; $i <= $level; $i++) {
@@ -325,9 +107,227 @@ class BuildingCalculator
             }
         }
 
-        $max = array_key_exists('max', $config) ? (float) $config['max'] : 0.95;
+        $max = array_key_exists('max', $config) ? (float)$config['max'] : 0.95;
         $max = max(0.0, min($max, 0.95));
 
         return max(0.0, min($bonus, $max));
+    }
+
+    public function productionAt(BuildingDefinition $definition, int $level): int
+    {
+        if ($level <= 0) {
+            return 0;
+        }
+
+        return (int)round($definition->getProductionBase() * pow($definition->getProductionGrowth(), $level - 1));
+    }
+
+    public function energyUseAt(BuildingDefinition $definition, int $level): int
+    {
+        if ($level <= 0) {
+            return 0;
+        }
+
+        $base = $definition->getEnergyUseBase();
+        $growth = $definition->getEnergyUseGrowth();
+        $value = $base * pow($growth, $level);
+
+        if ($definition->isEnergyUseLinear()) {
+            $value *= $level;
+        }
+
+        return (int)round($value);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function storageAt(BuildingDefinition $definition, int $level): array
+    {
+        $storage = [];
+        if ($level <= 0) {
+            return $storage;
+        }
+
+        foreach ($definition->getStorageConfig() as $resource => $config) {
+            $base = (float)($config['base'] ?? 0);
+            $growth = (float)($config['growth'] ?? 1.0);
+            if ($base <= 0) {
+                continue;
+            }
+
+            $storage[$resource] = (int)round($base * pow($growth, $level - 1));
+        }
+
+        return $storage;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function upkeepAt(BuildingDefinition $definition, int $level): array
+    {
+        $upkeep = [];
+        if ($level <= 0) {
+            return $upkeep;
+        }
+
+        foreach ($definition->getUpkeepConfig() as $resource => $config) {
+            $base = (float)($config['base'] ?? 0.0);
+            if ($base <= 0.0) {
+                continue;
+            }
+
+            $growth = (float)($config['growth'] ?? 1.0);
+            $value = $base * pow($growth, max(0, $level - 1));
+
+            if (!empty($config['linear'])) {
+                $value *= $level;
+            }
+
+            $upkeep[$resource] = (int)round($value);
+        }
+
+        return $upkeep;
+    }
+
+    public function applyShipBuildSpeedBonus(BuildingDefinition $definition, int $level, int $baseTime): int
+    {
+        if ($baseTime <= 0) {
+            return 1;
+        }
+
+        $bonus = $this->shipBuildSpeedBonus($definition, $level);
+        if ($bonus <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $modifier = 1.0 + $bonus;
+        if ($modifier <= 0.0) {
+            return max(1, $baseTime);
+        }
+
+        $time = (int)floor($baseTime / $modifier);
+
+        return max(1, $time);
+    }
+
+    public function shipBuildSpeedBonus(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getShipBuildSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        $base = (float)($config['base'] ?? 0.0);
+        if ($base <= 0.0) {
+            return 0.0;
+        }
+
+        $bonus = $base;
+        $growth = (float)($config['growth'] ?? 1.0);
+        if ($level > 1 && $growth !== 1.0) {
+            $bonus *= pow($growth, $level - 1);
+        }
+
+        if (!empty($config['linear'])) {
+            $bonus *= $level;
+        }
+
+        if (isset($config['max'])) {
+            $max = (float)$config['max'];
+            if ($max > 0.0) {
+                $bonus = min($bonus, $max);
+            }
+        }
+
+        return max(0.0, $bonus);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function cumulativeCost(BuildingDefinition $definition, int $targetLevel): array
+    {
+        $totals = [];
+        if ($targetLevel <= 0) {
+            return $totals;
+        }
+
+        foreach ($definition->getBaseCost() as $resource => $base) {
+            $sum = 0.0;
+            for ($i = 0; $i < $targetLevel; $i++) {
+                $sum += $base * pow($definition->getGrowthCost(), $i);
+            }
+            $totals[$resource] = (int)round($sum);
+        }
+
+        return $totals;
+    }
+
+    /**
+     * @param array<string, int> $buildingLevels
+     * @param array<string, int> $researchLevels
+     * @param array<string, array{label: string}> $researchCatalog
+     *
+     * @return array{ok: bool, missing: array<int, array{type: string, key: string, label: string, level: int, current: int}>}
+     */
+    public function checkRequirements(
+        BuildingDefinition $definition,
+        array              $buildingLevels,
+        array              $researchLevels,
+        array              $researchCatalog = []
+    ): array {
+        $requirements = $definition->getRequirements();
+        $missing = [];
+
+        foreach ($requirements['buildings'] ?? [] as $key => $requiredLevel) {
+            $currentLevel = (int)($buildingLevels[$key] ?? 0);
+            if ($currentLevel < $requiredLevel) {
+                $missing[] = [
+                    'type' => 'building',
+                    'key' => $key,
+                    'label' => $key,
+                    'level' => (int)$requiredLevel,
+                    'current' => $currentLevel,
+                ];
+            }
+        }
+
+        foreach ($requirements['research'] ?? [] as $key => $requiredLevel) {
+            $currentLevel = (int)($researchLevels[$key] ?? 0);
+            $missing[] = $currentLevel < $requiredLevel ? [
+                'type' => 'research',
+                'key' => $key,
+                'label' => $researchCatalog[$key]['label'] ?? $key,
+                'level' => (int)$requiredLevel,
+                'current' => $currentLevel,
+            ] : null;
+        }
+
+        $missing = array_values(array_filter($missing));
+
+        return [
+            'ok' => empty($missing),
+            'missing' => $missing,
+        ];
+    }
+
+    public function researchSpeedBonusAt(BuildingDefinition $definition, int $level): float
+    {
+        if ($level <= 0) {
+            return 0.0;
+        }
+
+        $config = $definition->getResearchSpeedBonusConfig();
+        if ($config === []) {
+            return 0.0;
+        }
+
+        return $this->calculateCappedBonus($config, $level);
     }
 }

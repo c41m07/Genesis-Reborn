@@ -24,21 +24,21 @@ use InvalidArgumentException;
 class GetDashboard
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly BuildQueueRepositoryInterface $buildQueue,
-        private readonly ResearchQueueRepositoryInterface $researchQueue,
+        private readonly PlanetRepositoryInterface         $planets,
+        private readonly BuildingStateRepositoryInterface  $buildingStates,
+        private readonly BuildQueueRepositoryInterface     $buildQueue,
+        private readonly ResearchQueueRepositoryInterface  $researchQueue,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly PlayerStatsRepositoryInterface $playerStats,
-        private readonly ResearchStateRepositoryInterface $researchStates,
-        private readonly FleetRepositoryInterface $fleets,
-        private readonly BuildingCatalog $catalog,
-        private readonly ResearchCatalog $researchCatalog,
-        private readonly ShipCatalog $shipCatalog,
-        private readonly BuildingCalculator $calculator,
-        private readonly ProcessBuildQueue $processBuildQueue,
-        private readonly ProcessResearchQueue $processResearchQueue,
-        private readonly ProcessShipBuildQueue $processShipQueue
+        private readonly PlayerStatsRepositoryInterface    $playerStats,
+        private readonly ResearchStateRepositoryInterface  $researchStates,
+        private readonly FleetRepositoryInterface          $fleets,
+        private readonly BuildingCatalog                   $catalog,
+        private readonly ResearchCatalog                   $researchCatalog,
+        private readonly ShipCatalog                       $shipCatalog,
+        private readonly BuildingCalculator                $calculator,
+        private readonly ProcessBuildQueue                 $processBuildQueue,
+        private readonly ProcessResearchQueue              $processResearchQueue,
+        private readonly ProcessShipBuildQueue             $processShipQueue
     ) {
     }
 
@@ -154,11 +154,11 @@ class GetDashboard
                 $stats = $shipDefinition->getStats();
                 $attack = $stats['attaque'] ?? 0;
                 $defense = $stats['défense'] ?? 0;
-                $fleetPower += ($attack + $defense) * (int) $quantity;
+                $fleetPower += ($attack + $defense) * (int)$quantity;
                 $fleetView[] = [
                     'key' => $shipKey,
                     'label' => $shipDefinition->getLabel(),
-                    'quantity' => (int) $quantity,
+                    'quantity' => (int)$quantity,
                 ];
             }
             usort($fleetView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
@@ -187,7 +187,7 @@ class GetDashboard
         }
 
         $scienceSpent = $this->playerStats->getScienceSpending($userId);
-        $sciencePower = (int) floor($scienceSpent / 1000);
+        $sciencePower = (int)floor($scienceSpent / 1000);
 
         $empireScore = $buildingPoints + $sciencePoints + $militaryPower;
 

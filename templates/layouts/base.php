@@ -47,36 +47,36 @@ $resourcePlanetId = $currentPlanetId ?? 0;
 
 $facilityStatuses = $facilityStatuses ?? [];
 $menuCategories = [
-    [
-        'label' => 'Empire',
-        'items' => [
-            'dashboard' => ['label' => 'Vue impériale', 'path' => '/dashboard', 'icon' => 'overview'],
+        [
+                'label' => 'Empire',
+                'items' => [
+                        'dashboard' => ['label' => 'Vue impériale', 'path' => '/dashboard', 'icon' => 'overview'],
+                ],
         ],
-    ],
-    [
-        'label' => 'Planètes',
-        'items' => [
-            'colony' => ['label' => 'Bâtiments', 'path' => '/colony', 'icon' => 'planet'],
-            'research' => ['label' => 'Labo de recherche', 'path' => '/research', 'icon' => 'research'],
-            'shipyard' => ['label' => 'Chantier spatial', 'path' => '/shipyard', 'icon' => 'shipyard'],
+        [
+                'label' => 'Planètes',
+                'items' => [
+                        'colony' => ['label' => 'Bâtiments', 'path' => '/colony', 'icon' => 'planet'],
+                        'research' => ['label' => 'Labo de recherche', 'path' => '/research', 'icon' => 'research'],
+                        'shipyard' => ['label' => 'Chantier spatial', 'path' => '/shipyard', 'icon' => 'shipyard'],
+                ],
         ],
-    ],
-    [
-        'label' => 'Gestion planétaire',
-        'items' => [
-            'fleet' => ['label' => 'Flotte', 'path' => '/fleet', 'icon' => 'shipyard'],
+        [
+                'label' => 'Gestion planétaire',
+                'items' => [
+                        'fleet' => ['label' => 'Flotte', 'path' => '/fleet', 'icon' => 'shipyard'],
+                ],
         ],
-    ],
-    [
-        'label' => 'Autre',
-        'items' => [
-            'galaxy' => ['label' => 'Carte galaxie', 'path' => '/galaxy', 'icon' => 'planet'],
-            'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
-            'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
-            'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
-            'changelog' => ['label' => 'Changelog', 'path' => '/changelog', 'icon' => 'tech'],
+        [
+                'label' => 'Autre',
+                'items' => [
+                        'galaxy' => ['label' => 'Carte galaxie', 'path' => '/galaxy', 'icon' => 'planet'],
+                        'tech-tree' => ['label' => 'Arbre techno', 'path' => '/tech-tree', 'icon' => 'tech'],
+                        'journal' => ['label' => 'Journal', 'path' => '/journal', 'icon' => 'tech'],
+                        'profile' => ['label' => 'Profil', 'path' => '/profile', 'icon' => 'overview'],
+                        'changelog' => ['label' => 'Changelog', 'path' => '/changelog', 'icon' => 'tech'],
+                ],
         ],
-    ],
 ];
 $menuLookup = [];
 foreach ($menuCategories as $category) {
@@ -96,7 +96,8 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <a class="brand" href="<?= htmlspecialchars($assetBase) ?>/dashboard">Genesis Reborn</a>
                         <span class="brand__tagline">Nouvelle ère galactique</span>
                     </div>
-                    <button class="sidebar__close" type="button" aria-label="Fermer la navigation" data-sidebar-close></button>
+                    <button class="sidebar__close" type="button" aria-label="Fermer la navigation"
+                            data-sidebar-close></button>
                 </div>
                 <?php foreach ($menuCategories as $section): ?>
                     <nav class="sidebar__section" aria-label="<?= htmlspecialchars($section['label']) ?>">
@@ -126,17 +127,17 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                     }
                                 }
                                 ?>
-                                <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
-                                    <<?= $tag . $linkAttributes ?>>
-                                        <svg class="icon icon-sm" aria-hidden="true">
-                                            <use href="<?= htmlspecialchars($spriteIcon($item['icon']), ENT_QUOTES) ?>"></use>
-                                        </svg>
-                                        <span><?= htmlspecialchars($item['label']) ?></span>
-                                        <?php if ($isLocked): ?>
-                                            <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
-                                            <span class="visually-hidden"> (installation indisponible)</span>
-                                        <?php endif; ?>
-                                    </<?= $tag ?>>
+                            <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
+                                <<?= $tag . $linkAttributes ?>>
+                                <svg class="icon icon-sm" aria-hidden="true">
+                                    <use href="<?= htmlspecialchars($spriteIcon($item['icon']), ENT_QUOTES) ?>"></use>
+                                </svg>
+                                <span><?= htmlspecialchars($item['label']) ?></span>
+                                <?php if ($isLocked): ?>
+                                    <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
+                                    <span class="visually-hidden"> (installation indisponible)</span>
+                                <?php endif; ?>
+                                </<?= $tag ?>>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -147,10 +148,11 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
         <div class="sidebar-overlay" data-sidebar-overlay></div>
     <?php endif; ?>
     <div class="workspace">
-        <header class="topbar <?= $isAuthenticated ? '' : 'topbar--guest' ?>"<?= $isAuthenticated ? ' data-resource-endpoint="' . htmlspecialchars($resourceEndpoint) . '" data-planet-id="' . (int) $resourcePlanetId . '" data-resource-poll="15000"' : '' ?>>
+        <header class="topbar <?= $isAuthenticated ? '' : 'topbar--guest' ?>"<?= $isAuthenticated ? ' data-resource-endpoint="' . htmlspecialchars($resourceEndpoint) . '" data-planet-id="' . (int)$resourcePlanetId . '" data-resource-poll="15000"' : '' ?>>
             <?php if ($isAuthenticated): ?>
                 <div class="topbar__primary">
-                    <button class="topbar__menu" type="button" aria-label="Ouvrir la navigation" data-sidebar-toggle aria-controls="primary-sidebar" aria-expanded="false">
+                    <button class="topbar__menu" type="button" aria-label="Ouvrir la navigation" data-sidebar-toggle
+                            aria-controls="primary-sidebar" aria-expanded="false">
                         <span class="topbar__menu-icon" aria-hidden="true"></span>
                     </button>
                     <div class="topbar__planet">
@@ -158,7 +160,8 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <h1 class="topbar__title"><?= htmlspecialchars($activePlanetName) ?></h1>
                     </div>
                     <?php if (!empty($planets)): ?>
-                        <form class="topbar__selector" method="get" action="<?= htmlspecialchars($assetBase . $currentSectionPath) ?>">
+                        <form class="topbar__selector" method="get"
+                              action="<?= htmlspecialchars($assetBase . $currentSectionPath) ?>">
                             <label class="visually-hidden" for="topbar-planet-select">Changer de planète</label>
                             <select id="topbar-planet-select" name="planet" data-auto-submit>
                                 <?php foreach ($planets as $planetOption): ?>
@@ -172,9 +175,9 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                     <?php foreach (['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'] as $key => $label): ?>
                         <?php
                         $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0, 'capacity' => 0];
-                        $value = max(0, (int) ($data['value'] ?? 0));
-                        $capacityValue = max(0, (int) ($data['capacity'] ?? 0));
-                        $perHourValue = (int) ($data['perHour'] ?? 0);
+                        $value = max(0, (int)($data['value'] ?? 0));
+                        $capacityValue = max(0, (int)($data['capacity'] ?? 0));
+                        $perHourValue = (int)($data['perHour'] ?? 0);
                         $rateNumber = format_number($perHourValue);
                         $ratePrefix = ($key !== 'energy' && $perHourValue > 0) ? '+' : '';
                         $rateDisplay = $ratePrefix . $rateNumber . '/h';
@@ -182,7 +185,9 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         $capacityDisplay = $capacityValue > 0 ? format_number($capacityValue) : '—';
                         $meterClasses = 'resource-meter' . (($value <= 0 && $perHourValue < 0) ? ' resource-meter--warning' : '');
                         ?>
-                        <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>" data-resource="<?= htmlspecialchars($key) ?>" data-resource-capacity="<?= $capacityValue ?>">
+                        <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>"
+                             data-resource="<?= htmlspecialchars($key) ?>"
+                             data-resource-capacity="<?= $capacityValue ?>">
                             <div class="resource-meter__icon">
                                 <svg class="icon icon-sm" aria-hidden="true">
                                     <use href="<?= htmlspecialchars($spriteIcon($key), ENT_QUOTES) ?>"></use>
@@ -192,10 +197,13 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
                                 <div class="resource-meter__values">
                                     <div class="resource-meter__primary">
-                                        <span class="resource-meter__value" data-resource-value><?= format_number($value) ?></span>
-                                        <span class="resource-meter__rate <?= $rateClass ?>" data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
+                                        <span class="resource-meter__value"
+                                              data-resource-value><?= format_number($value) ?></span>
+                                        <span class="resource-meter__rate <?= $rateClass ?>"
+                                              data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                     </div>
-                                    <span class="resource-meter__capacity" data-resource-capacity-display>/ <?= htmlspecialchars($capacityDisplay) ?></span>
+                                    <span class="resource-meter__capacity"
+                                          data-resource-capacity-display>/ <?= htmlspecialchars($capacityDisplay) ?></span>
                                 </div>
                             </div>
                         </div>

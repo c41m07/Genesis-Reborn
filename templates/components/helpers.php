@@ -34,7 +34,7 @@ if (!function_exists('format_number')) {
         if (!is_numeric($value)) {
             $number = 0.0;
         } else {
-            $number = (float) $value;
+            $number = (float)$value;
         }
 
         $absValue = abs($number);
@@ -49,7 +49,7 @@ if (!function_exists('format_number')) {
         foreach ($thresholds as $limit => $symbol) {
             if ($absValue >= $limit) {
                 $suffix = $symbol;
-                $divisor = (float) $limit;
+                $divisor = (float)$limit;
 
                 break;
             }

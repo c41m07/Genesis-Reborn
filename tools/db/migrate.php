@@ -14,10 +14,10 @@ if (is_file($envPath . '/.env')) {
 
 $parameters = require $envPath . '/config/parameters.php';
 
-$host = (string) ($parameters['db.host'] ?? '127.0.0.1');
-$port = (int) ($parameters['db.port'] ?? 3306);
-$dbName = (string) ($parameters['db.name'] ?? 'genesis_reborn');
-$user = (string) ($parameters['db.user'] ?? 'root');
+$host = (string)($parameters['db.host'] ?? '127.0.0.1');
+$port = (int)($parameters['db.port'] ?? 3306);
+$dbName = (string)($parameters['db.name'] ?? 'genesis_reborn');
+$user = (string)($parameters['db.user'] ?? 'root');
 $password = $parameters['db.pass'] ?? null;
 
 $dsn = sprintf('mysql:host=%s;port=%d;charset=utf8mb4', $host, $port);

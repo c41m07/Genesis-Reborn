@@ -32,6 +32,6 @@ class PdoPlayerStatsRepository implements PlayerStatsRepositoryInterface
         $stmt->execute(['id' => $playerId]);
         $value = $stmt->fetchColumn();
 
-        return $value !== false ? (int) $value : 0;
+        return $value !== false ? (int)$value : 0;
     }
 }

@@ -32,13 +32,35 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
         return $planets;
     }
 
-    public function find(int $id): ?Planet
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function hydrate(array $data): Planet
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE id = :id');
-        $stmt->execute(['id' => $id]);
-        $row = $stmt->fetch();
-
-        return $row ? $this->hydrate($row) : null;
+        return new Planet(
+            (int)$data['id'],
+            (int)$data['player_id'],
+            (int)($data['galaxy'] ?? 0),
+            (int)($data['system'] ?? 0),
+            (int)($data['position'] ?? 0),
+            $data['name'],
+            (int)($data['diameter'] ?? 0),
+            (int)($data['temperature_min'] ?? 0),
+            (int)($data['temperature_max'] ?? 0),
+            (int)$data['metal'],
+            (int)$data['crystal'],
+            (int)$data['hydrogen'],
+            (int)$data['energy'],
+            (int)($data['prod_metal_per_hour'] ?? 0),
+            (int)($data['prod_crystal_per_hour'] ?? 0),
+            (int)($data['prod_hydrogen_per_hour'] ?? 0),
+            (int)($data['prod_energy_per_hour'] ?? 0),
+            (int)($data['metal_capacity'] ?? 0),
+            (int)($data['crystal_capacity'] ?? 0),
+            (int)($data['hydrogen_capacity'] ?? 0),
+            (int)($data['energy_capacity'] ?? 0),
+            isset($data['last_resource_tick']) ? new DateTimeImmutable($data['last_resource_tick']) : null
+        );
     }
 
     /** @return Planet[] */
@@ -134,7 +156,7 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
                         'now' => $now->format('Y-m-d H:i:s'),
                     ]);
 
-                    $planetId = (int) $this->pdo->lastInsertId();
+                    $planetId = (int)$this->pdo->lastInsertId();
                     break;
                 } catch (PDOException $exception) {
                     if (isset($exception->errorInfo[1]) && $exception->errorInfo[1] === 1062) {
@@ -165,6 +187,42 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             $this->pdo->rollBack();
             throw $exception;
         }
+    }
+
+    private function randomizeValue(int $base, float $variation): int
+    {
+        if ($variation <= 0.0 || $base === 0) {
+            return $base;
+        }
+
+        $variation = max(0.0, $variation);
+        $minMultiplier = 1.0 - $variation;
+        $maxMultiplier = 1.0 + $variation;
+
+        if ($minMultiplier > $maxMultiplier) {
+            [$minMultiplier, $maxMultiplier] = [$maxMultiplier, $minMultiplier];
+        }
+
+        $scale = 1000;
+        $min = (int)round($minMultiplier * $scale);
+        $max = (int)round($maxMultiplier * $scale);
+
+        if ($min === $max) {
+            return (int)round($base * $min / $scale);
+        }
+
+        $multiplier = random_int($min, $max) / $scale;
+
+        return (int)round($base * $multiplier);
+    }
+
+    public function find(int $id): ?Planet
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM planets WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+
+        return $row ? $this->hydrate($row) : null;
     }
 
     public function update(Planet $planet): void
@@ -200,63 +258,5 @@ class PdoPlanetRepository implements PlanetRepositoryInterface
             'name' => $name,
             'id' => $planetId,
         ]);
-    }
-
-    /**
-     * @param array<string, mixed> $data
-     */
-    private function hydrate(array $data): Planet
-    {
-        return new Planet(
-            (int) $data['id'],
-            (int) $data['player_id'],
-            (int) ($data['galaxy'] ?? 0),
-            (int) ($data['system'] ?? 0),
-            (int) ($data['position'] ?? 0),
-            $data['name'],
-            (int) ($data['diameter'] ?? 0),
-            (int) ($data['temperature_min'] ?? 0),
-            (int) ($data['temperature_max'] ?? 0),
-            (int) $data['metal'],
-            (int) $data['crystal'],
-            (int) $data['hydrogen'],
-            (int) $data['energy'],
-            (int) ($data['prod_metal_per_hour'] ?? 0),
-            (int) ($data['prod_crystal_per_hour'] ?? 0),
-            (int) ($data['prod_hydrogen_per_hour'] ?? 0),
-            (int) ($data['prod_energy_per_hour'] ?? 0),
-            (int) ($data['metal_capacity'] ?? 0),
-            (int) ($data['crystal_capacity'] ?? 0),
-            (int) ($data['hydrogen_capacity'] ?? 0),
-            (int) ($data['energy_capacity'] ?? 0),
-            isset($data['last_resource_tick']) ? new DateTimeImmutable($data['last_resource_tick']) : null
-        );
-    }
-
-    private function randomizeValue(int $base, float $variation): int
-    {
-        if ($variation <= 0.0 || $base === 0) {
-            return $base;
-        }
-
-        $variation = max(0.0, $variation);
-        $minMultiplier = 1.0 - $variation;
-        $maxMultiplier = 1.0 + $variation;
-
-        if ($minMultiplier > $maxMultiplier) {
-            [$minMultiplier, $maxMultiplier] = [$maxMultiplier, $minMultiplier];
-        }
-
-        $scale = 1000;
-        $min = (int) round($minMultiplier * $scale);
-        $max = (int) round($maxMultiplier * $scale);
-
-        if ($min === $max) {
-            return (int) round($base * $min / $scale);
-        }
-
-        $multiplier = random_int($min, $max) / $scale;
-
-        return (int) round($base * $multiplier);
     }
 }

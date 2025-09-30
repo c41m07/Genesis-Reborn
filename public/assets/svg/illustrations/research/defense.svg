@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <defs>
-    <linearGradient id="def-bg" x1="12%" y1="12%" x2="88%" y2="88%">
-      <stop offset="0" stop-color="#27365f"/>
-      <stop offset="1" stop-color="#101829"/>
-    </linearGradient>
-    <linearGradient id="def-shield" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0" stop-color="#8de4ff"/>
-      <stop offset="1" stop-color="#3a98ff"/>
-    </linearGradient>
-  </defs>
-  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#def-bg)"/>
-  <path d="M48 24 66 32v14c0 14-8.5 22.5-18 26-9.5-3.5-18-12-18-26V32z" fill="url(#def-shield)"/>
-  <path d="M48 32 60 36v10c0 9-4.8 14.6-12 17.7C40 60.6 36 55 36 46V36z" fill="#10263b" opacity="0.55"/>
+    <defs>
+        <linearGradient id="def-bg" x1="12%" y1="12%" x2="88%" y2="88%">
+            <stop offset="0" stop-color="#27365f"/>
+            <stop offset="1" stop-color="#101829"/>
+        </linearGradient>
+        <linearGradient id="def-shield" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0" stop-color="#8de4ff"/>
+            <stop offset="1" stop-color="#3a98ff"/>
+        </linearGradient>
+    </defs>
+    <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#def-bg)"/>
+    <path d="M48 24 66 32v14c0 14-8.5 22.5-18 26-9.5-3.5-18-12-18-26V32z" fill="url(#def-shield)"/>
+    <path d="M48 32 60 36v10c0 9-4.8 14.6-12 17.7C40 60.6 36 55 36 46V36z" fill="#10263b" opacity="0.55"/>
 </svg>

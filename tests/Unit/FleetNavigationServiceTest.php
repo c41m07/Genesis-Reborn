@@ -35,11 +35,11 @@ class FleetNavigationServiceTest extends TestCase
         );
 
         $expectedDistance = 5 * 95 + 4 * 5 + 10; // system diff + position diff + base
-        $expectedSpeed = (int) round(8000 * (1 + 0.1));
-        $expectedTravelSeconds = (int) ceil($expectedDistance / $expectedSpeed * 3600);
+        $expectedSpeed = (int)round(8000 * (1 + 0.1));
+        $expectedTravelSeconds = (int)ceil($expectedDistance / $expectedSpeed * 3600);
         $expectedArrival = $departure->add(new DateInterval('PT' . $expectedTravelSeconds . 'S'));
         $rawFuel = (0.5 * $expectedDistance * 10) + (0.4 * $expectedDistance * 5);
-        $expectedFuel = (int) ceil($rawFuel * 0.9);
+        $expectedFuel = (int)ceil($rawFuel * 0.9);
 
         self::assertSame($expectedDistance, $result['distance']);
         self::assertSame($expectedSpeed, $result['speed']);

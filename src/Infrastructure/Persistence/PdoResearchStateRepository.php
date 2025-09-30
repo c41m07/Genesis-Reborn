@@ -24,7 +24,7 @@ class PdoResearchStateRepository implements ResearchStateRepositoryInterface
         $levels = [];
 
         while ($row = $stmt->fetch()) {
-            $levels[$row['rkey']] = (int) $row['level'];
+            $levels[$row['rkey']] = (int)$row['level'];
         }
 
         return $levels;

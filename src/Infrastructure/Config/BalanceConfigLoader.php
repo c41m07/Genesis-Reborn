@@ -62,6 +62,30 @@ final class BalanceConfigLoader
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function parseFile(string $filename): array
+    {
+        $path = $this->configDir . '/' . ltrim($filename, '/');
+
+        if (!is_file($path)) {
+            throw new RuntimeException(sprintf('Balance configuration file "%s" not found.', $path));
+        }
+
+        try {
+            $parsed = Yaml::parseFile($path);
+        } catch (ParseException $exception) {
+            throw new RuntimeException(sprintf('Unable to parse balance configuration file "%s".', $path), 0, $exception);
+        }
+
+        if (!is_array($parsed)) {
+            throw new RuntimeException(sprintf('Balance configuration file "%s" must contain an array structure.', $path));
+        }
+
+        return $parsed;
+    }
+
+    /**
      * @return BuildingConfig[]
      */
     public function getBuildingConfigs(): array
@@ -69,6 +93,26 @@ final class BalanceConfigLoader
         $this->loadBuildings();
 
         return array_values($this->buildingConfigs);
+    }
+
+    private function loadBuildings(): void
+    {
+        if ($this->buildingConfigs !== null) {
+            return;
+        }
+
+        $data = $this->parseFile('buildings.yml');
+        $configs = [];
+
+        foreach ($data as $key => $config) {
+            if (!is_string($key) || !is_array($config)) {
+                throw new RuntimeException('Invalid building configuration entry encountered.');
+            }
+
+            $configs[$key] = new BuildingConfig($key, $config);
+        }
+
+        $this->buildingConfigs = $configs;
     }
 
     public function getBuildingConfig(string $key): BuildingConfig
@@ -92,6 +136,26 @@ final class BalanceConfigLoader
         return array_values($this->shipConfigs);
     }
 
+    private function loadShips(): void
+    {
+        if ($this->shipConfigs !== null) {
+            return;
+        }
+
+        $data = $this->parseFile('ships.yml');
+        $configs = [];
+
+        foreach ($data as $key => $config) {
+            if (!is_string($key) || !is_array($config)) {
+                throw new RuntimeException('Invalid ship configuration entry encountered.');
+            }
+
+            $configs[$key] = new ShipConfig($key, $config);
+        }
+
+        $this->shipConfigs = $configs;
+    }
+
     public function getShipConfig(string $key): ShipConfig
     {
         $this->loadShips();
@@ -113,6 +177,26 @@ final class BalanceConfigLoader
         return array_values($this->technologyConfigs);
     }
 
+    private function loadTechnologies(): void
+    {
+        if ($this->technologyConfigs !== null) {
+            return;
+        }
+
+        $data = $this->parseFile('technologies.yml');
+        $configs = [];
+
+        foreach ($data as $key => $config) {
+            if (!is_string($key) || !is_array($config)) {
+                throw new RuntimeException('Invalid technology configuration entry encountered.');
+            }
+
+            $configs[$key] = new TechnologyConfig($key, $config);
+        }
+
+        $this->technologyConfigs = $configs;
+    }
+
     public function getTechnologyConfig(string $key): TechnologyConfig
     {
         $this->loadTechnologies();
@@ -122,18 +206,6 @@ final class BalanceConfigLoader
         }
 
         return $this->technologyConfigs[$key];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function all(): array
-    {
-        if ($this->balanceCache === null) {
-            $this->balanceCache = $this->parseFile('balance.yml');
-        }
-
-        return $this->balanceCache;
     }
 
     public function get(string $path, mixed $default = null): mixed
@@ -152,6 +224,18 @@ final class BalanceConfigLoader
         return $value;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function all(): array
+    {
+        if ($this->balanceCache === null) {
+            $this->balanceCache = $this->parseFile('balance.yml');
+        }
+
+        return $this->balanceCache;
+    }
+
     public function reset(): void
     {
         $this->balanceCache = null;
@@ -168,7 +252,7 @@ final class BalanceConfigLoader
     public function createBalanceConfig(array $config): BalanceConfig
     {
         $roundingTolerance = isset($config['rounding_tolerance'])
-            ? (float) $config['rounding_tolerance']
+            ? (float)$config['rounding_tolerance']
             : 0.000001;
 
         $roundingConfig = [];
@@ -193,71 +277,11 @@ final class BalanceConfigLoader
         $tickDuration = $config['tick_duration_seconds'] ?? $config['tick_duration'] ?? 3600;
 
         return new BalanceConfig(
-            isset($config['minimum_speed_modifier']) ? (float) $config['minimum_speed_modifier'] : 0.01,
-            isset($config['maximum_discount']) ? (float) $config['maximum_discount'] : 0.95,
-            (int) $tickDuration,
+            isset($config['minimum_speed_modifier']) ? (float)$config['minimum_speed_modifier'] : 0.01,
+            isset($config['maximum_discount']) ? (float)$config['maximum_discount'] : 0.95,
+            (int)$tickDuration,
             $rounding,
         );
-    }
-
-    private function loadBuildings(): void
-    {
-        if ($this->buildingConfigs !== null) {
-            return;
-        }
-
-        $data = $this->parseFile('buildings.yml');
-        $configs = [];
-
-        foreach ($data as $key => $config) {
-            if (!is_string($key) || !is_array($config)) {
-                throw new RuntimeException('Invalid building configuration entry encountered.');
-            }
-
-            $configs[$key] = new BuildingConfig($key, $config);
-        }
-
-        $this->buildingConfigs = $configs;
-    }
-
-    private function loadShips(): void
-    {
-        if ($this->shipConfigs !== null) {
-            return;
-        }
-
-        $data = $this->parseFile('ships.yml');
-        $configs = [];
-
-        foreach ($data as $key => $config) {
-            if (!is_string($key) || !is_array($config)) {
-                throw new RuntimeException('Invalid ship configuration entry encountered.');
-            }
-
-            $configs[$key] = new ShipConfig($key, $config);
-        }
-
-        $this->shipConfigs = $configs;
-    }
-
-    private function loadTechnologies(): void
-    {
-        if ($this->technologyConfigs !== null) {
-            return;
-        }
-
-        $data = $this->parseFile('technologies.yml');
-        $configs = [];
-
-        foreach ($data as $key => $config) {
-            if (!is_string($key) || !is_array($config)) {
-                throw new RuntimeException('Invalid technology configuration entry encountered.');
-            }
-
-            $configs[$key] = new TechnologyConfig($key, $config);
-        }
-
-        $this->technologyConfigs = $configs;
     }
 
     /**
@@ -266,7 +290,7 @@ final class BalanceConfigLoader
      */
     private function extractMode(array $config, string|array $keys, string $default): string
     {
-        $keys = (array) $keys;
+        $keys = (array)$keys;
 
         foreach ($keys as $key) {
             if (isset($config[$key]) && is_string($config[$key])) {
@@ -299,29 +323,5 @@ final class BalanceConfigLoader
         }
 
         return $default;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function parseFile(string $filename): array
-    {
-        $path = $this->configDir . '/' . ltrim($filename, '/');
-
-        if (!is_file($path)) {
-            throw new RuntimeException(sprintf('Balance configuration file "%s" not found.', $path));
-        }
-
-        try {
-            $parsed = Yaml::parseFile($path);
-        } catch (ParseException $exception) {
-            throw new RuntimeException(sprintf('Unable to parse balance configuration file "%s".', $path), 0, $exception);
-        }
-
-        if (!is_array($parsed)) {
-            throw new RuntimeException(sprintf('Balance configuration file "%s" must contain an array structure.', $path));
-        }
-
-        return $parsed;
     }
 }

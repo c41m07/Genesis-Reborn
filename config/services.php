@@ -125,13 +125,13 @@ return function (Container $container): void {
         $bonusMax = 0.0;
 
         if (array_key_exists('per_level', $bonusConfig)) {
-            $bonusPerLevel = (float) $bonusConfig['per_level'];
+            $bonusPerLevel = (float)$bonusConfig['per_level'];
         } elseif (array_key_exists('base', $bonusConfig)) {
-            $bonusPerLevel = (float) $bonusConfig['base'];
+            $bonusPerLevel = (float)$bonusConfig['base'];
         }
 
         if (array_key_exists('max', $bonusConfig)) {
-            $bonusMax = (float) $bonusConfig['max'];
+            $bonusMax = (float)$bonusConfig['max'];
         }
 
         return new ResearchCalculator(max(0.0, $bonusPerLevel), max(0.0, $bonusMax));
@@ -147,7 +147,7 @@ return function (Container $container): void {
     ));
 
     $container->set(FleetBattleRoundDTO::class, static fn () => static function (
-        int $round,
+        int   $round,
         array $attackerLosses,
         array $defenderLosses,
         array $attackerRemaining,
@@ -158,11 +158,11 @@ return function (Container $container): void {
 
     $container->set(FleetBattleResultDTO::class, static fn () => static function (
         string $winner,
-        array $attackerRemaining,
-        array $defenderRemaining,
-        array $rounds,
-        bool $attackerRetreated,
-        bool $defenderRetreated
+        array  $attackerRemaining,
+        array  $defenderRemaining,
+        array  $rounds,
+        bool   $attackerRetreated,
+        bool   $defenderRetreated
     ): FleetBattleResultDTO {
         return new FleetBattleResultDTO($winner, $attackerRemaining, $defenderRemaining, $rounds, $attackerRetreated, $defenderRetreated);
     });

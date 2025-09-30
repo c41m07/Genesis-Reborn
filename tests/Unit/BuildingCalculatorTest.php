@@ -16,90 +16,6 @@ class BuildingCalculatorTest extends TestCase
     private BuildingCatalog $catalog;
     private BuildingDefinition $definition;
 
-    protected function setUp(): void
-    {
-        $config = [
-            'metal_mine' => [
-                'label' => 'Mine de métal',
-                'base_cost' => ['metal' => 60, 'crystal' => 15],
-                'growth_cost' => 1.6,
-                'base_time' => 20,
-                'growth_time' => 1.5,
-                'prod_base' => 100,
-                'prod_growth' => 1.1,
-                'energy_use_base' => 10,
-                'energy_use_growth' => 1.05,
-                'energy_use_linear' => true,
-                'affects' => 'metal',
-            ],
-            'worker_factory' => [
-                'label' => 'Complexe d’ouvriers',
-                'base_cost' => ['metal' => 400, 'crystal' => 120],
-                'growth_cost' => 1.6,
-                'base_time' => 30,
-                'growth_time' => 1.4,
-                'prod_base' => 0,
-                'prod_growth' => 1.0,
-                'energy_use_base' => 18,
-                'energy_use_growth' => 1.1,
-                'energy_use_linear' => true,
-                'affects' => 'infrastructure',
-                'construction_speed_bonus' => ['per_level' => 0.05, 'max' => 0.5],
-            ],
-            'robot_factory' => [
-                'label' => 'Chantier robotique',
-                'base_cost' => ['metal' => 2000, 'crystal' => 800, 'hydrogen' => 200],
-                'growth_cost' => 1.7,
-                'base_time' => 60,
-                'growth_time' => 1.5,
-                'prod_base' => 0,
-                'prod_growth' => 1.0,
-                'energy_use_base' => 30,
-                'energy_use_growth' => 1.15,
-                'energy_use_linear' => true,
-                'affects' => 'infrastructure',
-                'construction_speed_bonus' => ['per_level' => 0.1, 'max' => 0.75],
-            ],
-            'research_lab' => [
-                'label' => 'Laboratoire expérimental',
-                'base_cost' => ['metal' => 200, 'crystal' => 320],
-                'growth_cost' => 1.6,
-                'base_time' => 40,
-                'growth_time' => 1.5,
-                'prod_base' => 0,
-                'prod_growth' => 1.0,
-                'energy_use_base' => 20,
-                'energy_use_growth' => 1.2,
-                'energy_use_linear' => true,
-                'affects' => 'energy',
-                'research_speed_bonus' => ['base' => 0.02, 'linear' => true, 'max' => 0.6],
-            ],
-            'shipyard' => [
-                'label' => 'Chantier orbital',
-                'base_cost' => ['metal' => 400, 'crystal' => 200],
-                'growth_cost' => 1.65,
-                'base_time' => 45,
-                'growth_time' => 1.4,
-                'prod_base' => 0,
-                'prod_growth' => 1.0,
-                'energy_use_base' => 30,
-                'energy_use_growth' => 1.2,
-                'energy_use_linear' => true,
-                'affects' => 'energy',
-                'ship_build_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.5],
-            ],
-        ];
-
-        $buildingConfigs = [];
-        foreach ($config as $key => $data) {
-            $buildingConfigs[] = new BuildingConfig($key, $data);
-        }
-
-        $this->catalog = new BuildingCatalog($buildingConfigs);
-        $this->calculator = new BuildingCalculator($this->catalog);
-        $this->definition = $this->catalog->get('metal_mine');
-    }
-
     public function testNextCostScalesWithLevel(): void
     {
         $level0 = $this->calculator->nextCost($this->definition, 0);
@@ -189,5 +105,89 @@ class BuildingCalculatorTest extends TestCase
         self::assertLessThan($baseTime, $reduced);
         self::assertGreaterThanOrEqual(1, $reduced);
 
+    }
+
+    protected function setUp(): void
+    {
+        $config = [
+            'metal_mine' => [
+                'label' => 'Mine de métal',
+                'base_cost' => ['metal' => 60, 'crystal' => 15],
+                'growth_cost' => 1.6,
+                'base_time' => 20,
+                'growth_time' => 1.5,
+                'prod_base' => 100,
+                'prod_growth' => 1.1,
+                'energy_use_base' => 10,
+                'energy_use_growth' => 1.05,
+                'energy_use_linear' => true,
+                'affects' => 'metal',
+            ],
+            'worker_factory' => [
+                'label' => 'Complexe d’ouvriers',
+                'base_cost' => ['metal' => 400, 'crystal' => 120],
+                'growth_cost' => 1.6,
+                'base_time' => 30,
+                'growth_time' => 1.4,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 18,
+                'energy_use_growth' => 1.1,
+                'energy_use_linear' => true,
+                'affects' => 'infrastructure',
+                'construction_speed_bonus' => ['per_level' => 0.05, 'max' => 0.5],
+            ],
+            'robot_factory' => [
+                'label' => 'Chantier robotique',
+                'base_cost' => ['metal' => 2000, 'crystal' => 800, 'hydrogen' => 200],
+                'growth_cost' => 1.7,
+                'base_time' => 60,
+                'growth_time' => 1.5,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 30,
+                'energy_use_growth' => 1.15,
+                'energy_use_linear' => true,
+                'affects' => 'infrastructure',
+                'construction_speed_bonus' => ['per_level' => 0.1, 'max' => 0.75],
+            ],
+            'research_lab' => [
+                'label' => 'Laboratoire expérimental',
+                'base_cost' => ['metal' => 200, 'crystal' => 320],
+                'growth_cost' => 1.6,
+                'base_time' => 40,
+                'growth_time' => 1.5,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 20,
+                'energy_use_growth' => 1.2,
+                'energy_use_linear' => true,
+                'affects' => 'energy',
+                'research_speed_bonus' => ['base' => 0.02, 'linear' => true, 'max' => 0.6],
+            ],
+            'shipyard' => [
+                'label' => 'Chantier orbital',
+                'base_cost' => ['metal' => 400, 'crystal' => 200],
+                'growth_cost' => 1.65,
+                'base_time' => 45,
+                'growth_time' => 1.4,
+                'prod_base' => 0,
+                'prod_growth' => 1.0,
+                'energy_use_base' => 30,
+                'energy_use_growth' => 1.2,
+                'energy_use_linear' => true,
+                'affects' => 'energy',
+                'ship_build_speed_bonus' => ['base' => 0.01, 'linear' => true, 'max' => 0.5],
+            ],
+        ];
+
+        $buildingConfigs = [];
+        foreach ($config as $key => $data) {
+            $buildingConfigs[] = new BuildingConfig($key, $data);
+        }
+
+        $this->catalog = new BuildingCatalog($buildingConfigs);
+        $this->calculator = new BuildingCalculator($this->catalog);
+        $this->definition = $this->catalog->get('metal_mine');
     }
 }

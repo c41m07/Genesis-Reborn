@@ -13,11 +13,11 @@ use App\Domain\Service\BuildingCatalog;
 class ProcessBuildQueue
 {
     public function __construct(
-        private readonly BuildQueueRepositoryInterface $queue,
+        private readonly BuildQueueRepositoryInterface    $queue,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly BuildingCatalog $catalog,
-        private readonly BuildingCalculator $calculator
+        private readonly PlanetRepositoryInterface        $planets,
+        private readonly BuildingCatalog                  $catalog,
+        private readonly BuildingCalculator               $calculator
     ) {
     }
 

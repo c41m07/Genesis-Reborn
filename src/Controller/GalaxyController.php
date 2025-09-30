@@ -19,14 +19,14 @@ use DateTimeImmutable;
 class GalaxyController extends AbstractController
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly UserRepositoryInterface $users,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly UserRepositoryInterface          $users,
+        ViewRenderer                                      $renderer,
+        SessionInterface                                  $session,
+        FlashBag                                          $flashBag,
+        CsrfTokenManager                                  $csrfTokenManager,
+        string                                            $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -48,10 +48,10 @@ class GalaxyController extends AbstractController
         $query = $request->getQueryParams();
 
         if ($ownedPlanets === []) {
-            $galaxy = max(1, (int) ($query['galaxy'] ?? 1));
-            $system = max(1, (int) ($query['system'] ?? 1));
+            $galaxy = max(1, (int)($query['galaxy'] ?? 1));
+            $system = max(1, (int)($query['system'] ?? 1));
             $viewMode = $this->sanitizeViewMode($query['view'] ?? 'all', $viewOptions);
-            $searchTerm = trim((string) ($query['q'] ?? ''));
+            $searchTerm = trim((string)($query['q'] ?? ''));
 
             $systemPlanets = $this->planets->findByCoordinates($galaxy, $system);
             $owners = $this->hydrateOwners($systemPlanets);
@@ -85,14 +85,14 @@ class GalaxyController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($query['planet'] ?? $ownedPlanets[0]->getId());
+        $selectedId = (int)($query['planet'] ?? $ownedPlanets[0]->getId());
         $selectedPlanet = $this->findPlanet($ownedPlanets, $selectedId) ?? $ownedPlanets[0];
         $selectedId = $selectedPlanet->getId();
 
-        $galaxy = max(1, (int) ($query['galaxy'] ?? $selectedPlanet->getGalaxy()));
-        $system = max(1, (int) ($query['system'] ?? $selectedPlanet->getSystem()));
+        $galaxy = max(1, (int)($query['galaxy'] ?? $selectedPlanet->getGalaxy()));
+        $system = max(1, (int)($query['system'] ?? $selectedPlanet->getSystem()));
         $viewMode = $this->sanitizeViewMode($query['view'] ?? 'all', $viewOptions);
-        $searchTerm = trim((string) ($query['q'] ?? ''));
+        $searchTerm = trim((string)($query['q'] ?? ''));
 
         $systemPlanets = $this->planets->findByCoordinates($galaxy, $system);
         $owners = $this->hydrateOwners($systemPlanets);
@@ -142,19 +142,13 @@ class GalaxyController extends AbstractController
     }
 
     /**
-     * @param Planet[] $planets
-     *
-     * Je balaie la liste pour retrouver la planète demandée.
+     * @param array<string, string> $options
      */
-    private function findPlanet(array $planets, int $planetId): ?Planet
+    private function sanitizeViewMode(string $value, array $options): string
     {
-        foreach ($planets as $planet) {
-            if ($planet->getId() === $planetId) {
-                return $planet;
-            }
-        }
+        $value = strtolower(trim($value));
 
-        return null;
+        return array_key_exists($value, $options) ? $value : 'all';
     }
 
     /**
@@ -190,11 +184,11 @@ class GalaxyController extends AbstractController
      * Je construis les 16 cases du système avec toutes les infos utiles.
      */
     private function buildSlots(
-        array $systemPlanets,
-        array $owners,
-        int $galaxy,
-        int $system,
-        int $userId,
+        array  $systemPlanets,
+        array  $owners,
+        int    $galaxy,
+        int    $system,
+        int    $userId,
         string $viewMode,
         string $searchTerm
     ): array {
@@ -263,7 +257,7 @@ class GalaxyController extends AbstractController
                 }
 
                 foreach ($haystacks as $value) {
-                    if (str_contains(mb_strtolower((string) $value), $needle)) {
+                    if (str_contains(mb_strtolower((string)$value), $needle)) {
                         $matchesSearch = true;
                         break;
                     }
@@ -278,6 +272,43 @@ class GalaxyController extends AbstractController
         }
 
         return $slots;
+    }
+
+    /**
+     * @return array{key: string, label: string, tone: string}
+     */
+    private function classifyActivity(DateTimeImmutable $lastTick, DateTimeImmutable $now): array
+    {
+        $elapsed = max(0, $now->getTimestamp() - $lastTick->getTimestamp());
+        if ($elapsed <= 3600) {
+            return ['key' => 'active', 'label' => 'Actif', 'tone' => 'positive'];
+        }
+        if ($elapsed <= 21600) {
+            return ['key' => 'calm', 'label' => 'Calme', 'tone' => 'neutral'];
+        }
+        if ($elapsed <= 43200) {
+            return ['key' => 'idle', 'label' => 'Veille', 'tone' => 'neutral'];
+        }
+
+        return ['key' => 'inactive', 'label' => 'Inactif', 'tone' => 'negative'];
+    }
+
+    /**
+     * @param array{metal: int, crystal: int, hydrogen: int, energy: int} $production
+     *
+     * @return array{key: string, label: string}
+     */
+    private function classifyStrength(array $production): array
+    {
+        $score = max(0, $production['metal']) + max(0, $production['crystal']) + max(0, $production['hydrogen']);
+        if ($score >= 45000) {
+            return ['key' => 'strong', 'label' => 'Puissante'];
+        }
+        if ($score >= 18000) {
+            return ['key' => 'solid', 'label' => 'Solide'];
+        }
+
+        return ['key' => 'developing', 'label' => 'Émergente'];
     }
 
     /**
@@ -339,11 +370,11 @@ class GalaxyController extends AbstractController
                 continue;
             }
 
-            $ownerId = (int) ($slot['owner']['id'] ?? 0);
+            $ownerId = (int)($slot['owner']['id'] ?? 0);
             if (!isset($players[$ownerId])) {
                 $players[$ownerId] = [
                     'id' => $ownerId,
-                    'name' => (string) ($slot['owner']['name'] ?? ''),
+                    'name' => (string)($slot['owner']['name'] ?? ''),
                     'planets' => 0,
                     'inactive' => 0,
                     'strong' => 0,
@@ -360,9 +391,9 @@ class GalaxyController extends AbstractController
                 ++$players[$ownerId]['strong'];
             }
 
-            $players[$ownerId]['production'] += max(0, (int) ($slot['production']['metal'] ?? 0))
-                + max(0, (int) ($slot['production']['crystal'] ?? 0))
-                + max(0, (int) ($slot['production']['hydrogen'] ?? 0));
+            $players[$ownerId]['production'] += max(0, (int)($slot['production']['metal'] ?? 0))
+                + max(0, (int)($slot['production']['crystal'] ?? 0))
+                + max(0, (int)($slot['production']['hydrogen'] ?? 0));
 
             $lastActivity = $slot['lastActivity'] ?? null;
             if ($lastActivity instanceof DateTimeImmutable) {
@@ -404,49 +435,18 @@ class GalaxyController extends AbstractController
     }
 
     /**
-     * @param array<string, string> $options
-     */
-    private function sanitizeViewMode(string $value, array $options): string
-    {
-        $value = strtolower(trim($value));
-
-        return array_key_exists($value, $options) ? $value : 'all';
-    }
-
-    /**
-     * @return array{key: string, label: string, tone: string}
-     */
-    private function classifyActivity(DateTimeImmutable $lastTick, DateTimeImmutable $now): array
-    {
-        $elapsed = max(0, $now->getTimestamp() - $lastTick->getTimestamp());
-        if ($elapsed <= 3600) {
-            return ['key' => 'active', 'label' => 'Actif', 'tone' => 'positive'];
-        }
-        if ($elapsed <= 21600) {
-            return ['key' => 'calm', 'label' => 'Calme', 'tone' => 'neutral'];
-        }
-        if ($elapsed <= 43200) {
-            return ['key' => 'idle', 'label' => 'Veille', 'tone' => 'neutral'];
-        }
-
-        return ['key' => 'inactive', 'label' => 'Inactif', 'tone' => 'negative'];
-    }
-
-    /**
-     * @param array{metal: int, crystal: int, hydrogen: int, energy: int} $production
+     * @param Planet[] $planets
      *
-     * @return array{key: string, label: string}
+     * Je balaie la liste pour retrouver la planète demandée.
      */
-    private function classifyStrength(array $production): array
+    private function findPlanet(array $planets, int $planetId): ?Planet
     {
-        $score = max(0, $production['metal']) + max(0, $production['crystal']) + max(0, $production['hydrogen']);
-        if ($score >= 45000) {
-            return ['key' => 'strong', 'label' => 'Puissante'];
-        }
-        if ($score >= 18000) {
-            return ['key' => 'solid', 'label' => 'Solide'];
+        foreach ($planets as $planet) {
+            if ($planet->getId() === $planetId) {
+                return $planet;
+            }
         }
 
-        return ['key' => 'developing', 'label' => 'Émergente'];
+        return null;
     }
 }

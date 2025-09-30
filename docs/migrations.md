@@ -2,16 +2,19 @@
 
 ## Vue d'ensemble
 
-Le système de migration de Genesis Reborn permet d'appliquer des changements de schéma de base de données de manière incrémentale, **évitant les pertes de données** lors des mises à jour.
+Le système de migration de Genesis Reborn permet d'appliquer des changements de schéma de base de données de manière
+incrémentale, **évitant les pertes de données** lors des mises à jour.
 
 ## Caractéristiques principales
 
 ### ✅ Sécurité des données
+
 - **Aucune perte de données** : Les migrations sont appliquées de manière incrémentale
 - **Suivi automatique** : Table `migrations` pour tracer les migrations appliquées
 - **Vérification d'intégrité** : Checksum SHA256 pour détecter les modifications
 
 ### ✅ Migration intelligente
+
 - **Détection automatique** : Évite de re-appliquer les migrations déjà effectuées
 - **Protection des données** : Skip automatique des migrations destructives si des données existent
 - **Transactions atomiques** : Rollback automatique en cas d'erreur
@@ -26,6 +29,7 @@ composer db:migrate
 ## Structure des migrations
 
 Les fichiers de migration sont dans `/migrations/` avec le format:
+
 ```
 YYYYMMDDHHII_description.sql
 ```
@@ -56,12 +60,14 @@ Le nouveau système est **rétrocompatible** :
 ## Sécurité et bonnes pratiques
 
 ### ✅ Recommandations
+
 - Utiliser `composer db:migrate` pour toutes les nouvelles installations
 - Créer de nouvelles migrations avec `CREATE TABLE IF NOT EXISTS`
 - Utiliser `ALTER TABLE` pour les modifications de schéma
 - Tester les migrations sur une copie avant production
 
 ### ❌ À éviter
+
 - Modifications des migrations déjà appliquées (détectées par checksum)
 - Utilisation de `DROP TABLE` sans conditions dans de nouvelles migrations
 - Suppression manuelle d'enregistrements dans la table `migrations`
@@ -69,21 +75,27 @@ Le nouveau système est **rétrocompatible** :
 ## Résolution de problèmes
 
 ### Migration déjà modifiée
+
 ```
 WARNING: 20250920_schema.sql has changed since last application!
 ```
+
 **Solution** : Les migrations ne doivent pas être modifiées après application.
 
 ### Échec de migration
+
 ```
 Failed to apply migration XXX: [erreur]
 ```
+
 **Solution** : La transaction est rollback automatiquement. Corriger l'erreur et relancer.
 
 ### Données existantes détectées
+
 ```
 20250920_schema.sql SKIPPED (destructive, data exists)
 ```
+
 **Statut** : Normal - Protection automatique contre la perte de données.
 
 ## Architecture technique
@@ -101,6 +113,7 @@ migrations/
 ```
 
 La table `migrations` contient :
+
 - `filename` : Nom du fichier de migration
 - `applied_at` : Timestamp d'application
 - `checksum` : Hash SHA256 du contenu pour l'intégrité

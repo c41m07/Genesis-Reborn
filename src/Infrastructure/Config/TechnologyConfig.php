@@ -40,9 +40,9 @@ final class TechnologyConfig
     public function __construct(string $key, array $data)
     {
         $this->key = $key;
-        $this->label = (string) ($data['label'] ?? $key);
-        $this->category = (string) ($data['category'] ?? 'Divers');
-        $this->description = (string) ($data['description'] ?? '');
+        $this->label = (string)($data['label'] ?? $key);
+        $this->category = (string)($data['category'] ?? 'Divers');
+        $this->description = (string)($data['description'] ?? '');
 
         $baseCost = $data['base_cost'] ?? [];
         if (!is_array($baseCost)) {
@@ -50,13 +50,13 @@ final class TechnologyConfig
         }
 
         foreach ($baseCost as $resource => $value) {
-            $this->baseCost[$resource] = (int) round((float) $value);
+            $this->baseCost[$resource] = (int)round((float)$value);
         }
 
-        $this->baseTime = (int) round((float) ($data['base_time'] ?? 0));
-        $this->growthCost = (float) ($data['growth_cost'] ?? 1.0);
-        $this->growthTime = (float) ($data['growth_time'] ?? 1.0);
-        $this->maxLevel = max(0, (int) ($data['max_level'] ?? 10));
+        $this->baseTime = (int)round((float)($data['base_time'] ?? 0));
+        $this->growthCost = (float)($data['growth_cost'] ?? 1.0);
+        $this->growthTime = (float)($data['growth_time'] ?? 1.0);
+        $this->maxLevel = max(0, (int)($data['max_level'] ?? 10));
 
         $requires = $data['requires'] ?? [];
         if (!is_array($requires)) {
@@ -64,13 +64,13 @@ final class TechnologyConfig
         }
 
         foreach ($requires as $researchKey => $level) {
-            $this->requires[$researchKey] = max(0, (int) $level);
+            $this->requires[$researchKey] = max(0, (int)$level);
         }
 
-        $this->requiresLab = max(0, (int) ($data['requires_lab'] ?? 0));
+        $this->requiresLab = max(0, (int)($data['requires_lab'] ?? 0));
 
         if (!empty($data['image'])) {
-            $this->image = (string) $data['image'];
+            $this->image = (string)$data['image'];
         }
     }
 

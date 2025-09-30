@@ -12,10 +12,10 @@ use PDOException;
 class ConnectionFactory
 {
     public function __construct(
-        private readonly string $host,
-        private readonly int $port,
-        private readonly string $dbName,
-        private readonly string $user,
+        private readonly string  $host,
+        private readonly int     $port,
+        private readonly string  $dbName,
+        private readonly string  $user,
         private readonly ?string $password
     ) {
     }

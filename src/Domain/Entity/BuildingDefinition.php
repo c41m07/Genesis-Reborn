@@ -16,25 +16,25 @@ class BuildingDefinition
      * @param array<string, mixed> $constructionSpeedBonus
      */
     public function __construct(
-        private readonly string $key,
-        private readonly string $label,
-        private readonly array $baseCost,
-        private readonly float $growthCost,
-        private readonly int $baseTime,
-        private readonly float $growthTime,
-        private readonly int $productionBase,
-        private readonly float $productionGrowth,
-        private readonly int $energyUseBase,
-        private readonly float $energyUseGrowth,
-        private readonly bool $energyUseLinear,
-        private readonly string $affects,
-        private readonly array $requirements = [],
+        private readonly string  $key,
+        private readonly string  $label,
+        private readonly array   $baseCost,
+        private readonly float   $growthCost,
+        private readonly int     $baseTime,
+        private readonly float   $growthTime,
+        private readonly int     $productionBase,
+        private readonly float   $productionGrowth,
+        private readonly int     $energyUseBase,
+        private readonly float   $energyUseGrowth,
+        private readonly bool    $energyUseLinear,
+        private readonly string  $affects,
+        private readonly array   $requirements = [],
         private readonly ?string $image = null,
-        private readonly array $shipBuildSpeedBonus = [],
-        private readonly array $researchSpeedBonus = [],
-        private readonly array $storage = [],
-        private readonly array $upkeep = [],
-        private readonly array $constructionSpeedBonus = []
+        private readonly array   $shipBuildSpeedBonus = [],
+        private readonly array   $researchSpeedBonus = [],
+        private readonly array   $storage = [],
+        private readonly array   $upkeep = [],
+        private readonly array   $constructionSpeedBonus = []
     ) {
     }
 

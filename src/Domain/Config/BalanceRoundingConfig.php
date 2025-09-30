@@ -31,7 +31,7 @@ final class BalanceRoundingConfig
     private string $energyAvailableMode;
 
     public function __construct(
-        float $tolerance = 0.000001,
+        float  $tolerance = 0.000001,
         string $resourceMode = self::MODE_FLOOR,
         string $capacityMode = self::MODE_ROUND,
         string $productionMode = self::MODE_ROUND,
@@ -46,6 +46,17 @@ final class BalanceRoundingConfig
         $this->energyAvailableMode = $this->normalizeMode($energyAvailableMode);
     }
 
+    private function normalizeMode(string $mode): string
+    {
+        $mode = strtolower($mode);
+
+        if (!in_array($mode, self::ALLOWED_MODES, true)) {
+            throw new InvalidArgumentException(sprintf('Invalid rounding mode "%s".', $mode));
+        }
+
+        return $mode;
+    }
+
     public function getTolerance(): float
     {
         return $this->tolerance;
@@ -54,6 +65,15 @@ final class BalanceRoundingConfig
     public function roundResource(float $value): int
     {
         return $this->applyMode($this->resourceMode, $value);
+    }
+
+    private function applyMode(string $mode, float $value): int
+    {
+        return match ($mode) {
+            self::MODE_FLOOR => (int)floor($value + $this->tolerance),
+            self::MODE_CEIL => (int)ceil($value - $this->tolerance),
+            default => (int)round($value),
+        };
     }
 
     public function roundCapacity(float $value): int
@@ -74,25 +94,5 @@ final class BalanceRoundingConfig
     public function roundEnergyAvailable(float $value): int
     {
         return $this->applyMode($this->energyAvailableMode, $value);
-    }
-
-    private function normalizeMode(string $mode): string
-    {
-        $mode = strtolower($mode);
-
-        if (!in_array($mode, self::ALLOWED_MODES, true)) {
-            throw new InvalidArgumentException(sprintf('Invalid rounding mode "%s".', $mode));
-        }
-
-        return $mode;
-    }
-
-    private function applyMode(string $mode, float $value): int
-    {
-        return match ($mode) {
-            self::MODE_FLOOR => (int) floor($value + $this->tolerance),
-            self::MODE_CEIL => (int) ceil($value - $this->tolerance),
-            default => (int) round($value),
-        };
     }
 }

@@ -22,14 +22,14 @@ class ColonyController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
-        private readonly GetBuildingsOverview $getOverview,
-        private readonly UpgradeBuilding $upgradeBuilding,
-        private readonly ProcessBuildQueue $buildQueueProcessor,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly GetBuildingsOverview      $getOverview,
+        private readonly UpgradeBuilding           $upgradeBuilding,
+        private readonly ProcessBuildQueue         $buildQueueProcessor,
+        ViewRenderer                               $renderer,
+        SessionInterface                           $session,
+        FlashBag                                   $flashBag,
+        CsrfTokenManager                           $csrfTokenManager,
+        string                                     $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -60,7 +60,7 @@ class ColonyController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {
@@ -95,7 +95,7 @@ class ColonyController extends AbstractController
                 $overview = $this->getOverview->execute($selectedId);
                 $planet = $overview['planet'];
                 $queue = $this->formatBuildQueue($overview['queue'] ?? []);
-                $buildingKey = (string) ($data['building'] ?? '');
+                $buildingKey = (string)($data['building'] ?? '');
                 $buildingEntry = $this->findBuildingEntry($overview['buildings'] ?? [], $buildingKey);
 
                 return $this->json([
@@ -158,10 +158,10 @@ class ColonyController extends AbstractController
 
         foreach ($queue['jobs'] ?? [] as $job) {
             $jobs[] = [
-                'building' => (string) ($job['building'] ?? ''),
-                'label' => (string) ($job['label'] ?? ''),
-                'targetLevel' => (int) ($job['targetLevel'] ?? 0),
-                'remaining' => (int) ($job['remaining'] ?? 0),
+                'building' => (string)($job['building'] ?? ''),
+                'label' => (string)($job['label'] ?? ''),
+                'targetLevel' => (int)($job['targetLevel'] ?? 0),
+                'remaining' => (int)($job['remaining'] ?? 0),
                 'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
             ];
         }
@@ -170,6 +170,11 @@ class ColonyController extends AbstractController
             'count' => count($jobs),
             'jobs' => $jobs,
         ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 
     /**
@@ -231,9 +236,9 @@ class ColonyController extends AbstractController
             }
 
             $consumption[$resource] = [
-                'current' => (int) ($values['current'] ?? 0),
-                'next' => (int) ($values['next'] ?? 0),
-                'delta' => (int) ($values['delta'] ?? 0),
+                'current' => (int)($values['current'] ?? 0),
+                'next' => (int)($values['next'] ?? 0),
+                'delta' => (int)($values['delta'] ?? 0),
             ];
         }
 
@@ -241,7 +246,7 @@ class ColonyController extends AbstractController
         $normalizeStorage = static function (array $values): array {
             $normalized = [];
             foreach ($values as $resource => $value) {
-                $normalized[$resource] = (int) $value;
+                $normalized[$resource] = (int)$value;
             }
 
             return $normalized;
@@ -255,11 +260,11 @@ class ColonyController extends AbstractController
             }
 
             $missing[] = [
-                'type' => (string) ($item['type'] ?? ''),
-                'key' => (string) ($item['key'] ?? ''),
-                'label' => (string) ($item['label'] ?? ''),
-                'level' => (int) ($item['level'] ?? 0),
-                'current' => (int) ($item['current'] ?? 0),
+                'type' => (string)($item['type'] ?? ''),
+                'key' => (string)($item['key'] ?? ''),
+                'label' => (string)($item['label'] ?? ''),
+                'level' => (int)($item['level'] ?? 0),
+                'current' => (int)($item['current'] ?? 0),
             ];
         }
 
@@ -269,18 +274,18 @@ class ColonyController extends AbstractController
             'key' => $definition->getKey(),
             'label' => $definition->getLabel(),
             'image' => $definition->getImage(),
-            'level' => (int) ($entry['level'] ?? 0),
-            'canUpgrade' => (bool) ($entry['canUpgrade'] ?? false),
-            'affordable' => (bool) ($entry['affordable'] ?? false),
-            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
-            'cost' => array_map(static fn ($value) => (int) $value, $entry['cost'] ?? []),
-            'time' => (int) ($entry['time'] ?? 0),
-            'baseTime' => (int) ($entry['baseTime'] ?? 0),
+            'level' => (int)($entry['level'] ?? 0),
+            'canUpgrade' => (bool)($entry['canUpgrade'] ?? false),
+            'affordable' => (bool)($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int)$value, $entry['missingResources'] ?? []),
+            'cost' => array_map(static fn ($value) => (int)$value, $entry['cost'] ?? []),
+            'time' => (int)($entry['time'] ?? 0),
+            'baseTime' => (int)($entry['baseTime'] ?? 0),
             'production' => [
-                'resource' => (string) ($production['resource'] ?? ''),
-                'current' => (int) ($production['current'] ?? 0),
-                'next' => (int) ($production['next'] ?? 0),
-                'delta' => (int) ($production['delta'] ?? 0),
+                'resource' => (string)($production['resource'] ?? ''),
+                'current' => (int)($production['current'] ?? 0),
+                'next' => (int)($production['next'] ?? 0),
+                'delta' => (int)($production['delta'] ?? 0),
             ],
             'consumption' => $consumption,
             'storage' => [
@@ -289,14 +294,9 @@ class ColonyController extends AbstractController
                 'delta' => $normalizeStorage($storage['delta'] ?? []),
             ],
             'requirements' => [
-                'ok' => (bool) ($requirements['ok'] ?? false),
+                'ok' => (bool)($requirements['ok'] ?? false),
                 'missing' => $missing,
             ],
         ];
-    }
-
-    private function formatDateTime(mixed $value): ?string
-    {
-        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }
