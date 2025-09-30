@@ -19,6 +19,12 @@ html {
   font-size: 16px;
 }
 
+:root {
+    --anchor-scroll-offset: calc(var(--space-4) + var(--space-3) + 130px);
+
+    scroll-padding-top: var(--anchor-scroll-offset);
+}
+
 body {
   margin: 0;
   font-family: var(--font-family-base);
@@ -756,6 +762,13 @@ main.workspace__content {
 
 .building-card {
   height: 100%;
+    scroll-margin-top: var(--anchor-scroll-offset);
+}
+
+[id^="building-"],
+[id^="research-"] {
+    scroll-margin-top: var(--anchor-scroll-offset);
+   /* border: 2px solid green;*/ /*Valeur a changé car elle prend toute les carte et doit prendre seulement la carte ciblé*/
 }
 
 .building-card .panel__body {

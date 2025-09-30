@@ -36,6 +36,7 @@
 
   /* Typography */
   --font-family-base: 'Segoe UI', 'Inter', sans-serif;
+    --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.25rem;
