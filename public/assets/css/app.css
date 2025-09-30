@@ -1353,6 +1353,32 @@ main.workspace__content {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.65rem 0.75rem;
+    text-align: left;
+}
+
+.data-table thead {
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.data-table td:not(:first-child) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
 .comparison-table tbody tr:nth-child(even) {
     background: rgba(255, 255, 255, 0.02);
 }
