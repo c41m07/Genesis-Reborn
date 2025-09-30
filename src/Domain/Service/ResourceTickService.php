@@ -176,13 +176,22 @@ class ResourceTickService
                     }
                 }
             }
+            $secondsFactor = $elapsedSeconds / $this->balanceConfig->getTickDurationSeconds();
+            $energyPerHour = $energyProduction - $energyConsumption;
+            $energyCapacity = $capacityTotals['energy'] ?? null;
+            $currentEnergy = $resourceTotals['energy'] ?? 0.0;
+            $energyDelta = $energyPerHour * $secondsFactor;
+            $projectedEnergy = $currentEnergy + $energyDelta;
+
+            if ($energyCapacity !== null && $energyCapacity > 0) {
+                $projectedEnergy = min($energyCapacity, $projectedEnergy);
+            }
 
             $energyRatio = 1.0;
-            if ($energyConsumption > 0.0 && $energyProduction < $energyConsumption) {
+            if ($energyPerHour < 0.0 && $projectedEnergy <= 0.0 && $energyConsumption > 0.0) {
                 $energyRatio = max(0.0, $energyProduction / $energyConsumption);
             }
 
-            $secondsFactor = $elapsedSeconds / $this->balanceConfig->getTickDurationSeconds();
             $adjustedProduction = [];
 
             foreach ($productionRaw as $resourceKey => $perHour) {
@@ -206,17 +215,7 @@ class ResourceTickService
                 $resourceTotals[$resourceKey] = max(0.0, $newAmount);
             }
 
-            $energyPerHour = $energyProduction - $energyConsumption;
-            $energyDelta = $energyPerHour * $secondsFactor;
-            $currentEnergy = $resourceTotals['energy'] ?? 0.0;
-            $energyCapacity = $capacityTotals['energy'] ?? null;
-            $energyAvailable = $currentEnergy + $energyDelta;
-
-            if ($energyCapacity !== null && $energyCapacity > 0) {
-                $energyAvailable = min($energyCapacity, $energyAvailable);
-            }
-
-            $energyAvailable = max(0.0, $energyAvailable);
+            $energyAvailable = max(0.0, $projectedEnergy);
             $resourceTotals['energy'] = $energyAvailable;
 
             $finalResources = [];

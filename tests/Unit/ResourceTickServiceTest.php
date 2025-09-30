@@ -230,4 +230,50 @@ class ResourceTickServiceTest extends TestCase
 
         $this->service = new ResourceTickService($effects, $loader->getBalanceConfig());
     }
+
+    public function testEnergyDeficitCoveredByStockMaintainsProductionUntilDepleted(): void
+    {
+        $startTick = new DateTimeImmutable('2025-09-20 08:00:00');
+        $firstTickTime = $startTick->add(new DateInterval('PT1M'));
+
+        $effectsOverride = [
+            'test_mine' => [
+                'produces' => [
+                    'metal' => ['base' => 120.0, 'growth' => 1.0],
+                ],
+                'consumes' => [
+                    'energy' => ['base' => 600.0, 'growth' => 1.0],
+                ],
+            ],
+        ];
+
+        $initialState = [
+            'resources' => ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 20],
+            'capacities' => ['metal' => 1000, 'crystal' => 1000, 'hydrogen' => 1000, 'energy' => 100],
+            'last_tick' => $startTick,
+            'building_levels' => ['test_mine' => 1],
+        ];
+
+        $firstTick = $this->service->tick([1 => $initialState], $firstTickTime, $effectsOverride)[1];
+
+        self::assertSame(1.0, $firstTick['energy']['ratio']);
+        self::assertSame(2, $firstTick['resources']['metal']);
+        self::assertSame(0, $firstTick['resources']['crystal']);
+        self::assertSame(0, $firstTick['resources']['hydrogen']);
+        self::assertSame(10, $firstTick['energy']['available']);
+        self::assertSame(120, $firstTick['production_per_hour']['metal']);
+
+        $secondState = $initialState;
+        $secondState['resources'] = $firstTick['resources'];
+        $secondState['capacities'] = $firstTick['capacities'];
+        $secondState['last_tick'] = $firstTickTime;
+
+        $secondTickTime = $firstTickTime->add(new DateInterval('PT1M'));
+        $secondTick = $this->service->tick([1 => $secondState], $secondTickTime, $effectsOverride)[1];
+
+        self::assertSame(0.0, $secondTick['energy']['ratio']);
+        self::assertSame(2, $secondTick['resources']['metal']);
+        self::assertSame(0, $secondTick['energy']['available']);
+        self::assertSame(0, $secondTick['production_per_hour']['metal']);
+    }
 }
