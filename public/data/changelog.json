@@ -56,7 +56,9 @@
       "[fix] : ajoute une police de secours (fallback) au `body` dans `app.css`",
       "[chore] : met à jour `composer.lock` pour PHP-CS-Fixer 3.88.2",
       "[fix] : #76 améliore la logique de calcul d’énergie et ajoute un test unitaire pour le scénario de déficit énergétique",
-      "[fix] : #92 ajoute les styles pour la table de données (layout et formatage) dans `app.css`"
+      "[fix] : #92 ajoute les styles pour la table de données (layout et formatage) dans `app.css`",
+      "[fix] : #73 Correction du calcule des point joueurs dans la vue de la colonie",
+      "[Fix] : #76 Revue et amélioration de la logic pour le calcule de l'energie et des déficite planétaire"
     ]
   }
 ]
