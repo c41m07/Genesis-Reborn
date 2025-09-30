@@ -192,7 +192,13 @@ ob_start();
                 <?php endforeach; ?>
             </aside>
             <div class="tech-tree__details-column">
-                <section class="tech-tree__details tech-tree__details--sticky" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
+                <section
+                        class="tech-tree__details tech-tree__details--sticky"
+                        id="tech-tree-detail"
+                        data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>"
+                        data-base-url="<?= htmlspecialchars($baseUrl) ?>"
+                        data-planet-id="<?= $selectedPlanetId !== null ? (int) $selectedPlanetId : '' ?>"
+                >
                     <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
                 </section>
             </div>

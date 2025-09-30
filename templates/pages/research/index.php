@@ -116,6 +116,7 @@ ob_start();
                         'status' => $status,
                         'class' => 'tech-card',
                         'attributes' => [
+                            'id' => 'research-' . $definition->getKey(),
                             'data-research-card' => $definition->getKey(),
                         ],
                         'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,

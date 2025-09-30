@@ -22,6 +22,7 @@ export const initTechTree = () => {
   }
 
   const baseUrl = detailContainer.getAttribute('data-base-url') || '';
+  const planetId = (detailContainer.getAttribute('data-planet-id') || '').trim();
   const normalizedBase = baseUrl.replace(/\/$/, '');
 
   const resolveImage = (path) => {
@@ -53,11 +54,27 @@ export const initTechTree = () => {
           const current = escapeHtml(requirement.current ?? 0);
           const required = escapeHtml(requirement.required ?? 0);
           const label = escapeHtml(requirement.label ?? requirement.key ?? '');
+            const key = String(requirement.key ?? '').trim();
+            let requirementUrl = '';
+
+            if (key !== '' && planetId !== '') {
+                if (requirement.type === 'building') {
+                    requirementUrl =
+                        `${normalizedBase}/colony?planet=${encodeURIComponent(planetId)}#building-${encodeURIComponent(key)}`;
+                } else if (requirement.type === 'research') {
+                    requirementUrl =
+                        `${normalizedBase}/research?planet=${encodeURIComponent(planetId)}#research-${encodeURIComponent(key)}`;
+                }
+            }
+
+            const labelContent = requirementUrl
+                ? `<a class="tech-requirement__name tech-requirement__link" href="${escapeHtml(requirementUrl)}">${label}</a>`
+                : `<span class="tech-requirement__name">${label}</span>`;
 
           return (
             `<li class="tech-requirement ${statusClass}">` +
-            `<span class="tech-requirement__name">${label}</span>` +
-            `<span class="tech-requirement__progress">${current} / ${required}</span>` +
+            labelContent +
+                `<span class="tech-requirement__progress">${current} / ${required}</span>` +
             '</li>'
           );
         })

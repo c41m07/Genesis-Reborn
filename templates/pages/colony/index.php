@@ -156,6 +156,7 @@ ob_start();
                         'status' => $status,
                         'class' => 'building-card',
                         'attributes' => [
+                            'id' => 'building-' . $definition->getKey(),
                             'data-building-card' => $definition->getKey(),
                         ],
                         'body' => static function () use (
