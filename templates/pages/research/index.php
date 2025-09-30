@@ -98,7 +98,7 @@ ob_start();
                     $canResearch = (bool) ($item['canResearch'] ?? false);
                     $level = (int) ($item['level'] ?? 0);
                     $maxLevel = (int) ($item['maxLevel'] ?? 0);
-                    $progess = (int) (($item['progress'] ?? 0.0)*100);
+                    $progress = (int) (($item['progress'] ?? 0.0)*100);
 //                    $progress = (int) round(($item['progress'] ?? 0.0) * 100);
                     $requirements = $item['requirements'] ?? ['ok' => true, 'missing' => []];
                     $requirementsOk = (bool) ($requirements['ok'] ?? true);
