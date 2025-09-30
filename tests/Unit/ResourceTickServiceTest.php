@@ -83,16 +83,16 @@ class ResourceTickServiceTest extends TestCase
         self::assertCount(2, $result);
         $planetOne = $result[1];
         self::assertSame([
-            'metal' => 1349,
-            'crystal' => 632,
+            'metal' => 1699,
+            'crystal' => 764,
             'hydrogen' => 10,
-            'energy' => 2380,
+            'energy' => 1487,
         ], $planetOne['resources']);
         self::assertSame([
-            'metal' => 175,
-            'crystal' => 66,
+            'metal' => 350,
+            'crystal' => 132,
             'hydrogen' => -95,
-            'energy' => 1190,
+            'energy' => 744,
         ], $planetOne['production_per_hour']);
         self::assertSame([
             'metal' => 90000,
@@ -101,10 +101,10 @@ class ResourceTickServiceTest extends TestCase
             'energy' => 3850,
         ], $planetOne['capacities']);
         self::assertSame([
-            'production' => 1318,
-            'consumption' => 128,
-            'balance' => 1190,
-            'available' => 2380,
+            'production' => 776,
+            'consumption' => 33,
+            'balance' => 744,
+            'available' => 1487,
             'ratio' => 1.0,
         ], $planetOne['energy']);
         self::assertSame(7200, $planetOne['elapsed_seconds']);
@@ -119,7 +119,7 @@ class ResourceTickServiceTest extends TestCase
         self::assertSame([
             'metal' => 0,
             'crystal' => 0,
-            'energy' => -69,
+            'energy' => -29,
         ], $planetTwo['production_per_hour']);
         self::assertSame([
             'metal' => 58000,
@@ -129,8 +129,8 @@ class ResourceTickServiceTest extends TestCase
         ], $planetTwo['capacities']);
         self::assertSame([
             'production' => 0,
-            'consumption' => 69,
-            'balance' => -69,
+            'consumption' => 29,
+            'balance' => -29,
             'available' => 0,
             'ratio' => 0.0,
         ], $planetTwo['energy']);
@@ -229,6 +229,52 @@ class ResourceTickServiceTest extends TestCase
         $effects = ResourceEffectFactory::fromBuildingConfig($loader->getBuildingConfigs());
 
         $this->service = new ResourceTickService($effects, $loader->getBalanceConfig());
+    }
+
+    public function testEnergyDeficitCoveredByStockMaintainsProductionUntilDepleted(): void
+    {
+        $startTick = new DateTimeImmutable('2025-09-20 08:00:00');
+        $firstTickTime = $startTick->add(new DateInterval('PT1M'));
+
+        $effectsOverride = [
+            'test_mine' => [
+                'produces' => [
+                    'metal' => ['base' => 120.0, 'growth' => 1.0],
+                ],
+                'consumes' => [
+                    'energy' => ['base' => 600.0, 'growth' => 1.0],
+                ],
+            ],
+        ];
+
+        $initialState = [
+            'resources' => ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 20],
+            'capacities' => ['metal' => 1000, 'crystal' => 1000, 'hydrogen' => 1000, 'energy' => 100],
+            'last_tick' => $startTick,
+            'building_levels' => ['test_mine' => 1],
+        ];
+
+        $firstTick = $this->service->tick([1 => $initialState], $firstTickTime, $effectsOverride)[1];
+
+        self::assertSame(1.0, $firstTick['energy']['ratio']);
+        self::assertSame(2, $firstTick['resources']['metal']);
+        self::assertSame(0, $firstTick['resources']['crystal']);
+        self::assertSame(0, $firstTick['resources']['hydrogen']);
+        self::assertSame(10, $firstTick['energy']['available']);
+        self::assertSame(120, $firstTick['production_per_hour']['metal']);
+
+        $secondState = $initialState;
+        $secondState['resources'] = $firstTick['resources'];
+        $secondState['capacities'] = $firstTick['capacities'];
+        $secondState['last_tick'] = $firstTickTime;
+
+        $secondTickTime = $firstTickTime->add(new DateInterval('PT1M'));
+        $secondTick = $this->service->tick([1 => $secondState], $secondTickTime, $effectsOverride)[1];
+
+        self::assertSame(0.0, $secondTick['energy']['ratio']);
+        self::assertSame(2, $secondTick['resources']['metal']);
+        self::assertSame(0, $secondTick['energy']['available']);
+        self::assertSame(0, $secondTick['production_per_hour']['metal']);
     }
 
     public function testEnergyDeficitCoveredByStockMaintainsProductionUntilDepleted(): void
