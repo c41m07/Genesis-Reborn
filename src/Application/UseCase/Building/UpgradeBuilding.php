@@ -67,7 +67,7 @@ class UpgradeBuilding
 
         $duration = $this->calculator->nextTime($definition, $targetLevel - 1, $projectedLevels);
         $this->buildQueue->enqueue($planetId, $buildingKey, $targetLevel, $duration);
-        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
+        $this->playerStats->addBuildingSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Construction planifiée.'];

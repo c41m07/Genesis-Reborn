@@ -94,7 +94,7 @@ class QueueProcessingTest extends TestCase
         $planetAfter = $planetRepository->find(1);
         self::assertNotNull($planetAfter);
         self::assertGreaterThan(0, $planetAfter->getMetalPerHour());
-        self::assertSame(100, $playerStats->getScienceSpending(42));
+        self::assertSame(100, $playerStats->getBuildingSpending(42));
     }
 
     /**
@@ -234,7 +234,7 @@ class QueueProcessingTest extends TestCase
 
         self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
         self::assertSame(0, $shipQueue->countActive(1));
-        self::assertSame(600, $playerStats->getScienceSpending(42));
+        self::assertSame(600, $playerStats->getFleetSpending(42));
     }
 
     /**
@@ -1265,18 +1265,46 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
  */
 class InMemoryPlayerStatsRepository implements PlayerStatsRepositoryInterface
 {
-    private int $total = 0;
+    private int $buildingSpent = 0;
+
+    private int $scienceSpent = 0;
+
+    private int $fleetSpent = 0;
+
+    public function addBuildingSpending(int $playerId, int $amount): void
+    {
+        if ($amount > 0) {
+            $this->buildingSpent += $amount;
+        }
+    }
 
     public function addScienceSpending(int $playerId, int $amount): void
     {
         if ($amount > 0) {
-            $this->total += $amount;
+            $this->scienceSpent += $amount;
         }
+    }
+
+    public function addFleetSpending(int $playerId, int $amount): void
+    {
+        if ($amount > 0) {
+            $this->fleetSpent += $amount;
+        }
+    }
+
+    public function getBuildingSpending(int $playerId): int
+    {
+        return $this->buildingSpent;
     }
 
     public function getScienceSpending(int $playerId): int
     {
-        return $this->total;
+        return $this->scienceSpent;
+    }
+
+    public function getFleetSpending(int $playerId): int
+    {
+        return $this->fleetSpent;
     }
 }
 

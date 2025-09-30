@@ -13,7 +13,7 @@
     ]
   },
   {
-    "version": "Va0.0.2-alpha",
+    "version": "V0.0.2-alpha",
     "date": "23-09-2025",
     "changes": [
       "[feat] : ajoute le module Changelog (contrôleur + vue) et améliore la structure JSON du changelog",
@@ -37,34 +37,26 @@
     "changes": [
       "[feat] : met à jour les tableaux de bord de colonie et les détails planétaires",
       "[feat] : configure les caractéristiques de la planète mère selon l’orbite",
-      "[fix] : met à jour les ressources initiales et capacités, ajuste l’URL du sprite et nettoie l’affichage des bonus"
+      "[fix] : met à jour les ressources initiales et capacités, ajuste l’URL du sprite et nettoie l’affichage des bonus",
+      "[chore] : met à jour `composer.lock` (améliorations PHPStan/CI/maintenance)"
+    ]
+  },
+  {
+    "version": "Va0.0.4-alpha",
+    "date": "26-09-2025",
+    "changes": [
+      "[fix] : améliore l’UI de l’arbre techno avec un panneau de détails « sticky »"
     ]
   },
   {
     "version": "Va0.0.5-alpha",
-    "date": "26-09-2025",
-    "changes": [
-      "[fix] : améliore l’UI de l’arbre techno avec un panneau de détails ‘sticky’"
-    ]
-  },
-  {
-    "version": "Va0.0.6-alpha",
-    "date": "29-09-2025",
-    "changes": [
-      "[chore] : met à jour `composer.lock` (PHP-CS-Fixer 3.88.2)",
-      "[balance] : ajuste les valeurs de production de base dans `buildings.yml`",
-      "[fix] : affine le style de l’arbre techno (cohérence UI)"
-    ]
-  },
-  {
-    "version": "Va0.0.7-alpha",
     "date": "30-09-2025",
     "changes": [
-      "[style] : standardise les espacements/formatages dans plusieurs fichiers",
+      "[style] : standardise les espacements et le formatage dans plusieurs fichiers",
       "[fix] : ajoute une police de secours (fallback) au `body` dans `app.css`",
-      "[fix] : corrige le nom de variable pour le calcul de progression dans `index.php`",
-      "[fix] : #72 ajoute des `scroll-margin` et ajuste des variables CSS pour les cartes bâtiments",
-      "[fix] : #72 ajoute l’`id` planète aux liens de l’arbre techno et améliore le style des liens de prérequis"
+      "[chore] : met à jour `composer.lock` pour PHP-CS-Fixer 3.88.2",
+      "[fix] : #76 améliore la logique de calcul d’énergie et ajoute un test unitaire pour le scénario de déficit énergétique",
+      "[fix] : #92 ajoute les styles pour la table de données (layout et formatage) dans `app.css`"
     ]
   }
 ]

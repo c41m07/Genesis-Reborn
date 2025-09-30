@@ -76,7 +76,7 @@ class BuildShips
         );
         $duration = max($quantity, $perUnitTime * $quantity);
         $this->shipQueue->enqueue($planetId, $shipKey, $quantity, $duration);
-        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
+        $this->playerStats->addFleetSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Production planifiée.'];

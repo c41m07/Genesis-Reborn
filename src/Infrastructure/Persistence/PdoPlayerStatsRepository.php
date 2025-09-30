@@ -13,22 +13,52 @@ class PdoPlayerStatsRepository implements PlayerStatsRepositoryInterface
     {
     }
 
+    public function addBuildingSpending(int $playerId, int $amount): void
+    {
+        $this->incrementColumn('building_spent', $playerId, $amount);
+    }
+
     public function addScienceSpending(int $playerId, int $amount): void
+    {
+        $this->incrementColumn('science_spent', $playerId, $amount);
+    }
+
+    public function addFleetSpending(int $playerId, int $amount): void
+    {
+        $this->incrementColumn('fleet_spent', $playerId, $amount);
+    }
+
+    public function getBuildingSpending(int $playerId): int
+    {
+        return $this->getColumnValue('building_spent', $playerId);
+    }
+
+    public function getScienceSpending(int $playerId): int
+    {
+        return $this->getColumnValue('science_spent', $playerId);
+    }
+
+    public function getFleetSpending(int $playerId): int
+    {
+        return $this->getColumnValue('fleet_spent', $playerId);
+    }
+
+    private function incrementColumn(string $column, int $playerId, int $amount): void
     {
         if ($amount <= 0) {
             return;
         }
 
-        $stmt = $this->pdo->prepare('UPDATE players SET science_spent = science_spent + :amount WHERE id = :id');
+        $stmt = $this->pdo->prepare(sprintf('UPDATE players SET %1$s = %1$s + :amount WHERE id = :id', $column));
         $stmt->execute([
             'amount' => $amount,
             'id' => $playerId,
         ]);
     }
 
-    public function getScienceSpending(int $playerId): int
+    private function getColumnValue(string $column, int $playerId): int
     {
-        $stmt = $this->pdo->prepare('SELECT science_spent FROM players WHERE id = :id');
+        $stmt = $this->pdo->prepare(sprintf('SELECT %s FROM players WHERE id = :id', $column));
         $stmt->execute(['id' => $playerId]);
         $value = $stmt->fetchColumn();
 

@@ -24,21 +24,21 @@ use InvalidArgumentException;
 class GetDashboard
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface         $planets,
-        private readonly BuildingStateRepositoryInterface  $buildingStates,
-        private readonly BuildQueueRepositoryInterface     $buildQueue,
-        private readonly ResearchQueueRepositoryInterface  $researchQueue,
+        private readonly PlanetRepositoryInterface $planets,
+        private readonly BuildingStateRepositoryInterface $buildingStates,
+        private readonly BuildQueueRepositoryInterface $buildQueue,
+        private readonly ResearchQueueRepositoryInterface $researchQueue,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly PlayerStatsRepositoryInterface    $playerStats,
-        private readonly ResearchStateRepositoryInterface  $researchStates,
-        private readonly FleetRepositoryInterface          $fleets,
-        private readonly BuildingCatalog                   $catalog,
-        private readonly ResearchCatalog                   $researchCatalog,
-        private readonly ShipCatalog                       $shipCatalog,
-        private readonly BuildingCalculator                $calculator,
-        private readonly ProcessBuildQueue                 $processBuildQueue,
-        private readonly ProcessResearchQueue              $processResearchQueue,
-        private readonly ProcessShipBuildQueue             $processShipQueue
+        private readonly PlayerStatsRepositoryInterface $playerStats,
+        private readonly ResearchStateRepositoryInterface $researchStates,
+        private readonly FleetRepositoryInterface $fleets,
+        private readonly BuildingCatalog $catalog,
+        private readonly ResearchCatalog $researchCatalog,
+        private readonly ShipCatalog $shipCatalog,
+        private readonly BuildingCalculator $calculator,
+        private readonly ProcessBuildQueue $processBuildQueue,
+        private readonly ProcessResearchQueue $processResearchQueue,
+        private readonly ProcessShipBuildQueue $processShipQueue
     ) {
     }
 
@@ -63,8 +63,6 @@ class GetDashboard
         $planets = $this->planets->findByUser($userId);
         $planetSummaries = [];
         $totals = ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
-        $buildingPoints = 0;
-        $sciencePoints = 0;
         $researchSum = 0;
         $unlockedResearch = 0;
         $highestTech = ['label' => 'Aucune technologie', 'level' => 0];
@@ -113,11 +111,7 @@ class GetDashboard
             $totals['hydrogen'] += $planet->getHydrogen();
             $totals['energy'] += $planet->getEnergy();
 
-            $buildingTotal = array_sum($levels);
             $researchTotal = array_sum($researchLevels);
-
-            $buildingPoints += $buildingTotal;
-            $sciencePoints += $researchTotal;
 
             $researchSum += $researchTotal;
             $unlockedResearch += count(array_filter($researchLevels, static fn (int $level): bool => $level > 0));
@@ -154,11 +148,11 @@ class GetDashboard
                 $stats = $shipDefinition->getStats();
                 $attack = $stats['attaque'] ?? 0;
                 $defense = $stats['défense'] ?? 0;
-                $fleetPower += ($attack + $defense) * (int)$quantity;
+                $fleetPower += ($attack + $defense) * (int) $quantity;
                 $fleetView[] = [
                     'key' => $shipKey,
                     'label' => $shipDefinition->getLabel(),
-                    'quantity' => (int)$quantity,
+                    'quantity' => (int) $quantity,
                 ];
             }
             usort($fleetView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
@@ -186,10 +180,16 @@ class GetDashboard
             ];
         }
 
+        $buildingSpent = $this->playerStats->getBuildingSpending($userId);
         $scienceSpent = $this->playerStats->getScienceSpending($userId);
-        $sciencePower = (int)floor($scienceSpent / 1000);
+        $fleetSpent = $this->playerStats->getFleetSpending($userId);
 
-        $empireScore = $buildingPoints + $sciencePoints + $militaryPower;
+        $buildingPoints = intdiv($buildingSpent, 1000);
+        $sciencePoints = intdiv($scienceSpent, 1000);
+        $militaryPoints = intdiv($fleetSpent, 1000);
+        $sciencePower = $sciencePoints;
+
+        $empireScore = $buildingPoints + $sciencePoints + $militaryPoints;
 
         return [
             'planets' => $planetSummaries,
@@ -203,10 +203,12 @@ class GetDashboard
                 'points' => $empireScore,
                 'buildingPoints' => $buildingPoints,
                 'sciencePoints' => $sciencePoints,
-                'militaryPoints' => $militaryPower,
+                'militaryPoints' => $militaryPoints,
                 'militaryPower' => $militaryPower,
                 'planetCount' => count($planets),
+                'buildingSpent' => $buildingSpent,
                 'scienceSpent' => $scienceSpent,
+                'fleetSpent' => $fleetSpent,
                 'sciencePower' => $sciencePower,
             ],
         ];
