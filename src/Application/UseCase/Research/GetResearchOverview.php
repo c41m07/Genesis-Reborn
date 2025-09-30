@@ -16,13 +16,13 @@ use RuntimeException;
 class GetResearchOverview
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ResearchQueueRepositoryInterface $researchQueue,
-        private readonly ResearchCatalog $catalog,
-        private readonly ResearchCalculator $calculator,
-        private readonly ProcessResearchQueue $queueProcessor
+        private readonly ResearchCatalog                  $catalog,
+        private readonly ResearchCalculator               $calculator,
+        private readonly ProcessResearchQueue             $queueProcessor
     ) {
     }
 
@@ -195,7 +195,7 @@ class GetResearchOverview
                 continue;
             }
 
-            $difference = (int) $amount - $current;
+            $difference = (int)$amount - $current;
             if ($difference > 0) {
                 $missing[$resource] = $difference;
             }

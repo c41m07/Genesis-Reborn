@@ -18,12 +18,12 @@ class ProfileController extends AbstractController
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-        private readonly GetDashboard $getDashboard,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly GetDashboard            $getDashboard,
+        ViewRenderer                             $renderer,
+        SessionInterface                         $session,
+        FlashBag                                 $flashBag,
+        CsrfTokenManager                         $csrfTokenManager,
+        string                                   $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }

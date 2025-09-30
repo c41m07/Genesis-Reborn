@@ -6,7 +6,7 @@ metal_mine:
   base_time: 20
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 100
+  prod_base: 200
   prod_growth: 1.15
   energy_use_base: 10
   energy_use_growth: 1.1
@@ -14,8 +14,8 @@ metal_mine:
   affects: metal
   image: assets/svg/illustrations/buildings/metal-mine.svg
   requires:
-    buildings: {  }
-    research: {  }
+    buildings: { }
+    research: { }
 crystal_mine:
   label: 'Mine de cristal'
   base_cost:
@@ -24,7 +24,7 @@ crystal_mine:
   base_time: 25
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 50
+  prod_base: 100
   prod_growth: 1.15
   energy_use_base: 15
   energy_use_growth: 1.1
@@ -32,8 +32,8 @@ crystal_mine:
   affects: crystal
   image: assets/svg/illustrations/buildings/crystal-mine.svg
   requires:
-    buildings: {  }
-    research: {  }
+    buildings: { }
+    research: { }
 solar_plant:
   label: 'Centrale solaire'
   base_cost:
@@ -50,8 +50,8 @@ solar_plant:
   affects: energy
   image: assets/svg/illustrations/buildings/solar-plant.svg
   requires:
-    buildings: {  }
-    research: {  }
+    buildings: { }
+    research: { }
 fusion_reactor:
   label: 'Réacteur à fusion'
   base_cost:
@@ -61,7 +61,7 @@ fusion_reactor:
   base_time: 60
   growth_cost: 1.55
   growth_time: 1.6
-  prod_base: 320
+  prod_base: 200
   prod_growth: 1.18
   energy_use_base: 0
   energy_use_growth: 1.0
@@ -87,7 +87,7 @@ antimatter_reactor:
   base_time: 90
   growth_cost: 1.55
   growth_time: 1.6
-  prod_base: 800
+  prod_base: 400
   prod_growth: 1.2
   energy_use_base: 0
   energy_use_growth: 1.0
@@ -112,7 +112,7 @@ hydrogen_plant:
   base_time: 35
   growth_cost: 1.6
   growth_time: 1.6
-  prod_base: 30
+  prod_base: 300
   prod_growth: 1.15
   energy_use_base: 20
   energy_use_growth: 1.1
@@ -122,7 +122,7 @@ hydrogen_plant:
   requires:
     buildings:
       solar_plant: 1
-    research: {  }
+    research: { }
 storage_depot:
   label: 'Entrepôt planétaire'
   base_cost:
@@ -176,7 +176,7 @@ worker_factory:
     buildings:
       metal_mine: 4
       crystal_mine: 3
-    research: {  }
+    research: { }
   construction_speed_bonus:
     per_level: 0.01
     max: 0.99
@@ -229,7 +229,7 @@ research_lab:
     buildings:
       solar_plant: 1
       crystal_mine: 1
-    research: {  }
+    research: { }
   research_speed_bonus:
     base: 0.01
     linear: true

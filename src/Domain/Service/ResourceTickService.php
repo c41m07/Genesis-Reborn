@@ -64,37 +64,37 @@ class ResourceTickService
 
             $resourceTotals = [];
             foreach ($state['resources'] as $resourceKey => $value) {
-                $resourceTotals[$resourceKey] = (float) $value;
+                $resourceTotals[$resourceKey] = (float)$value;
             }
 
             $baseCapacities = [];
             if (isset($state['base_capacities']) && is_array($state['base_capacities'])) {
                 foreach ($state['base_capacities'] as $resourceKey => $value) {
-                    $baseCapacities[$resourceKey] = (float) $value;
+                    $baseCapacities[$resourceKey] = (float)$value;
                 }
             }
 
             $capacityTotals = $baseCapacities;
             $currentCapacities = [];
             foreach ($state['capacities'] as $resourceKey => $value) {
-                $currentCapacities[$resourceKey] = (float) $value;
+                $currentCapacities[$resourceKey] = (float)$value;
 
                 if (!array_key_exists($resourceKey, $capacityTotals)) {
-                    $capacityTotals[$resourceKey] = (float) $value;
+                    $capacityTotals[$resourceKey] = (float)$value;
                 }
             }
 
             $buildingLevels = [];
             if (isset($state['building_levels']) && is_array($state['building_levels'])) {
                 foreach ($state['building_levels'] as $buildingKey => $level) {
-                    $buildingLevels[$buildingKey] = max(0, (int) $level);
+                    $buildingLevels[$buildingKey] = max(0, (int)$level);
                 }
             }
 
             $previousBuildingLevels = [];
             if (isset($state['previous_building_levels']) && is_array($state['previous_building_levels'])) {
                 foreach ($state['previous_building_levels'] as $buildingKey => $level) {
-                    $previousBuildingLevels[$buildingKey] = max(0, (int) $level);
+                    $previousBuildingLevels[$buildingKey] = max(0, (int)$level);
                 }
             }
 
@@ -176,13 +176,22 @@ class ResourceTickService
                     }
                 }
             }
+            $secondsFactor = $elapsedSeconds / $this->balanceConfig->getTickDurationSeconds();
+            $energyPerHour = $energyProduction - $energyConsumption;
+            $energyCapacity = $capacityTotals['energy'] ?? null;
+            $currentEnergy = $resourceTotals['energy'] ?? 0.0;
+            $energyDelta = $energyPerHour * $secondsFactor;
+            $projectedEnergy = $currentEnergy + $energyDelta;
+
+            if ($energyCapacity !== null && $energyCapacity > 0) {
+                $projectedEnergy = min($energyCapacity, $projectedEnergy);
+            }
 
             $energyRatio = 1.0;
-            if ($energyConsumption > 0.0 && $energyProduction < $energyConsumption) {
+            if ($energyPerHour < 0.0 && $projectedEnergy <= 0.0 && $energyConsumption > 0.0) {
                 $energyRatio = max(0.0, $energyProduction / $energyConsumption);
             }
 
-            $secondsFactor = $elapsedSeconds / $this->balanceConfig->getTickDurationSeconds();
             $adjustedProduction = [];
 
             foreach ($productionRaw as $resourceKey => $perHour) {
@@ -206,17 +215,7 @@ class ResourceTickService
                 $resourceTotals[$resourceKey] = max(0.0, $newAmount);
             }
 
-            $energyPerHour = $energyProduction - $energyConsumption;
-            $energyDelta = $energyPerHour * $secondsFactor;
-            $currentEnergy = $resourceTotals['energy'] ?? 0.0;
-            $energyCapacity = $capacityTotals['energy'] ?? null;
-            $energyAvailable = $currentEnergy + $energyDelta;
-
-            if ($energyCapacity !== null && $energyCapacity > 0) {
-                $energyAvailable = min($energyCapacity, $energyAvailable);
-            }
-
-            $energyAvailable = max(0.0, $energyAvailable);
+            $energyAvailable = max(0.0, $projectedEnergy);
             $resourceTotals['energy'] = $energyAvailable;
 
             $finalResources = [];
@@ -263,8 +262,8 @@ class ResourceTickService
             return 0.0;
         }
 
-        $base = (float) ($config['base'] ?? 0.0);
-        $growth = isset($config['growth']) ? (float) $config['growth'] : 1.0;
+        $base = (float)($config['base'] ?? 0.0);
+        $growth = isset($config['growth']) ? (float)$config['growth'] : 1.0;
         $value = $base * pow($growth, max(0, $level - 1));
 
         if (!empty($config['linear'])) {

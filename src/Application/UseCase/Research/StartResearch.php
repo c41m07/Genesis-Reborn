@@ -15,13 +15,13 @@ use App\Domain\Service\ResearchCatalog;
 class StartResearch
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly ResearchQueueRepositoryInterface $researchQueue,
-        private readonly PlayerStatsRepositoryInterface $playerStats,
-        private readonly ResearchCatalog $catalog,
-        private readonly ResearchCalculator $calculator
+        private readonly PlayerStatsRepositoryInterface   $playerStats,
+        private readonly ResearchCatalog                  $catalog,
+        private readonly ResearchCalculator               $calculator
     ) {
     }
 
@@ -141,7 +141,7 @@ class StartResearch
         $total = 0;
         foreach ($cost as $amount) {
             if ($amount > 0) {
-                $total += (int) $amount;
+                $total += (int)$amount;
             }
         }
 

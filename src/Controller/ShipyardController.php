@@ -22,14 +22,14 @@ class ShipyardController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
-        private readonly GetShipyardOverview $getOverview,
-        private readonly BuildShips $buildShips,
-        private readonly ProcessShipBuildQueue $shipQueueProcessor,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly GetShipyardOverview       $getOverview,
+        private readonly BuildShips                $buildShips,
+        private readonly ProcessShipBuildQueue     $shipQueueProcessor,
+        ViewRenderer                               $renderer,
+        SessionInterface                           $session,
+        FlashBag                                   $flashBag,
+        CsrfTokenManager                           $csrfTokenManager,
+        string                                     $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -60,7 +60,7 @@ class ShipyardController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {
@@ -112,14 +112,14 @@ class ShipyardController extends AbstractController
                 return $this->redirect($this->baseUrl . '/shipyard?planet=' . $selectedId);
             }
 
-            $quantity = isset($data['quantity']) ? (int) $data['quantity'] : 1;
+            $quantity = isset($data['quantity']) ? (int)$data['quantity'] : 1;
             $quantity = max(1, $quantity);
             $result = $this->buildShips->execute($selectedId, $userId, $data['ship'] ?? '', $quantity);
             if ($request->wantsJson()) {
                 $updated = $this->getOverview->execute($selectedId);
                 $planet = $updated['planet'];
                 $queue = $this->formatShipQueue($updated['queue'] ?? []);
-                $shipKey = (string) ($data['ship'] ?? '');
+                $shipKey = (string)($data['ship'] ?? '');
                 $shipEntry = $this->findShipEntry($updated['categories'] ?? [], $shipKey);
 
                 return $this->json([
@@ -176,10 +176,10 @@ class ShipyardController extends AbstractController
 
         foreach ($queue['jobs'] ?? [] as $job) {
             $jobs[] = [
-                'ship' => (string) ($job['ship'] ?? ''),
-                'label' => (string) ($job['label'] ?? ''),
-                'quantity' => (int) ($job['quantity'] ?? 0),
-                'remaining' => (int) ($job['remaining'] ?? 0),
+                'ship' => (string)($job['ship'] ?? ''),
+                'label' => (string)($job['label'] ?? ''),
+                'quantity' => (int)($job['quantity'] ?? 0),
+                'remaining' => (int)($job['remaining'] ?? 0),
                 'endsAt' => $this->formatDateTime($job['endsAt'] ?? null),
             ];
         }
@@ -188,6 +188,11 @@ class ShipyardController extends AbstractController
             'count' => count($jobs),
             'jobs' => $jobs,
         ];
+    }
+
+    private function formatDateTime(mixed $value): ?string
+    {
+        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 
     /**
@@ -244,29 +249,24 @@ class ShipyardController extends AbstractController
             }
 
             $missing[] = [
-                'type' => (string) ($item['type'] ?? ''),
-                'key' => (string) ($item['key'] ?? ''),
-                'label' => (string) ($item['label'] ?? ''),
-                'level' => (int) ($item['level'] ?? 0),
-                'current' => (int) ($item['current'] ?? 0),
+                'type' => (string)($item['type'] ?? ''),
+                'key' => (string)($item['key'] ?? ''),
+                'label' => (string)($item['label'] ?? ''),
+                'level' => (int)($item['level'] ?? 0),
+                'current' => (int)($item['current'] ?? 0),
             ];
         }
 
         return [
             'key' => $definition->getKey(),
             'label' => $definition->getLabel(),
-            'canBuild' => (bool) ($entry['canBuild'] ?? false),
-            'affordable' => (bool) ($entry['affordable'] ?? false),
-            'missingResources' => array_map(static fn ($value) => (int) $value, $entry['missingResources'] ?? []),
+            'canBuild' => (bool)($entry['canBuild'] ?? false),
+            'affordable' => (bool)($entry['affordable'] ?? false),
+            'missingResources' => array_map(static fn ($value) => (int)$value, $entry['missingResources'] ?? []),
             'requirements' => [
-                'ok' => (bool) ($requirements['ok'] ?? false),
+                'ok' => (bool)($requirements['ok'] ?? false),
                 'missing' => $missing,
             ],
         ];
-    }
-
-    private function formatDateTime(mixed $value): ?string
-    {
-        return $value instanceof DateTimeInterface ? $value->format(DATE_ATOM) : null;
     }
 }

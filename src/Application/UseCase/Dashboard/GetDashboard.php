@@ -63,8 +63,6 @@ class GetDashboard
         $planets = $this->planets->findByUser($userId);
         $planetSummaries = [];
         $totals = ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
-        $buildingPoints = 0;
-        $sciencePoints = 0;
         $researchSum = 0;
         $unlockedResearch = 0;
         $highestTech = ['label' => 'Aucune technologie', 'level' => 0];
@@ -113,11 +111,7 @@ class GetDashboard
             $totals['hydrogen'] += $planet->getHydrogen();
             $totals['energy'] += $planet->getEnergy();
 
-            $buildingTotal = array_sum($levels);
             $researchTotal = array_sum($researchLevels);
-
-            $buildingPoints += $buildingTotal;
-            $sciencePoints += $researchTotal;
 
             $researchSum += $researchTotal;
             $unlockedResearch += count(array_filter($researchLevels, static fn (int $level): bool => $level > 0));
@@ -186,10 +180,16 @@ class GetDashboard
             ];
         }
 
+        $buildingSpent = $this->playerStats->getBuildingSpending($userId);
         $scienceSpent = $this->playerStats->getScienceSpending($userId);
-        $sciencePower = (int) floor($scienceSpent / 1000);
+        $fleetSpent = $this->playerStats->getFleetSpending($userId);
 
-        $empireScore = $buildingPoints + $sciencePoints + $militaryPower;
+        $buildingPoints = intdiv($buildingSpent, 1000);
+        $sciencePoints = intdiv($scienceSpent, 1000);
+        $militaryPoints = intdiv($fleetSpent, 1000);
+        $sciencePower = $sciencePoints;
+
+        $empireScore = $buildingPoints + $sciencePoints + $militaryPoints;
 
         return [
             'planets' => $planetSummaries,
@@ -203,10 +203,12 @@ class GetDashboard
                 'points' => $empireScore,
                 'buildingPoints' => $buildingPoints,
                 'sciencePoints' => $sciencePoints,
-                'militaryPoints' => $militaryPower,
+                'militaryPoints' => $militaryPoints,
                 'militaryPower' => $militaryPower,
                 'planetCount' => count($planets),
+                'buildingSpent' => $buildingSpent,
                 'scienceSpent' => $scienceSpent,
+                'fleetSpent' => $fleetSpent,
                 'sciencePower' => $sciencePower,
             ],
         ];

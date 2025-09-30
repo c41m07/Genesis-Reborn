@@ -6,6 +6,7 @@
 ---
 
 ## Sommaire
+
 - [Aperçu du projet](#aperçu-du-projet)
 - [Fonctionnalités principales](#fonctionnalités-principales)
 - [Architecture & organisation](#architecture--organisation)
@@ -23,23 +24,28 @@
 ---
 
 ## Aperçu du projet
+
 - Version **Solo** opérationnelle : toutes les entités portent un `player_id` et sont filtrées par joueur connecté.
-- Architecture **MVC refondue** : front controller unique, routeur interne, séparation Domain/Application/Infrastructure/Templates/Config.
+- Architecture **MVC refondue** : front controller unique, routeur interne, séparation
+  Domain/Application/Infrastructure/Templates/Config.
 - Composer + PSR-4, tests unitaires, analyse statique, outils QA intégrés.
 - Front basé sur gabarits HTML/CSS, Vanilla JS (ESM) et pipeline d’icônes SVG.
 
 ---
 
 ## Fonctionnalités principales
+
 - **Comptes & authentification** : inscription, connexion, déconnexion, CSRF sur POST.
 - **Colonies & bâtiments** : construction, file d’attente, coûts, production, calcul d’énergie.
 - **Recherches** : catalogue, prérequis, files par planète.
-- **Chantier spatial & flottes** : construction navale, planification de missions, gestion carburant/ETA, résolutions PvE.
+- **Chantier spatial & flottes** : construction navale, planification de missions, gestion carburant/ETA, résolutions
+  PvE.
 - **Journal & tableau de bord** : suivi des événements et synthèse de progression.
 
 ---
 
 ## Architecture & organisation
+
 ```
 /config
   /balance (balance.yml, buildings.yml, ships.yml, technologies.yml)
@@ -62,16 +68,19 @@ tests (PHPUnit)
 ---
 
 ## Modèles & données
+
 - **Joueur** : unique par email/username, propriétaire de planètes, files, flottes.
 - **Planètes** : niveaux de bâtiments, file `build_queue`, rendement/énergie recalculés.
 - **Technologies** : niveaux par joueur, file `research_queue`.
 - **Vaisseaux & flottes** : production par `ship_build_queue`, missions (exploration, attaque, transport).
 - **Journal** : événements PvE et synthèses multi-joueurs.
-- **Balance** : voir [docs/balance.md](./balance.md) pour la structure des YAML (bâtiments, recherches, unités) et leur chargement.
+- **Balance** : voir [docs/balance.md](./balance.md) pour la structure des YAML (bâtiments, recherches, unités) et leur
+  chargement.
 
 ---
 
 ## Services métier
+
 - Catalogues : `BuildingCatalog`, `ResearchCatalog`, `ShipCatalog`.
 - Calculs : `BuildingCalculator`, `ResearchCalculator`, `CostService`.
 - Files & ticks : `ResourceTickService`, `ProcessBuildQueue`, `ProcessResearchQueue`, `ProcessShipBuildQueue`.
@@ -80,6 +89,7 @@ tests (PHPUnit)
 ---
 
 ## Endpoints & navigation
+
 - **Auth** : `/`, `/login`, `/register`, `/logout`
 - **Dashboard** : `/dashboard?planet=`
 - **Colonies** : `/colony` (upgrade bâtiments)
@@ -93,18 +103,24 @@ tests (PHPUnit)
 ---
 
 ## Design system & assets
+
 - **Tokens CSS** (`public/assets/css/tokens.css`) : couleurs, espacements, typographie, contrastes (WCAG AA).
 - **Sprite d’icônes** (`public/assets/svg/sprite.svg`) via `<use href="/assets/svg/sprite.svg#icon-...">`.
 - **Pipeline icônes** : ajouter des SVG dans `public/assets/svg/icons/` puis exécuter `npm run svgo:build`.
 
 ### Comportement du ticker de ressources
-- Le snapshot de ressources embarque désormais la capacité maximale pour chaque type, exposée dans le layout et via l’API.
-- Le ticker JavaScript conserve cette capacité, borne les valeurs à 0 et affiche l’information sous la forme `actuel / capacité`.
-- Lorsque la réserve atteint 0 avec un débit horaire négatif, le composant applique `resource-meter--warning` afin de signaler visuellement l’épuisement.
+
+- Le snapshot de ressources embarque désormais la capacité maximale pour chaque type, exposée dans le layout et via
+  l’API.
+- Le ticker JavaScript conserve cette capacité, borne les valeurs à 0 et affiche l’information sous la forme
+  `actuel / capacité`.
+- Lorsque la réserve atteint 0 avec un débit horaire négatif, le composant applique `resource-meter--warning` afin de
+  signaler visuellement l’épuisement.
 
 ---
 
 ## Sessions & sécurité
+
 - Gestion via `App\Infrastructure\Http\Session\Session`.
 - Méthodes : `get/set/has/remove`, `flash`, `pull`.
 - Accessible via injection `SessionInterface` (ne pas utiliser `$_SESSION` directement).
@@ -112,6 +128,7 @@ tests (PHPUnit)
 ---
 
 ## Installation & commandes
+
 ```bash
 # Dépendances
 composer update
@@ -137,24 +154,29 @@ npm run svgo:build
 ---
 
 ## Roadmap & évolutions multi
-- Consulter [`docs/ROADMAP.md`](./ROADMAP.md) pour suivre la progression détaillée par piliers : Solo, Multijoueur, Avancés et Bonus.
+
+- Consulter [`docs/ROADMAP.md`](./ROADMAP.md) pour suivre la progression détaillée par piliers : Solo, Multijoueur,
+  Avancés et Bonus.
 
 ---
 
 ## Bugs connus & TODO
+
 - enlever les production de dashboard dans planétes selectionnées et remplacer par les caractéristique de la planéte :
   taille, temperature max et température minimal pour future implémentation des planéte procédural
-- Génération procédurale des planètes encore simplifiée : les coordonnées et caractéristiques n'impactent pas la production.
+- Génération procédurale des planètes encore simplifiée : les coordonnées et caractéristiques n'impactent pas la
+  production.
 - Colonisation multi-planètes et transferts de ressources en transit encore à implémenter côté backend et interface.
 - Onglet flottes : ne permet pas de gérer les flottes du joueur actuellement et est juste un calculateur de carburant.
 - Journal et Profil: Refonte complete à faire.
 - Rajouter des info sur dashboard pour les mouvement de flottes ou autre interaction.
-- Rajouter countdown sur page impérial sur "production en cour" ( prévoir future implémentation pour les countdowns de 
+- Rajouter countdown sur page impérial sur "production en cour" ( prévoir future implémentation pour les countdowns de
   déplacement de flotte).
 
 ---
 
 ## Qualité & tests
+
 - **Tests unitaires** via PHPUnit (sessions, calculs bâtiments).
 - **Analyse statique** : `composer stan` (PHPStan).
 - **Normes de code** : `composer cs` (PHP-CS-Fixer).
@@ -163,5 +185,6 @@ npm run svgo:build
 ---
 
 ## Licence
+
 Projet éducatif en cours de développement.  
 Assets tiers sous licence respective.  

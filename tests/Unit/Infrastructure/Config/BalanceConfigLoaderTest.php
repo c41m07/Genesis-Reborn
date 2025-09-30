@@ -16,11 +16,6 @@ final class BalanceConfigLoaderTest extends TestCase
 {
     private BalanceConfigLoader $loader;
 
-    protected function setUp(): void
-    {
-        $this->loader = new BalanceConfigLoader(__DIR__ . '/../../../../config/balance');
-    }
-
     public function testGetBuildingConfigReturnsDefinition(): void
     {
         $definition = $this->loader->getBuildingConfig('metal_mine');
@@ -95,5 +90,10 @@ final class BalanceConfigLoaderTest extends TestCase
         self::assertSame(12000, $fallback['diameter']);
         self::assertSame(-20, $fallback['temperature_min']);
         self::assertSame(40, $fallback['temperature_max']);
+    }
+
+    protected function setUp(): void
+    {
+        $this->loader = new BalanceConfigLoader(__DIR__ . '/../../../../config/balance');
     }
 }

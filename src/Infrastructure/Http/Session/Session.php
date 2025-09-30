@@ -19,7 +19,7 @@ class Session implements SessionInterface
      */
     public function __construct(array &$data)
     {
-        $this->data = & $data;
+        $this->data = &$data;
     }
 
     /**
@@ -43,11 +43,6 @@ class Session implements SessionInterface
     public function remove(string $key): void
     {
         unset($this->data[$key]);
-    }
-
-    public function has(string $key): bool
-    {
-        return array_key_exists($key, $this->data);
     }
 
     public function invalidate(): void
@@ -74,6 +69,11 @@ class Session implements SessionInterface
         unset($this->data[$key]);
 
         return $value;
+    }
+
+    public function has(string $key): bool
+    {
+        return array_key_exists($key, $this->data);
     }
 
     /**

@@ -15,11 +15,11 @@ use RuntimeException;
 abstract class AbstractController
 {
     public function __construct(
-        protected readonly ViewRenderer $renderer,
+        protected readonly ViewRenderer     $renderer,
         protected readonly SessionInterface $session,
-        protected readonly FlashBag $flashBag,
+        protected readonly FlashBag         $flashBag,
         protected readonly CsrfTokenManager $csrfTokenManager,
-        protected readonly string $baseUrl
+        protected readonly string           $baseUrl
     ) {
     }
 
@@ -57,11 +57,6 @@ abstract class AbstractController
         $this->flashBag->add($type, $message);
     }
 
-    protected function getUserId(): ?int
-    {
-        return $this->session->get('user_id');
-    }
-
     protected function requireUser(): int
     {
         $userId = $this->getUserId();
@@ -69,7 +64,12 @@ abstract class AbstractController
             throw new \RuntimeException('Utilisateur non connecté.');
         }
 
-        return (int) $userId;
+        return (int)$userId;
+    }
+
+    protected function getUserId(): ?int
+    {
+        return $this->session->get('user_id');
     }
 
     protected function generateCsrfToken(string $id): string

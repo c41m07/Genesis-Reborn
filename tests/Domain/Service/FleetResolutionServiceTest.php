@@ -19,15 +19,6 @@ final class FleetResolutionServiceTest extends TestCase
      */
     private array $temporaryFiles = [];
 
-    protected function tearDown(): void
-    {
-        foreach ($this->temporaryFiles as $file) {
-            @unlink($file);
-        }
-
-        $this->temporaryFiles = [];
-    }
-
     public function testResolveBattleReturnsAttackerVictoryWhenDefenderIsEmpty(): void
     {
         $catalog = $this->createCatalog();
@@ -46,62 +37,6 @@ final class FleetResolutionServiceTest extends TestCase
         self::assertCount(0, $result->getRounds());
         self::assertFalse($result->didAttackerRetreat());
         self::assertFalse($result->didDefenderRetreat());
-    }
-
-    public function testResolveBattleConsumesMultipleRoundsUntilDefenderDestroyed(): void
-    {
-        $catalog = $this->createCatalog();
-        $loader = $this->createLoader($this->buildConfig());
-        $service = new FleetResolutionService($catalog, $loader);
-
-        $result = $service->resolveBattle(
-            new AttackingFleetDTO(['fighter' => 10]),
-            new DefendingFleetDTO(['fighter' => 5])
-        );
-
-        self::assertSame('attacker', $result->getWinner());
-        self::assertSame(['fighter' => 10], $result->getAttackerRemaining());
-        self::assertSame(['fighter' => 0], $result->getDefenderRemaining());
-        self::assertSame(5, $result->getRoundsFought());
-        self::assertFalse($result->didAttackerRetreat());
-        self::assertFalse($result->didDefenderRetreat());
-
-        $rounds = $result->getRounds();
-        self::assertNotEmpty($rounds);
-        self::assertSame(['fighter' => 1], $rounds[0]->getDefenderLosses());
-    }
-
-    public function testMinimumLossRatioForcesAttritionWhenDamageIsInsufficient(): void
-    {
-        $catalog = $this->createCatalog(['attaque' => 0]);
-        $loader = $this->createLoader($this->buildConfig(minLossRatio: 0.5));
-        $service = new FleetResolutionService($catalog, $loader);
-
-        $result = $service->resolveBattle(
-            new AttackingFleetDTO(['fighter' => 2]),
-            new DefendingFleetDTO(['fighter' => 2])
-        );
-
-        self::assertSame('draw', $result->getWinner());
-        self::assertSame(['fighter' => 0], $result->getAttackerRemaining());
-        self::assertSame(['fighter' => 0], $result->getDefenderRemaining());
-        self::assertSame(2, $result->getRoundsFought());
-    }
-
-    public function testRetreatThresholdStopsBattle(): void
-    {
-        $catalog = $this->createCatalog();
-        $loader = $this->createLoader($this->buildConfig(defenderRetreat: 0.9));
-        $service = new FleetResolutionService($catalog, $loader);
-
-        $result = $service->resolveBattle(
-            new AttackingFleetDTO(['fighter' => 8]),
-            new DefendingFleetDTO(['fighter' => 4])
-        );
-
-        self::assertSame('attacker', $result->getWinner());
-        self::assertTrue($result->didDefenderRetreat());
-        self::assertSame(1, $result->getRoundsFought());
     }
 
     /**
@@ -168,5 +103,70 @@ target_priorities:
 damage_modifiers:
   default: 1.0
 YAML;
+    }
+
+    public function testResolveBattleConsumesMultipleRoundsUntilDefenderDestroyed(): void
+    {
+        $catalog = $this->createCatalog();
+        $loader = $this->createLoader($this->buildConfig());
+        $service = new FleetResolutionService($catalog, $loader);
+
+        $result = $service->resolveBattle(
+            new AttackingFleetDTO(['fighter' => 10]),
+            new DefendingFleetDTO(['fighter' => 5])
+        );
+
+        self::assertSame('attacker', $result->getWinner());
+        self::assertSame(['fighter' => 10], $result->getAttackerRemaining());
+        self::assertSame(['fighter' => 0], $result->getDefenderRemaining());
+        self::assertSame(5, $result->getRoundsFought());
+        self::assertFalse($result->didAttackerRetreat());
+        self::assertFalse($result->didDefenderRetreat());
+
+        $rounds = $result->getRounds();
+        self::assertNotEmpty($rounds);
+        self::assertSame(['fighter' => 1], $rounds[0]->getDefenderLosses());
+    }
+
+    public function testMinimumLossRatioForcesAttritionWhenDamageIsInsufficient(): void
+    {
+        $catalog = $this->createCatalog(['attaque' => 0]);
+        $loader = $this->createLoader($this->buildConfig(minLossRatio: 0.5));
+        $service = new FleetResolutionService($catalog, $loader);
+
+        $result = $service->resolveBattle(
+            new AttackingFleetDTO(['fighter' => 2]),
+            new DefendingFleetDTO(['fighter' => 2])
+        );
+
+        self::assertSame('draw', $result->getWinner());
+        self::assertSame(['fighter' => 0], $result->getAttackerRemaining());
+        self::assertSame(['fighter' => 0], $result->getDefenderRemaining());
+        self::assertSame(2, $result->getRoundsFought());
+    }
+
+    public function testRetreatThresholdStopsBattle(): void
+    {
+        $catalog = $this->createCatalog();
+        $loader = $this->createLoader($this->buildConfig(defenderRetreat: 0.9));
+        $service = new FleetResolutionService($catalog, $loader);
+
+        $result = $service->resolveBattle(
+            new AttackingFleetDTO(['fighter' => 8]),
+            new DefendingFleetDTO(['fighter' => 4])
+        );
+
+        self::assertSame('attacker', $result->getWinner());
+        self::assertTrue($result->didDefenderRetreat());
+        self::assertSame(1, $result->getRoundsFought());
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->temporaryFiles as $file) {
+            @unlink($file);
+        }
+
+        $this->temporaryFiles = [];
     }
 }

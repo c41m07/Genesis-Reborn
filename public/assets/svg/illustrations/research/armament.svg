@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <defs>
-    <linearGradient id="arm-bg" x1="10%" y1="8%" x2="90%" y2="92%">
-      <stop offset="0" stop-color="#3b274f"/>
-      <stop offset="1" stop-color="#170f24"/>
-    </linearGradient>
-    <linearGradient id="arm-core" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0" stop-color="#ff9f9f"/>
-      <stop offset="1" stop-color="#ff5858"/>
-    </linearGradient>
-  </defs>
-  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#arm-bg)"/>
-  <path d="M32 56h32l12-12-12-12H32l-12 12z" fill="url(#arm-core)"/>
-  <path d="M40 44h24l6 6-6 6H40l-6-6z" fill="#1b0f25" opacity="0.55"/>
-  <circle cx="48" cy="44" r="6" fill="#ffd0d0" opacity="0.7"/>
+    <defs>
+        <linearGradient id="arm-bg" x1="10%" y1="8%" x2="90%" y2="92%">
+            <stop offset="0" stop-color="#3b274f"/>
+            <stop offset="1" stop-color="#170f24"/>
+        </linearGradient>
+        <linearGradient id="arm-core" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0" stop-color="#ff9f9f"/>
+            <stop offset="1" stop-color="#ff5858"/>
+        </linearGradient>
+    </defs>
+    <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#arm-bg)"/>
+    <path d="M32 56h32l12-12-12-12H32l-12 12z" fill="url(#arm-core)"/>
+    <path d="M40 44h24l6 6-6 6H40l-6-6z" fill="#1b0f25" opacity="0.55"/>
+    <circle cx="48" cy="44" r="6" fill="#ffd0d0" opacity="0.7"/>
 </svg>

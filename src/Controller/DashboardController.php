@@ -16,11 +16,11 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly GetDashboard $getDashboard,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        ViewRenderer                  $renderer,
+        SessionInterface              $session,
+        FlashBag                      $flashBag,
+        CsrfTokenManager              $csrfTokenManager,
+        string                        $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -51,7 +51,7 @@ class DashboardController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $activeSummary = $data['planets'][0] ?? null;
 
         foreach ($data['planets'] as $summary) {

@@ -13,7 +13,7 @@ return static function (array $resources, array $options = []): string {
         return '';
     }
 
-    $showRates = (bool) ($options['showRates'] ?? true);
+    $showRates = (bool)($options['showRates'] ?? true);
     $class = trim('resource-bar ' . ($options['class'] ?? ''));
     $baseUrlOption = $options['baseUrl'] ?? null;
     $assetBase = is_string($baseUrlOption) ? $baseUrlOption : null;
@@ -24,18 +24,18 @@ return static function (array $resources, array $options = []): string {
             continue;
         }
 
-        $label = $data['label'] ?? ucfirst((string) $key);
-        $value = (float) ($data['value'] ?? 0);
+        $label = $data['label'] ?? ucfirst((string)$key);
+        $value = (float)($data['value'] ?? 0);
         $perHour = $data['perHour'] ?? null;
         $capacity = $data['capacity'] ?? null;
         $hint = $data['hint'] ?? null;
         $trend = $data['trend'] ?? null;
 
-        $valueDisplay = format_number((float) $value);
+        $valueDisplay = format_number((float)$value);
         $rateDisplay = '';
         $rateClass = '';
         if ($showRates && $perHour !== null) {
-            $rate = (float) $perHour;
+            $rate = (float)$perHour;
             $ratePrefix = ($key !== 'energy' && $rate > 0) ? '+' : '';
             $rateDisplay = $ratePrefix . format_number($rate) . '/h';
             $rateClass = $rate >= 0 ? 'is-positive' : 'is-negative';
@@ -45,7 +45,7 @@ return static function (array $resources, array $options = []): string {
             $rateClass = $trend;
         }
 
-        $iconHref = asset_url('assets/svg/sprite.svg#icon-' . (string) $key, $assetBase);
+        $iconHref = asset_url('assets/svg/sprite.svg#icon-' . (string)$key, $assetBase);
         $icon = sprintf(
             '<svg class="icon icon-sm" aria-hidden="true"><use href="%s"></use></svg>',
             htmlspecialchars($iconHref, ENT_QUOTES)
@@ -53,7 +53,7 @@ return static function (array $resources, array $options = []): string {
 
         $hintMarkup = '';
         if ($hint) {
-            $hintMarkup = sprintf('<span class="resource-meter__hint">%s</span>', htmlspecialchars((string) $hint, ENT_QUOTES));
+            $hintMarkup = sprintf('<span class="resource-meter__hint">%s</span>', htmlspecialchars((string)$hint, ENT_QUOTES));
         }
 
         $rateMarkup = '';
@@ -63,15 +63,15 @@ return static function (array $resources, array $options = []): string {
 
         $capacityMarkup = '';
         if (array_key_exists('capacity', $data)) {
-            $capacityValue = $capacity !== null ? (float) $capacity : 0.0;
+            $capacityValue = $capacity !== null ? (float)$capacity : 0.0;
             $formattedCapacity = $capacityValue > 0 ? format_number($capacityValue) : '—';
             $capacityMarkup = sprintf('<span class="resource-meter__capacity">/ %s</span>', htmlspecialchars($formattedCapacity, ENT_QUOTES));
         }
 
-        $items .= '<div class="resource-meter" role="group" aria-label="' . htmlspecialchars((string) $label, ENT_QUOTES) . '">';
+        $items .= '<div class="resource-meter" role="group" aria-label="' . htmlspecialchars((string)$label, ENT_QUOTES) . '">';
         $items .= '<div class="resource-meter__icon">' . $icon . '</div>';
         $items .= '<div class="resource-meter__details">';
-        $items .= '<span class="resource-meter__label">' . htmlspecialchars((string) $label, ENT_QUOTES) . '</span>';
+        $items .= '<span class="resource-meter__label">' . htmlspecialchars((string)$label, ENT_QUOTES) . '</span>';
         $items .= '<div class="resource-meter__values">';
         $items .= '<div class="resource-meter__primary">';
         $items .= '<span class="resource-meter__value">' . htmlspecialchars($valueDisplay, ENT_QUOTES) . '</span>';

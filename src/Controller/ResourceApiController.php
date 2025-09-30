@@ -21,17 +21,17 @@ use DateTimeImmutable;
 class ResourceApiController extends AbstractController
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly ProcessBuildQueue $buildQueue,
-        private readonly ProcessResearchQueue $researchQueue,
-        private readonly ProcessShipBuildQueue $shipQueue,
+        private readonly PlanetRepositoryInterface        $planets,
+        private readonly ProcessBuildQueue                $buildQueue,
+        private readonly ProcessResearchQueue             $researchQueue,
+        private readonly ProcessShipBuildQueue            $shipQueue,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly ResourceTickService $resourceTickService,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly ResourceTickService              $resourceTickService,
+        ViewRenderer                                      $renderer,
+        SessionInterface                                  $session,
+        FlashBag                                          $flashBag,
+        CsrfTokenManager                                  $csrfTokenManager,
+        string                                            $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -46,7 +46,7 @@ class ResourceApiController extends AbstractController
             ], 401);
         }
 
-        $planetId = (int) ($request->getQueryParams()['planet'] ?? 0);
+        $planetId = (int)($request->getQueryParams()['planet'] ?? 0);
         if ($planetId <= 0) {
             return $this->json([
                 'success' => false,
@@ -108,51 +108,51 @@ class ResourceApiController extends AbstractController
         $planetTick = $tickResults[$planetId] ?? null;
 
         if ($planetTick !== null) {
-            $elapsed = (int) $planetTick['elapsed_seconds'];
+            $elapsed = (int)$planetTick['elapsed_seconds'];
 
             /** @var array<string, int> $resources */
             $resources = $planetTick['resources'];
             if (isset($resources['metal'])) {
-                $planet->setMetal((int) $resources['metal']);
+                $planet->setMetal((int)$resources['metal']);
             }
             if (isset($resources['crystal'])) {
-                $planet->setCrystal((int) $resources['crystal']);
+                $planet->setCrystal((int)$resources['crystal']);
             }
             if (isset($resources['hydrogen'])) {
-                $planet->setHydrogen((int) $resources['hydrogen']);
+                $planet->setHydrogen((int)$resources['hydrogen']);
             }
             if (isset($resources['energy'])) {
-                $planet->setEnergy((int) $resources['energy']);
+                $planet->setEnergy((int)$resources['energy']);
             }
 
             /** @var array<string, int> $production */
             $production = $planetTick['production_per_hour'];
             if (isset($production['metal'])) {
-                $planet->setMetalPerHour((int) $production['metal']);
+                $planet->setMetalPerHour((int)$production['metal']);
             }
             if (isset($production['crystal'])) {
-                $planet->setCrystalPerHour((int) $production['crystal']);
+                $planet->setCrystalPerHour((int)$production['crystal']);
             }
             if (isset($production['hydrogen'])) {
-                $planet->setHydrogenPerHour((int) $production['hydrogen']);
+                $planet->setHydrogenPerHour((int)$production['hydrogen']);
             }
             if (isset($production['energy'])) {
-                $planet->setEnergyPerHour((int) $production['energy']);
+                $planet->setEnergyPerHour((int)$production['energy']);
             }
 
             /** @var array<string, int> $capacities */
             $capacities = $planetTick['capacities'];
             if (isset($capacities['metal'])) {
-                $planet->setMetalCapacity((int) $capacities['metal']);
+                $planet->setMetalCapacity((int)$capacities['metal']);
             }
             if (isset($capacities['crystal'])) {
-                $planet->setCrystalCapacity((int) $capacities['crystal']);
+                $planet->setCrystalCapacity((int)$capacities['crystal']);
             }
             if (isset($capacities['hydrogen'])) {
-                $planet->setHydrogenCapacity((int) $capacities['hydrogen']);
+                $planet->setHydrogenCapacity((int)$capacities['hydrogen']);
             }
             if (isset($capacities['energy'])) {
-                $planet->setEnergyCapacity((int) $capacities['energy']);
+                $planet->setEnergyCapacity((int)$capacities['energy']);
             }
 
             if ($elapsed > 0 || $correctedFutureTick) {

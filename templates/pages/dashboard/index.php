@@ -72,17 +72,17 @@ ob_start();
                     <div class="metric">
                         <span class="metric__label">Points d’infrastructure</span>
                         <strong class="metric__value"><?= format_number($empire['buildingPoints'] ?? 0) ?></strong>
-                        <span class="metric__hint">Total des niveaux de bâtiments développés.</span>
+                        <span class="metric__hint">Total des ressources investies dans les bâtiments / 1000 (<?= format_number($empire['buildingSpent'] ?? 0) ?>).</span>
                     </div>
                     <div class="metric">
                         <span class="metric__label">Points scientifiques</span>
                         <strong class="metric__value"><?= format_number($empire['sciencePoints'] ?? 0) ?></strong>
-                        <span class="metric__hint">Somme des niveaux de recherches actives.</span>
+                        <span class="metric__hint">Total des ressources investies en recherche / 1000 (<?= format_number($empire['scienceSpent'] ?? 0) ?>).</span>
                     </div>
                     <div class="metric">
-                        <span class="metric__label">Puissance militaire</span>
-                        <strong class="metric__value"><?= format_number($empire['militaryPoints'] ?? ($empire['militaryPower'] ?? 0)) ?></strong>
-                        <span class="metric__hint">Valeur combinée d’attaque et de défense de la flotte.</span>
+                        <span class="metric__label">Points militaires</span>
+                        <strong class="metric__value"><?= format_number($empire['militaryPoints'] ?? 0) ?></strong>
+                        <span class="metric__hint">Total des ressources investies dans la flotte / 1000 (<?= format_number($empire['fleetSpent'] ?? 0) ?>). Puissance brute : <?= format_number($empire['militaryPower'] ?? 0) ?>.</span>
                     </div>
                 </div>
             </article>

@@ -62,7 +62,7 @@ final class BuildingConfig
     public function __construct(string $key, array $data)
     {
         $this->key = $key;
-        $this->label = (string) ($data['label'] ?? $key);
+        $this->label = (string)($data['label'] ?? $key);
 
         $baseCost = $data['base_cost'] ?? [];
         if (!is_array($baseCost)) {
@@ -70,21 +70,21 @@ final class BuildingConfig
         }
 
         foreach ($baseCost as $resource => $value) {
-            $this->baseCost[$resource] = (int) round((float) $value);
+            $this->baseCost[$resource] = (int)round((float)$value);
         }
 
-        $this->growthCost = (float) ($data['growth_cost'] ?? 1.0);
-        $this->baseTime = (int) round((float) ($data['base_time'] ?? 0));
-        $this->growthTime = (float) ($data['growth_time'] ?? 1.0);
-        $this->productionBase = (int) round((float) ($data['prod_base'] ?? 0));
-        $this->productionGrowth = (float) ($data['prod_growth'] ?? 1.0);
-        $this->energyUseBase = (int) round((float) ($data['energy_use_base'] ?? 0));
-        $this->energyUseGrowth = (float) ($data['energy_use_growth'] ?? 1.0);
+        $this->growthCost = (float)($data['growth_cost'] ?? 1.0);
+        $this->baseTime = (int)round((float)($data['base_time'] ?? 0));
+        $this->growthTime = (float)($data['growth_time'] ?? 1.0);
+        $this->productionBase = (int)round((float)($data['prod_base'] ?? 0));
+        $this->productionGrowth = (float)($data['prod_growth'] ?? 1.0);
+        $this->energyUseBase = (int)round((float)($data['energy_use_base'] ?? 0));
+        $this->energyUseGrowth = (float)($data['energy_use_growth'] ?? 1.0);
         $this->energyUseLinear = !empty($data['energy_use_linear']);
-        $this->affects = (string) ($data['affects'] ?? '');
+        $this->affects = (string)($data['affects'] ?? '');
 
         if (!empty($data['image'])) {
-            $this->image = (string) $data['image'];
+            $this->image = (string)$data['image'];
         }
 
         $requires = $data['requires'] ?? [];
@@ -94,13 +94,13 @@ final class BuildingConfig
 
         if (!empty($requires['buildings']) && is_array($requires['buildings'])) {
             foreach ($requires['buildings'] as $buildingKey => $level) {
-                $this->requiredBuildings[$buildingKey] = max(0, (int) $level);
+                $this->requiredBuildings[$buildingKey] = max(0, (int)$level);
             }
         }
 
         if (!empty($requires['research']) && is_array($requires['research'])) {
             foreach ($requires['research'] as $researchKey => $level) {
-                $this->requiredResearch[$researchKey] = max(0, (int) $level);
+                $this->requiredResearch[$researchKey] = max(0, (int)$level);
             }
         }
 
@@ -116,8 +116,8 @@ final class BuildingConfig
                 }
 
                 $this->storage[$resourceKey] = [
-                    'base' => (float) ($config['base'] ?? 0.0),
-                    'growth' => (float) ($config['growth'] ?? 1.0),
+                    'base' => (float)($config['base'] ?? 0.0),
+                    'growth' => (float)($config['growth'] ?? 1.0),
                 ];
             }
         }
@@ -130,8 +130,8 @@ final class BuildingConfig
                 }
 
                 $normalized = [
-                    'base' => (float) ($config['base'] ?? 0.0),
-                    'growth' => (float) ($config['growth'] ?? 1.0),
+                    'base' => (float)($config['base'] ?? 0.0),
+                    'growth' => (float)($config['growth'] ?? 1.0),
                 ];
 
                 if (!empty($config['linear'])) {
@@ -141,6 +141,51 @@ final class BuildingConfig
                 $this->upkeep[$resourceKey] = $normalized;
             }
         }
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return array{base?: float, per_level?: float, growth?: float, linear?: bool, max?: float}
+     */
+    private function normalizeBonusConfig(mixed $value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+
+        if (!is_array($value)) {
+            $numeric = (float)$value;
+            if ($numeric === 0.0) {
+                return [];
+            }
+
+            return ['base' => $numeric];
+        }
+
+        $normalized = [];
+
+        if (array_key_exists('base', $value)) {
+            $normalized['base'] = (float)$value['base'];
+        }
+
+        if (array_key_exists('per_level', $value)) {
+            $normalized['per_level'] = (float)$value['per_level'];
+        }
+
+        if (array_key_exists('growth', $value)) {
+            $normalized['growth'] = (float)$value['growth'];
+        }
+
+        if (!empty($value['linear'])) {
+            $normalized['linear'] = true;
+        }
+
+        if (array_key_exists('max', $value)) {
+            $normalized['max'] = (float)$value['max'];
+        }
+
+        return $normalized;
     }
 
     public function getKey(): string
@@ -270,50 +315,5 @@ final class BuildingConfig
     public function getConstructionSpeedBonus(): array
     {
         return $this->constructionSpeedBonus;
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return array{base?: float, per_level?: float, growth?: float, linear?: bool, max?: float}
-     */
-    private function normalizeBonusConfig(mixed $value): array
-    {
-        if ($value === null) {
-            return [];
-        }
-
-        if (!is_array($value)) {
-            $numeric = (float) $value;
-            if ($numeric === 0.0) {
-                return [];
-            }
-
-            return ['base' => $numeric];
-        }
-
-        $normalized = [];
-
-        if (array_key_exists('base', $value)) {
-            $normalized['base'] = (float) $value['base'];
-        }
-
-        if (array_key_exists('per_level', $value)) {
-            $normalized['per_level'] = (float) $value['per_level'];
-        }
-
-        if (array_key_exists('growth', $value)) {
-            $normalized['growth'] = (float) $value['growth'];
-        }
-
-        if (!empty($value['linear'])) {
-            $normalized['linear'] = true;
-        }
-
-        if (array_key_exists('max', $value)) {
-            $normalized['max'] = (float) $value['max'];
-        }
-
-        return $normalized;
     }
 }

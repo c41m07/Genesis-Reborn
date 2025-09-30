@@ -17,9 +17,9 @@ return static function (array $props): string {
             continue;
         }
 
-        $label = (string) ($item['label'] ?? '');
-        $current = (int) ($item['current'] ?? ($item['currentLevel'] ?? 0));
-        $required = (int) ($item['required'] ?? ($item['level'] ?? 0));
+        $label = (string)($item['label'] ?? '');
+        $current = (int)($item['current'] ?? ($item['currentLevel'] ?? 0));
+        $required = (int)($item['required'] ?? ($item['level'] ?? 0));
 
         $normalizedItems[] = [
             'label' => $label,
@@ -39,10 +39,10 @@ return static function (array $props): string {
     $contentId = $panelId . '-content';
     $isOpen = !empty($props['open']);
 
-    $panelClass = trim('requirements-panel ' . (string) ($props['class'] ?? ''));
-    $summaryClass = trim('requirements-panel__summary ' . (string) ($props['summaryClass'] ?? ''));
-    $contentClass = trim('requirements-panel__content ' . (string) ($props['contentClass'] ?? ''));
-    $listClass = trim('requirements-panel__list building-card__requirements ' . (string) ($props['listClass'] ?? ''));
+    $panelClass = trim('requirements-panel ' . (string)($props['class'] ?? ''));
+    $summaryClass = trim('requirements-panel__summary ' . (string)($props['summaryClass'] ?? ''));
+    $contentClass = trim('requirements-panel__content ' . (string)($props['contentClass'] ?? ''));
+    $listClass = trim('requirements-panel__list building-card__requirements ' . (string)($props['listClass'] ?? ''));
 
     $iconHtml = '';
     if (isset($props['icon']) && is_string($props['icon'])) {
@@ -57,7 +57,7 @@ return static function (array $props): string {
             $options['baseUrl'] = $props['baseUrl'];
         }
 
-        $iconHtml = (string) $props['iconRenderer']((string) $props['iconName'], $options);
+        $iconHtml = (string)$props['iconRenderer']((string)$props['iconName'], $options);
     }
 
     $titleHtml = htmlspecialchars($title, ENT_QUOTES);

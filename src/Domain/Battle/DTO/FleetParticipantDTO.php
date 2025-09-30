@@ -27,22 +27,6 @@ abstract class FleetParticipantDTO
     }
 
     /**
-     * @return array<string, int>
-     */
-    public function getComposition(): array
-    {
-        return $this->composition;
-    }
-
-    /**
-     * @return array<string, float>
-     */
-    public function getModifiers(): array
-    {
-        return $this->modifiers;
-    }
-
-    /**
      * @param array<string, int> $composition
      *
      * @return array<string, int>
@@ -52,8 +36,8 @@ abstract class FleetParticipantDTO
         $sanitized = [];
 
         foreach ($composition as $shipKey => $quantity) {
-            $shipKey = (string) $shipKey;
-            $quantity = (int) $quantity;
+            $shipKey = (string)$shipKey;
+            $quantity = (int)$quantity;
 
             if ($quantity <= 0) {
                 continue;
@@ -77,9 +61,25 @@ abstract class FleetParticipantDTO
         $sanitized = [];
 
         foreach ($modifiers as $key => $value) {
-            $sanitized[(string) $key] = (float) $value;
+            $sanitized[(string)$key] = (float)$value;
         }
 
         return $sanitized;
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function getComposition(): array
+    {
+        return $this->composition;
+    }
+
+    /**
+     * @return array<string, float>
+     */
+    public function getModifiers(): array
+    {
+        return $this->modifiers;
     }
 }

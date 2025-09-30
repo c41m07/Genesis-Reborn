@@ -17,12 +17,12 @@ class TechTreeController extends AbstractController
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
-        private readonly GetTechTree $getTechTree,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly GetTechTree               $getTechTree,
+        ViewRenderer                               $renderer,
+        SessionInterface                           $session,
+        FlashBag                                   $flashBag,
+        CsrfTokenManager                           $csrfTokenManager,
+        string                                     $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -51,7 +51,7 @@ class TechTreeController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {

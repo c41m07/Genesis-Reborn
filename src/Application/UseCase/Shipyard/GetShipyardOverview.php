@@ -21,15 +21,15 @@ class GetShipyardOverview
     private readonly BuildingDefinition $shipyardDefinition;
 
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly ResearchStateRepositoryInterface $researchStates,
+        private readonly PlanetRepositoryInterface         $planets,
+        private readonly BuildingStateRepositoryInterface  $buildingStates,
+        private readonly ResearchStateRepositoryInterface  $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly FleetRepositoryInterface $fleets,
-        private readonly ShipCatalog $catalog,
-        private readonly ProcessShipBuildQueue $queueProcessor,
-        BuildingCatalog $buildingCatalog,
-        private readonly BuildingCalculator $buildingCalculator
+        private readonly FleetRepositoryInterface          $fleets,
+        private readonly ShipCatalog                       $catalog,
+        private readonly ProcessShipBuildQueue             $queueProcessor,
+        BuildingCatalog                                    $buildingCatalog,
+        private readonly BuildingCalculator                $buildingCalculator
     ) {
         $this->shipyardDefinition = $buildingCatalog->get('shipyard');
     }
@@ -82,7 +82,7 @@ class GetShipyardOverview
             $fleetView[] = [
                 'key' => $shipKey,
                 'label' => $label,
-                'quantity' => (int) $quantity,
+                'quantity' => (int)$quantity,
             ];
         }
         usort($fleetView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
@@ -164,13 +164,13 @@ class GetShipyardOverview
         $missing = [];
 
         foreach ($requirements as $key => $requiredLevel) {
-            $current = (int) ($researchLevels[$key] ?? 0);
+            $current = (int)($researchLevels[$key] ?? 0);
             if ($current < $requiredLevel) {
                 $missing[] = [
                     'type' => 'research',
                     'key' => $key,
                     'label' => $catalog[$key]['label'] ?? $key,
-                    'level' => (int) $requiredLevel,
+                    'level' => (int)$requiredLevel,
                     'current' => $current,
                 ];
             }
@@ -207,7 +207,7 @@ class GetShipyardOverview
                 continue;
             }
 
-            $difference = (int) $amount - $current;
+            $difference = (int)$amount - $current;
             if ($difference > 0) {
                 $missing[$resource] = $difference;
             }

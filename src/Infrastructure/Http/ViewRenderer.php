@@ -26,6 +26,6 @@ class ViewRenderer
         ob_start();
         include $path;
 
-        return (string) ob_get_clean();
+        return (string)ob_get_clean();
     }
 }

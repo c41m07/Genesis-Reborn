@@ -11,7 +11,7 @@ class LoginUser
 {
     public function __construct(
         private readonly UserRepositoryInterface $users,
-        private readonly SessionInterface $session
+        private readonly SessionInterface        $session
     ) {
     }
 

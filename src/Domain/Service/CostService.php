@@ -22,7 +22,7 @@ class CostService
         $costs = [];
 
         foreach ($baseCost as $resource => $value) {
-            $costs[$resource] = (int) round(((float) $value) * pow($growthFactor, $currentLevel));
+            $costs[$resource] = (int)round(((float)$value) * pow($growthFactor, $currentLevel));
         }
 
         return $costs;
@@ -43,18 +43,18 @@ class CostService
         for ($i = 0; $i < $levels; $i++) {
             $levelIndex = $startLevel + $i;
             foreach ($baseCost as $resource => $value) {
-                $totals[$resource] += ((float) $value) * pow($growthFactor, $levelIndex);
+                $totals[$resource] += ((float)$value) * pow($growthFactor, $levelIndex);
             }
         }
 
-        return array_map(static fn (float $value) => (int) round($value), $totals);
+        return array_map(static fn (float $value) => (int)round($value), $totals);
     }
 
     public function scaledDuration(int $baseDuration, float $growthFactor, int $currentLevel, float $speedModifier = 1.0): int
     {
         $speedModifier = max($this->balanceConfig->getMinimumSpeedModifier(), $speedModifier);
 
-        return (int) max(1, round($baseDuration * pow($growthFactor, $currentLevel) / $speedModifier));
+        return (int)max(1, round($baseDuration * pow($growthFactor, $currentLevel) / $speedModifier));
     }
 
     /**
@@ -68,7 +68,7 @@ class CostService
 
         $result = [];
         foreach ($cost as $resource => $value) {
-            $result[$resource] = (int) max(0, round(((float) $value) * (1 - $discount)));
+            $result[$resource] = (int)max(0, round(((float)$value) * (1 - $discount)));
         }
 
         return $result;

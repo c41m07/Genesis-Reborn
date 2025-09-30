@@ -39,14 +39,77 @@ final class BalanceGlobals
     public function __construct(array $initialResources = [], array $initialCapacities = [], array $homeworld = [])
     {
         foreach ($initialResources as $resource => $value) {
-            $this->initialResources[$resource] = (int) round((float) $value);
+            $this->initialResources[$resource] = (int)round((float)$value);
         }
 
         foreach ($initialCapacities as $resource => $value) {
-            $this->initialCapacities[$resource] = (int) round((float) $value);
+            $this->initialCapacities[$resource] = (int)round((float)$value);
         }
 
         $this->parseHomeworldConfig($homeworld);
+    }
+
+    /**
+     * @param array<string, mixed> $homeworld
+     */
+    private function parseHomeworldConfig(array $homeworld): void
+    {
+        if (isset($homeworld['defaults']) && is_array($homeworld['defaults'])) {
+            foreach (array_keys($this->homeworldDefaultStats) as $key) {
+                if (array_key_exists($key, $homeworld['defaults'])) {
+                    $this->homeworldDefaultStats[$key] = (int)round((float)$homeworld['defaults'][$key]);
+                }
+            }
+        }
+
+        if (isset($homeworld['min_position'])) {
+            $this->homeworldMinPosition = max(1, (int)$homeworld['min_position']);
+        }
+
+        if (isset($homeworld['max_position'])) {
+            $this->homeworldMaxPosition = max($this->homeworldMinPosition, (int)$homeworld['max_position']);
+        } else {
+            $this->homeworldMaxPosition = max($this->homeworldMinPosition, $this->homeworldMaxPosition);
+        }
+
+        if (isset($homeworld['positions']) && is_array($homeworld['positions'])) {
+            foreach ($homeworld['positions'] as $position => $stats) {
+                if (!is_array($stats)) {
+                    continue;
+                }
+
+                $index = (int)$position;
+                $this->homeworldPositionStats[$index] = [
+                    'diameter' => isset($stats['diameter']) ? (int)round((float)$stats['diameter']) : $this->homeworldDefaultStats['diameter'],
+                    'temperature_min' => isset($stats['temperature_min']) ? (int)round((float)$stats['temperature_min']) : $this->homeworldDefaultStats['temperature_min'],
+                    'temperature_max' => isset($stats['temperature_max']) ? (int)round((float)$stats['temperature_max']) : $this->homeworldDefaultStats['temperature_max'],
+                ];
+            }
+        }
+
+        if (isset($homeworld['variation_percent'])) {
+            $variation = $homeworld['variation_percent'];
+
+            if (is_array($variation)) {
+                if (array_key_exists('default', $variation)) {
+                    $this->homeworldDefaultVariation = max(0.0, (float)$variation['default']);
+                }
+
+                foreach ($variation as $key => $value) {
+                    if ($key === 'default') {
+                        continue;
+                    }
+
+                    $this->homeworldVariationOverrides[$key] = max(0.0, (float)$value);
+                }
+            } else {
+                $this->homeworldDefaultVariation = max(0.0, (float)$variation);
+            }
+        }
+
+        if ($this->homeworldMaxPosition < $this->homeworldMinPosition) {
+            $this->homeworldMaxPosition = $this->homeworldMinPosition;
+        }
     }
 
     /** @return array<string, int> */
@@ -98,68 +161,5 @@ final class BalanceGlobals
     public function getHomeworldVariation(string $stat): float
     {
         return $this->homeworldVariationOverrides[$stat] ?? $this->homeworldDefaultVariation;
-    }
-
-    /**
-     * @param array<string, mixed> $homeworld
-     */
-    private function parseHomeworldConfig(array $homeworld): void
-    {
-        if (isset($homeworld['defaults']) && is_array($homeworld['defaults'])) {
-            foreach (array_keys($this->homeworldDefaultStats) as $key) {
-                if (array_key_exists($key, $homeworld['defaults'])) {
-                    $this->homeworldDefaultStats[$key] = (int) round((float) $homeworld['defaults'][$key]);
-                }
-            }
-        }
-
-        if (isset($homeworld['min_position'])) {
-            $this->homeworldMinPosition = max(1, (int) $homeworld['min_position']);
-        }
-
-        if (isset($homeworld['max_position'])) {
-            $this->homeworldMaxPosition = max($this->homeworldMinPosition, (int) $homeworld['max_position']);
-        } else {
-            $this->homeworldMaxPosition = max($this->homeworldMinPosition, $this->homeworldMaxPosition);
-        }
-
-        if (isset($homeworld['positions']) && is_array($homeworld['positions'])) {
-            foreach ($homeworld['positions'] as $position => $stats) {
-                if (!is_array($stats)) {
-                    continue;
-                }
-
-                $index = (int) $position;
-                $this->homeworldPositionStats[$index] = [
-                    'diameter' => isset($stats['diameter']) ? (int) round((float) $stats['diameter']) : $this->homeworldDefaultStats['diameter'],
-                    'temperature_min' => isset($stats['temperature_min']) ? (int) round((float) $stats['temperature_min']) : $this->homeworldDefaultStats['temperature_min'],
-                    'temperature_max' => isset($stats['temperature_max']) ? (int) round((float) $stats['temperature_max']) : $this->homeworldDefaultStats['temperature_max'],
-                ];
-            }
-        }
-
-        if (isset($homeworld['variation_percent'])) {
-            $variation = $homeworld['variation_percent'];
-
-            if (is_array($variation)) {
-                if (array_key_exists('default', $variation)) {
-                    $this->homeworldDefaultVariation = max(0.0, (float) $variation['default']);
-                }
-
-                foreach ($variation as $key => $value) {
-                    if ($key === 'default') {
-                        continue;
-                    }
-
-                    $this->homeworldVariationOverrides[$key] = max(0.0, (float) $value);
-                }
-            } else {
-                $this->homeworldDefaultVariation = max(0.0, (float) $variation);
-            }
-        }
-
-        if ($this->homeworldMaxPosition < $this->homeworldMinPosition) {
-            $this->homeworldMaxPosition = $this->homeworldMinPosition;
-        }
     }
 }

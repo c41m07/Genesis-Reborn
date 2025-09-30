@@ -17,10 +17,10 @@ class ShipDefinition
         private readonly string $category,
         private readonly string $role,
         private readonly string $description,
-        private readonly array $baseCost,
-        private readonly int $buildTime,
-        private readonly array $stats,
-        private readonly array $requiresResearch,
+        private readonly array  $baseCost,
+        private readonly int    $buildTime,
+        private readonly array  $stats,
+        private readonly array  $requiresResearch,
         private readonly string $image
     ) {
     }

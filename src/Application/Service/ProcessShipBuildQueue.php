@@ -11,7 +11,7 @@ class ProcessShipBuildQueue
 {
     public function __construct(
         private readonly ShipBuildQueueRepositoryInterface $queue,
-        private readonly FleetRepositoryInterface $fleets
+        private readonly FleetRepositoryInterface          $fleets
     ) {
     }
 

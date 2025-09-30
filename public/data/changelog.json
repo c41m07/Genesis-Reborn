@@ -3,60 +3,62 @@
     "version": "Va0.0.1-alpha",
     "date": "22-09-2025",
     "changes": [
-      "- Lancement de la version solo complète avec filtrage des entités par joueur connecté.",
-      "- Refonte MVC avec front controller unique, routeur interne et séparation Domain/Application/Infrastructure/Templates/Config.",
-      "- Mise en place de l'authentification complète : inscription, connexion, déconnexion et protection CSRF sur les formulaires POST.",
-      "- Gestion avancée des colonies : construction de bâtiments, files d'attente, calculs de coûts et d'énergie.",
-      "- Système de recherches avec catalogue, prérequis et files indépendantes par planète.",
-      "- Chantier spatial opérationnel : production navale, gestion du carburant, calculs d'ETA et planification de missions.",
-      "- Suivi de la progression via le tableau de bord et le journal des événements PvE.",
-      "- Design system consolidé avec tokens CSS, sprite d'icônes SVG et pipeline d'optimisation des assets.",
-      "- Service de sessions applicatives encapsulé offrant flash messages, gestion sécurisée et injection via interface.",
-      "- Outils de qualité intégrés : tests PHPUnit, analyse statique PHPStan et norme de code via PHP-CS-Fixer."
+      "[fix] : stabilise la commande `db:migrate` et corrige les erreurs liées aux migrations",
+      "[feat] : met en place un système de migrations sécurisé pour éviter les effacements de base",
+      "[chore] : réintègre les branches (merge/rebase) et aligne `dev`/`main`",
+      "[feat] : crée le schéma de base `genesis_reborn` en utf8mb4",
+      "[docs] : nettoie le README (retrait de tâches obsolètes)",
+      "[refactor] : réorganise les données de l’arbre techno en hiérarchie groupée et ajuste l’état par défaut",
+      "[perf] : garantit l’ordonnancement séquentiel des jobs (PDO queues)"
     ]
   },
   {
     "version": "V0.0.2-alpha",
-    "date": "24-09-2025",
+    "date": "23-09-2025",
     "changes": [
-      "- DB/CLI: correctifs sur la commande `db:migrate` et mise en place d’un système de migrations sécurisé pour éviter les effacements de base.",
-      "- Files d’attente: garantie d’un ordonnancement séquentiel des jobs en PDO.",
-      "- Tech tree: refactor des données en hiérarchie groupée + ajustement de l’état par défaut.",
-      "- Docs: nettoyage du README (retrait de tâches obsolètes).",
-      "- UI: mise en évidence rouge et bouton « Ressources insuffisantes » pour bâtiments, recherches et chantier spatial.",
-      "- UI: la section « Effets » des cartes bâtiments devient réductible (toggle).",
-      "- Balance: passage de `energy_use_linear` à `false` pour les bâtiments de production (coût énergétique exponentiel aux niveaux élevés, plus doux aux niveaux bas).",
-      "- Front: corrections successives des classes CSS dans les listes de prérequis technologiques (nettoyage et harmonisation).",
-      "- API/Docs: documentation des champs d’« affordability » exposés dans le payload.",
-      "- Changelog: ajout du contrôleur/vue de changelog + amélioration du JSON et de la gestion de session côté ChangeLogController.",
-      "- CI/Sécu: simplification des commandes CI et ajout du package d’avis de sécurité Composer.",
-      "- Countdown: amélioration du script centralisé et suppression des versions inline dans les templates, avec mise à jour du README.",
-      "- PHPStan: corrections de typages et ajout du guide de maintenance pour la contribution.",
-      "- CI: mise à jour de la version phpstan et de l’URL source dans `composer.lock` + refactor global.",
-      "- CI/Composer: mise à jour des instructions de maintenance et ajout d’un serveur de développement pour faciliter les tests locaux."
-
+      "[feat] : ajoute le module Changelog (contrôleur + vue) et améliore la structure JSON du changelog",
+      "[balance] : passe `energy_use_linear` à `false` pour les bâtiments de production",
+      "[fix] : harmonise les classes des items de prérequis technologiques dans `index.php` (style/UX)"
     ]
   },
   {
     "version": "Va0.0.3-alpha",
+    "date": "24-09-2025",
+    "changes": [
+      "[fix] : corrige des points PHPStan et met à jour la version/source dans `composer.lock`",
+      "[docs] : ajoute un guide de maintenance et clarifie les consignes Composer",
+      "[feat] : améliore le compte à rebours centralisé et nettoie le README",
+      "[chore] : simplifie les commandes CI et ajoute le package d’avis de sécurité Composer"
+    ]
+  },
+  {
+    "version": "Va0.0.4-alpha",
     "date": "25-09-2025",
     "changes": [
-      "-Balance: Augmentation des stockage maximal a la création d'un nouveaux compte ( pas de retrocomptatibilité avec les ancien compte pour le moment )",
-      "-Équilibrage des planètes: Génération aléatoire de taille et température en fonction de la position de la planéte dans le systéme. ( prévision pour future implémentation des planéte procédural ) ( pas de retrocomptatibilité avec les ancien compte pour le moment )",
-      "-Colonie,Chantier Spatial et recherche: carte de file synthétisent les bonus de vitesse cumulé des batiments",
-      "-Tableau de board: cartes de production affichent des compteurs temps réel partagés et la barre latérale présente désormais diamètre et températures de la planète sélectionnée."
-
-
+      "[feat] : met à jour les tableaux de bord de colonie et les détails planétaires",
+      "[feat] : configure les caractéristiques de la planète mère selon l’orbite",
+      "[fix] : met à jour les ressources initiales et capacités, ajuste l’URL du sprite et nettoie l’affichage des bonus",
+      "[chore] : met à jour `composer.lock` (améliorations PHPStan/CI/maintenance)"
     ]
   },
   {
     "version": "Va0.0.4-alpha",
     "date": "26-09-2025",
     "changes": [
-      "-UI: Suppression d’un doublon d’élément de menu et condition d’affichage clarifiée",
-      "-Securité: Protection d’accès de la page fleet (vérification de permission / rôle) via changelog",
-      "-Securité  : Guard/middleware d’autorisation pour l’accès à la page Flotte + redirection appropriée",
-      "-UI: Correction de l’affichage des prérequis pour les bâtiments et les recherches avec un sticking pour une meilleur lisibilité"
+      "[fix] : améliore l’UI de l’arbre techno avec un panneau de détails « sticky »"
+    ]
+  },
+  {
+    "version": "Va0.0.5-alpha",
+    "date": "30-09-2025",
+    "changes": [
+      "[style] : standardise les espacements et le formatage dans plusieurs fichiers",
+      "[fix] : ajoute une police de secours (fallback) au `body` dans `app.css`",
+      "[chore] : met à jour `composer.lock` pour PHP-CS-Fixer 3.88.2",
+      "[fix] : #76 améliore la logique de calcul d’énergie et ajoute un test unitaire pour le scénario de déficit énergétique",
+      "[fix] : #92 ajoute les styles pour la table de données (layout et formatage) dans `app.css`",
+      "[fix] : #73 Correction du calcule des point joueurs dans la vue de la colonie",
+      "[Fix] : #76 Revue et amélioration de la logic pour le calcule de l'energie et des déficite planétaire"
     ]
   }
 ]

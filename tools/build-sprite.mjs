@@ -1,6 +1,6 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { basename, extname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import {readdir, readFile, writeFile} from 'node:fs/promises';
+import {basename, extname, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 const rootDir = fileURLToPath(new URL('..', import.meta.url));
 const iconsDir = resolve(rootDir, 'public/assets/svg/icons');

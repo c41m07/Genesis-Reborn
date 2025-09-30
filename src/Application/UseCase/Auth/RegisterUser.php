@@ -12,9 +12,9 @@ use Throwable;
 class RegisterUser
 {
     public function __construct(
-        private readonly UserRepositoryInterface $users,
+        private readonly UserRepositoryInterface   $users,
         private readonly PlanetRepositoryInterface $planets,
-        private readonly SessionInterface $session
+        private readonly SessionInterface          $session
     ) {
     }
 

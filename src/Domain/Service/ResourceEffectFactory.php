@@ -27,9 +27,9 @@ final class ResourceEffectFactory
             $effect = [];
             $affects = $config->getAffects();
 
-            $productionBase = (float) $config->getProductionBase();
+            $productionBase = (float)$config->getProductionBase();
             $productionGrowth = $config->getProductionGrowth();
-            $energyUseBase = (float) $config->getEnergyUseBase();
+            $energyUseBase = (float)$config->getEnergyUseBase();
             $energyUseGrowth = $config->getEnergyUseGrowth();
             $energyUseLinear = $config->isEnergyUseLinear();
 
@@ -59,8 +59,8 @@ final class ResourceEffectFactory
             if ($storage !== []) {
                 foreach ($storage as $resourceKey => $storageConfig) {
                     $effect['storage'][$resourceKey] = [
-                        'base' => (float) ($storageConfig['base'] ?? 0.0),
-                        'growth' => (float) ($storageConfig['growth'] ?? 1.0),
+                        'base' => (float)($storageConfig['base'] ?? 0.0),
+                        'growth' => (float)($storageConfig['growth'] ?? 1.0),
                     ];
                 }
             }
@@ -69,8 +69,8 @@ final class ResourceEffectFactory
             if ($upkeep !== []) {
                 foreach ($upkeep as $resourceKey => $upkeepConfig) {
                     $consumption = [
-                        'base' => (float) ($upkeepConfig['base'] ?? 0.0),
-                        'growth' => (float) ($upkeepConfig['growth'] ?? 1.0),
+                        'base' => (float)($upkeepConfig['base'] ?? 0.0),
+                        'growth' => (float)($upkeepConfig['growth'] ?? 1.0),
                     ];
 
                     if (!empty($upkeepConfig['linear'])) {

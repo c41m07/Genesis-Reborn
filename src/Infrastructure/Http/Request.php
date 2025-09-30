@@ -21,10 +21,10 @@ class Request
     public function __construct(
         private readonly string $method,
         private readonly string $path,
-        private readonly array $query,
-        private readonly array $body,
+        private readonly array  $query,
+        private readonly array  $body,
         public readonly Session $session,
-        private readonly array $headers = []
+        private readonly array  $headers = []
     ) {
     }
 
@@ -39,7 +39,7 @@ class Request
                 session_start();
             }
 
-            $storage = & $_SESSION;
+            $storage = &$_SESSION;
             $session = new Session($storage);
         }
 
@@ -51,13 +51,13 @@ class Request
 
             if (str_starts_with($key, 'HTTP_')) {
                 $headerName = str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($key, 5)))));
-                $headers[$headerName] = (string) $value;
+                $headers[$headerName] = (string)$value;
             }
         }
 
         foreach (['CONTENT_TYPE' => 'Content-Type', 'CONTENT_LENGTH' => 'Content-Length'] as $serverKey => $headerName) {
             if (isset($_SERVER[$serverKey]) && is_scalar($_SERVER[$serverKey])) {
-                $headers[$headerName] = (string) $_SERVER[$serverKey];
+                $headers[$headerName] = (string)$_SERVER[$serverKey];
             }
         }
 
@@ -145,18 +145,6 @@ class Request
         return $this->attributes;
     }
 
-    public function getHeader(string $name): ?string
-    {
-        $normalized = strtolower($name);
-        foreach ($this->headers as $headerName => $value) {
-            if (strtolower($headerName) === $normalized) {
-                return $value;
-            }
-        }
-
-        return null;
-    }
-
     public function wantsJson(): bool
     {
         $accept = strtolower($this->getHeader('Accept') ?? '');
@@ -167,6 +155,18 @@ class Request
         $requestedWith = strtolower($this->getHeader('X-Requested-With') ?? '');
 
         return $requestedWith === 'xmlhttprequest';
+    }
+
+    public function getHeader(string $name): ?string
+    {
+        $normalized = strtolower($name);
+        foreach ($this->headers as $headerName => $value) {
+            if (strtolower($headerName) === $normalized) {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     /**

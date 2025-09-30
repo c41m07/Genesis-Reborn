@@ -3,7 +3,7 @@
 /** @var string|null $baseUrl URL de base pour les liens */
 
 
-$title   = $title ?? 'Journal des versions';
+$title = $title ?? 'Journal des versions';
 $baseUrl = $baseUrl ?? '';
 $changelog = [];
 
@@ -11,7 +11,7 @@ $changelog = [];
 $changelogPath = __DIR__ . '/../../../public/data/changelog.json';
 if (is_readable($changelogPath)) {
     $jsonContent = file_get_contents($changelogPath);
-    $decoded     = json_decode($jsonContent, true);
+    $decoded = json_decode($jsonContent, true);
     if (is_array($decoded)) {
         $changelog = $decoded;
     }
@@ -39,7 +39,7 @@ ob_start();
                     <?php foreach ($changelog as $entry): ?>
                         <?php
                         $version = $entry['version'] ?? '';
-                        $date    = $entry['date'] ?? '';
+                        $date = $entry['date'] ?? '';
                         $changes = $entry['changes'] ?? [];
                         ?>
                         <details class="tech-section tech-section--group">
@@ -54,7 +54,7 @@ ob_start();
                             </summary>
                             <ul class="tech-section__list tech-section__list--nested">
                                 <?php foreach ($changes as $change): ?>
-                                    <li class =""><?= htmlspecialchars($change,
+                                    <li class=""><?= htmlspecialchars($change,
                                         ENT_QUOTES) ?></li>
                                 <?php endforeach; ?>
                             </ul>

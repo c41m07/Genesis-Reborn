@@ -47,12 +47,12 @@ return static function (array $props): string {
             continue;
         }
 
-        $attributeKey = preg_replace('/[^a-z0-9_-]+/i', '', (string) $key);
+        $attributeKey = preg_replace('/[^a-z0-9_-]+/i', '', (string)$key);
         if ($attributeKey === '') {
             continue;
         }
 
-        $attributeString .= sprintf(' %s="%s"', $attributeKey, htmlspecialchars((string) $value, ENT_QUOTES));
+        $attributeString .= sprintf(' %s="%s"', $attributeKey, htmlspecialchars((string)$value, ENT_QUOTES));
     }
 
     $renderSlot = static function (callable|string|null $slot): string {
@@ -64,10 +64,10 @@ return static function (array $props): string {
             ob_start();
             $slot();
 
-            return (string) ob_get_clean();
+            return (string)ob_get_clean();
         }
 
-        return (string) $slot;
+        return (string)$slot;
     };
 
     $title = $props['title'] ?? '';

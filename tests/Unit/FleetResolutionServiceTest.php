@@ -16,13 +16,6 @@ final class FleetResolutionServiceTest extends TestCase
 {
     private FleetResolutionService $service;
 
-    protected function setUp(): void
-    {
-        $loader = new BalanceConfigLoader(dirname(__DIR__, 2) . '/config/balance');
-        $catalog = new ShipCatalog($loader->getShipConfigs());
-        $this->service = new FleetResolutionService($catalog, $loader);
-    }
-
     public function testResolveBattleReturnsAttackerVictoryWhenDefenderEmpty(): void
     {
         $result = $this->service->resolveBattle(
@@ -48,5 +41,12 @@ final class FleetResolutionServiceTest extends TestCase
         self::assertSame([], $result->getAttackerRemaining());
         self::assertSame([], $result->getDefenderRemaining());
         self::assertSame(0, $result->getRoundsFought());
+    }
+
+    protected function setUp(): void
+    {
+        $loader = new BalanceConfigLoader(dirname(__DIR__, 2) . '/config/balance');
+        $catalog = new ShipCatalog($loader->getShipConfigs());
+        $this->service = new FleetResolutionService($catalog, $loader);
     }
 }

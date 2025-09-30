@@ -33,7 +33,7 @@ class PdoFleetRepository implements FleetRepositoryInterface
         $fleet = [];
 
         while ($row = $stmt->fetch()) {
-            $fleet[$row['skey']] = (int) $row['quantity'];
+            $fleet[$row['skey']] = (int)$row['quantity'];
         }
 
         return $fleet;
@@ -83,7 +83,7 @@ class PdoFleetRepository implements FleetRepositoryInterface
             throw new RuntimeException('Planète introuvable pour la flotte.');
         }
 
-        return (int) $playerId;
+        return (int)$playerId;
     }
 
     private function ensureGarrisonFleet(int $playerId, int $planetId): int
@@ -104,7 +104,7 @@ class PdoFleetRepository implements FleetRepositoryInterface
         $fleetId = $stmt->fetchColumn();
 
         if ($fleetId !== false) {
-            return (int) $fleetId;
+            return (int)$fleetId;
         }
 
         $create = $this->pdo->prepare('INSERT INTO fleets (player_id, origin_planet_id, destination_planet_id, mission_type, status, mission_payload, departure_at, arrival_at, return_at, travel_time_seconds, fuel_consumed, created_at, updated_at)
@@ -116,7 +116,7 @@ class PdoFleetRepository implements FleetRepositoryInterface
             'status' => 'idle',
         ]);
 
-        return (int) $this->pdo->lastInsertId();
+        return (int)$this->pdo->lastInsertId();
     }
 
     private function getShipIdByKey(string $key): ?int
@@ -129,6 +129,6 @@ class PdoFleetRepository implements FleetRepositoryInterface
             return null;
         }
 
-        return (int) $shipId;
+        return (int)$shipId;
     }
 }

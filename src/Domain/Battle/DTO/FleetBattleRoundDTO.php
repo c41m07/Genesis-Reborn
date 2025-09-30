@@ -34,15 +34,44 @@ final class FleetBattleRoundDTO
      */
     public function __construct(
         private readonly int $round,
-        array $attackerLosses,
-        array $defenderLosses,
-        array $attackerRemaining,
-        array $defenderRemaining
+        array                $attackerLosses,
+        array                $defenderLosses,
+        array                $attackerRemaining,
+        array                $defenderRemaining
     ) {
         $this->attackerLosses = $this->sanitize($attackerLosses);
         $this->defenderLosses = $this->sanitize($defenderLosses);
         $this->attackerRemaining = $this->sanitize($attackerRemaining, true);
         $this->defenderRemaining = $this->sanitize($defenderRemaining, true);
+    }
+
+    /**
+     * @param array<string, int|float> $values
+     *
+     * @return array<string, int>
+     */
+    private function sanitize(array $values, bool $allowZero = false): array
+    {
+        $sanitized = [];
+
+        foreach ($values as $key => $value) {
+            $key = (string)$key;
+            $intValue = (int)$value;
+
+            if (!$allowZero && $intValue <= 0) {
+                continue;
+            }
+
+            if ($allowZero && $intValue < 0) {
+                $intValue = 0;
+            }
+
+            $sanitized[$key] = $intValue;
+        }
+
+        ksort($sanitized);
+
+        return $sanitized;
     }
 
     public function getRound(): int
@@ -80,34 +109,5 @@ final class FleetBattleRoundDTO
     public function getDefenderRemaining(): array
     {
         return $this->defenderRemaining;
-    }
-
-    /**
-     * @param array<string, int|float> $values
-     *
-     * @return array<string, int>
-     */
-    private function sanitize(array $values, bool $allowZero = false): array
-    {
-        $sanitized = [];
-
-        foreach ($values as $key => $value) {
-            $key = (string) $key;
-            $intValue = (int) $value;
-
-            if (!$allowZero && $intValue <= 0) {
-                continue;
-            }
-
-            if ($allowZero && $intValue < 0) {
-                $intValue = 0;
-            }
-
-            $sanitized[$key] = $intValue;
-        }
-
-        ksort($sanitized);
-
-        return $sanitized;
     }
 }

@@ -41,9 +41,17 @@ class GetDashboardTest extends TestCase
 
         $playerStats = $this->createMock(PlayerStatsRepositoryInterface::class);
         $playerStats->expects(self::once())
+            ->method('getBuildingSpending')
+            ->with(123)
+            ->willReturn(1500);
+        $playerStats->expects(self::once())
             ->method('getScienceSpending')
             ->with(123)
             ->willReturn(4200);
+        $playerStats->expects(self::once())
+            ->method('getFleetSpending')
+            ->with(123)
+            ->willReturn(900);
 
         $processBuildQueue = $this->createMock(ProcessBuildQueue::class);
         $processBuildQueue->expects(self::never())->method('process');
@@ -74,8 +82,14 @@ class GetDashboardTest extends TestCase
 
         $result = $useCase->execute(123);
 
+        self::assertSame(1500, $result['empire']['buildingSpent']);
+        self::assertSame(1, $result['empire']['buildingPoints']);
         self::assertSame(4200, $result['empire']['scienceSpent']);
+        self::assertSame(4, $result['empire']['sciencePoints']);
         self::assertSame(4, $result['empire']['sciencePower']);
+        self::assertSame(900, $result['empire']['fleetSpent']);
+        self::assertSame(0, $result['empire']['militaryPoints']);
+        self::assertSame(5, $result['empire']['points']);
         self::assertSame(0, $result['empire']['planetCount']);
     }
 }

@@ -13,8 +13,8 @@ class Route
     public function __construct(
         private readonly string $method,
         private readonly string $path,
-        private readonly array $handler,
-        private readonly array $parameters = []
+        private readonly array  $handler,
+        private readonly array  $parameters = []
     ) {
     }
 

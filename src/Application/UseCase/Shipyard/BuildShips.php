@@ -19,14 +19,14 @@ class BuildShips
     private readonly BuildingDefinition $shipyardDefinition;
 
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly ResearchStateRepositoryInterface $researchStates,
+        private readonly PlanetRepositoryInterface         $planets,
+        private readonly BuildingStateRepositoryInterface  $buildingStates,
+        private readonly ResearchStateRepositoryInterface  $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly PlayerStatsRepositoryInterface $playerStats,
-        BuildingCatalog $buildingCatalog,
-        private readonly BuildingCalculator $buildingCalculator,
-        private readonly ShipCatalog $catalog
+        private readonly PlayerStatsRepositoryInterface    $playerStats,
+        BuildingCatalog                                    $buildingCatalog,
+        private readonly BuildingCalculator                $buildingCalculator,
+        private readonly ShipCatalog                       $catalog
     ) {
         $this->shipyardDefinition = $buildingCatalog->get('shipyard');
     }
@@ -57,7 +57,7 @@ class BuildShips
 
         $researchLevels = $this->researchStates->getLevels($planetId);
         foreach ($definition->getRequiresResearch() as $key => $level) {
-            $current = (int) ($researchLevels[$key] ?? 0);
+            $current = (int)($researchLevels[$key] ?? 0);
             if ($current < $level) {
                 return ['success' => false, 'message' => 'Recherches insuffisantes pour ce modèle.'];
             }
@@ -76,7 +76,7 @@ class BuildShips
         );
         $duration = max($quantity, $perUnitTime * $quantity);
         $this->shipQueue->enqueue($planetId, $shipKey, $quantity, $duration);
-        $this->playerStats->addScienceSpending($userId, $this->sumCost($cost));
+        $this->playerStats->addFleetSpending($userId, $this->sumCost($cost));
         $this->planets->update($planet);
 
         return ['success' => true, 'message' => 'Production planifiée.'];
@@ -91,7 +91,7 @@ class BuildShips
     {
         $costs = [];
         foreach ($baseCost as $resource => $amount) {
-            $costs[$resource] = (int) ($amount * $quantity);
+            $costs[$resource] = (int)($amount * $quantity);
         }
 
         return $costs;
@@ -154,7 +154,7 @@ class BuildShips
         $total = 0;
         foreach ($cost as $amount) {
             if ($amount > 0) {
-                $total += (int) $amount;
+                $total += (int)$amount;
             }
         }
 

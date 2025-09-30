@@ -1,16 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <defs>
-    <linearGradient id="const-bg" x1="12%" y1="8%" x2="88%" y2="92%">
-      <stop offset="0" stop-color="#31425f"/>
-      <stop offset="1" stop-color="#141e2f"/>
-    </linearGradient>
-    <linearGradient id="const-core" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0" stop-color="#ffd77a"/>
-      <stop offset="1" stop-color="#ffa640"/>
-    </linearGradient>
-  </defs>
-  <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#const-bg)"/>
-  <path d="M28 60h40l8-12-8-12H28l-8 12z" fill="url(#const-core)"/>
-  <path d="M34 48h28l4 6-4 6H34l-4-6z" fill="#1a2336" opacity="0.5"/>
-  <path d="M36 52h24l-4 8H40z" fill="#ffe8b5" opacity="0.6"/>
+    <defs>
+        <linearGradient id="const-bg" x1="12%" y1="8%" x2="88%" y2="92%">
+            <stop offset="0" stop-color="#31425f"/>
+            <stop offset="1" stop-color="#141e2f"/>
+        </linearGradient>
+        <linearGradient id="const-core" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0" stop-color="#ffd77a"/>
+            <stop offset="1" stop-color="#ffa640"/>
+        </linearGradient>
+    </defs>
+    <rect x="6" y="6" width="84" height="84" rx="20" fill="url(#const-bg)"/>
+    <path d="M28 60h40l8-12-8-12H28l-8 12z" fill="url(#const-core)"/>
+    <path d="M34 48h28l4 6-4 6H34l-4-6z" fill="#1a2336" opacity="0.5"/>
+    <path d="M36 52h24l-4 8H40z" fill="#ffe8b5" opacity="0.6"/>
 </svg>

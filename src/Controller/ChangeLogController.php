@@ -16,13 +16,13 @@ use App\Infrastructure\Security\CsrfTokenManager;
 class ChangeLogController extends AbstractController
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        ViewRenderer                                      $renderer,
+        SessionInterface                                  $session,
+        FlashBag                                          $flashBag,
+        CsrfTokenManager                                  $csrfTokenManager,
+        string                                            $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -56,7 +56,7 @@ class ChangeLogController extends AbstractController
         $facilityStatuses = [];
 
         if ($planets !== []) {
-            $selectedPlanetId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+            $selectedPlanetId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
             $selectedPlanet = $planets[0];
             foreach ($planets as $planet) {
                 if ($planet->getId() === $selectedPlanetId) {
@@ -82,14 +82,14 @@ class ChangeLogController extends AbstractController
 
         // Passage des variables à la vue, y compris currentUserId
         return $this->render('pages/changelog/index.php', [
-            'title'         => 'Journal des versions',
-            'changelog'     => $changelogData,
-            'baseUrl'       => $this->baseUrl,
+            'title' => 'Journal des versions',
+            'changelog' => $changelogData,
+            'baseUrl' => $this->baseUrl,
             'activeSection' => 'changelog',
             'currentUserId' => $userId,
-            'flashes'       => $this->flashBag->consume(),
-            'csrf_logout'   => $this->generateCsrfToken('logout'),
-            'planets'       => $planets,
+            'flashes' => $this->flashBag->consume(),
+            'csrf_logout' => $this->generateCsrfToken('logout'),
+            'planets' => $planets,
             'selectedPlanetId' => $selectedPlanetId,
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,

@@ -27,22 +27,22 @@ use InvalidArgumentException;
 class JournalController extends AbstractController
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
-        private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly BuildQueueRepositoryInterface $buildQueue,
-        private readonly ResearchQueueRepositoryInterface $researchQueue,
+        private readonly PlanetRepositoryInterface         $planets,
+        private readonly BuildingStateRepositoryInterface  $buildingStates,
+        private readonly BuildQueueRepositoryInterface     $buildQueue,
+        private readonly ResearchQueueRepositoryInterface  $researchQueue,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly ProcessBuildQueue $processBuildQueue,
-        private readonly ProcessResearchQueue $processResearchQueue,
-        private readonly ProcessShipBuildQueue $processShipBuildQueue,
-        private readonly BuildingCatalog $buildingCatalog,
-        private readonly ResearchCatalog $researchCatalog,
-        private readonly ShipCatalog $shipCatalog,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly ProcessBuildQueue                 $processBuildQueue,
+        private readonly ProcessResearchQueue              $processResearchQueue,
+        private readonly ProcessShipBuildQueue             $processShipBuildQueue,
+        private readonly BuildingCatalog                   $buildingCatalog,
+        private readonly ResearchCatalog                   $researchCatalog,
+        private readonly ShipCatalog                       $shipCatalog,
+        ViewRenderer                                       $renderer,
+        SessionInterface                                   $session,
+        FlashBag                                           $flashBag,
+        CsrfTokenManager                                   $csrfTokenManager,
+        string                                             $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -79,7 +79,7 @@ class JournalController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {
@@ -185,6 +185,31 @@ class JournalController extends AbstractController
     }
 
     /**
+     * @return array{type: string, icon: string, title: string, description: string, endsAt: DateTimeImmutable, remaining: int}
+     *
+     * Je centralise ici le formatage d’un événement affiché dans l’UI.
+     */
+    private function createEvent(string $type, string $title, string $description, DateTimeImmutable $endsAt): array
+    {
+        $icons = [
+            'buildings' => 'buildings',
+            'research' => 'research',
+            'shipyard' => 'shipyard',
+        ];
+        $icon = $icons[$type] ?? 'overview';
+        $remaining = max(0, $endsAt->getTimestamp() - time());
+
+        return [
+            'type' => $type,
+            'icon' => $icon,
+            'title' => $title,
+            'description' => $description,
+            'endsAt' => $endsAt,
+            'remaining' => $remaining,
+        ];
+    }
+
+    /**
      * @param array<int, \App\Domain\Entity\ResearchJob> $jobs
      * @return array<int, array<string, mixed>>
      *
@@ -240,30 +265,5 @@ class JournalController extends AbstractController
         }
 
         return $events;
-    }
-
-    /**
-     * @return array{type: string, icon: string, title: string, description: string, endsAt: DateTimeImmutable, remaining: int}
-     *
-     * Je centralise ici le formatage d’un événement affiché dans l’UI.
-     */
-    private function createEvent(string $type, string $title, string $description, DateTimeImmutable $endsAt): array
-    {
-        $icons = [
-            'buildings' => 'buildings',
-            'research' => 'research',
-            'shipyard' => 'shipyard',
-        ];
-        $icon = $icons[$type] ?? 'overview';
-        $remaining = max(0, $endsAt->getTimestamp() - time());
-
-        return [
-            'type' => $type,
-            'icon' => $icon,
-            'title' => $title,
-            'description' => $description,
-            'endsAt' => $endsAt,
-            'remaining' => $remaining,
-        ];
     }
 }

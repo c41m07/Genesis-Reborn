@@ -94,7 +94,22 @@ class QueueProcessingTest extends TestCase
         $planetAfter = $planetRepository->find(1);
         self::assertNotNull($planetAfter);
         self::assertGreaterThan(0, $planetAfter->getMetalPerHour());
-        self::assertSame(100, $playerStats->getScienceSpending(42));
+        self::assertSame(100, $playerStats->getBuildingSpending(42));
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return BuildingConfig[]
+     */
+    private function makeBuildingConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new BuildingConfig($key, $data);
+        }
+
+        return $result;
     }
 
     public function testResearchStartIsQueuedAndProcessed(): void
@@ -142,6 +157,21 @@ class QueueProcessingTest extends TestCase
         self::assertSame(1, $researchStates->getLevels(1)['propulsion_basic']);
         self::assertSame(0, $researchQueue->countActive(1));
         self::assertSame(240, $playerStats->getScienceSpending(42));
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return TechnologyConfig[]
+     */
+    private function makeTechnologyConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new TechnologyConfig($key, $data);
+        }
+
+        return $result;
     }
 
     public function testShipProductionIsQueuedAndProcessed(): void
@@ -196,7 +226,7 @@ class QueueProcessingTest extends TestCase
         self::assertTrue($result['success']);
         self::assertSame([], $fleetRepository->getFleet(1));
         self::assertSame(1, $shipQueue->countActive(1));
-        $expectedPerUnit = max(1, (int) floor(4 / (1 + 0.1 * 2)));
+        $expectedPerUnit = max(1, (int)floor(4 / (1 + 0.1 * 2)));
         self::assertSame($expectedPerUnit * 3, $shipQueue->getLastDuration(1));
 
         $shipQueue->forceComplete(1);
@@ -204,7 +234,22 @@ class QueueProcessingTest extends TestCase
 
         self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
         self::assertSame(0, $shipQueue->countActive(1));
-        self::assertSame(600, $playerStats->getScienceSpending(42));
+        self::assertSame(600, $playerStats->getFleetSpending(42));
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $config
+     *
+     * @return ShipConfig[]
+     */
+    private function makeShipConfigs(array $config): array
+    {
+        $result = [];
+        foreach ($config as $key => $data) {
+            $result[] = new ShipConfig($key, $data);
+        }
+
+        return $result;
     }
 
     public function testShipProductionDurationRespectsMinimumPerUnit(): void
@@ -831,51 +876,6 @@ class QueueProcessingTest extends TestCase
         self::assertSame(36, $plan['travel_time']);
         self::assertSame(144, $plan['fuel']);
     }
-
-    /**
-     * @param array<string, array<string, mixed>> $config
-     *
-     * @return BuildingConfig[]
-     */
-    private function makeBuildingConfigs(array $config): array
-    {
-        $result = [];
-        foreach ($config as $key => $data) {
-            $result[] = new BuildingConfig($key, $data);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $config
-     *
-     * @return TechnologyConfig[]
-     */
-    private function makeTechnologyConfigs(array $config): array
-    {
-        $result = [];
-        foreach ($config as $key => $data) {
-            $result[] = new TechnologyConfig($key, $data);
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $config
-     *
-     * @return ShipConfig[]
-     */
-    private function makeShipConfigs(array $config): array
-    {
-        $result = [];
-        foreach ($config as $key => $data) {
-            $result[] = new ShipConfig($key, $data);
-        }
-
-        return $result;
-    }
 }
 
 /**
@@ -966,6 +966,11 @@ class InMemoryBuildQueueRepository implements BuildQueueRepositoryInterface
 
     private int $nextId = 1;
 
+    public function countActive(int $planetId): int
+    {
+        return count($this->getActiveQueue($planetId));
+    }
+
     public function getActiveQueue(int $planetId): array
     {
         $now = new \DateTimeImmutable();
@@ -984,11 +989,6 @@ class InMemoryBuildQueueRepository implements BuildQueueRepositoryInterface
             ),
             array_values($active)
         );
-    }
-
-    public function countActive(int $planetId): int
-    {
-        return count($this->getActiveQueue($planetId));
     }
 
     public function enqueue(int $planetId, string $buildingKey, int $targetLevel, int $durationSeconds): void
@@ -1084,6 +1084,11 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
     private int $nextId = 1;
     private ?int $lastDuration = null;
 
+    public function countActive(int $planetId): int
+    {
+        return count($this->getActiveQueue($planetId));
+    }
+
     public function getActiveQueue(int $planetId): array
     {
         $now = new \DateTimeImmutable();
@@ -1102,11 +1107,6 @@ class InMemoryResearchQueueRepository implements ResearchQueueRepositoryInterfac
             ),
             array_values($active)
         );
-    }
-
-    public function countActive(int $planetId): int
-    {
-        return count($this->getActiveQueue($planetId));
     }
 
     public function enqueue(int $planetId, string $researchKey, int $targetLevel, int $durationSeconds): void
@@ -1173,6 +1173,11 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
     private array $jobs = [];
     private int $nextId = 1;
 
+    public function countActive(int $planetId): int
+    {
+        return count($this->getActiveQueue($planetId));
+    }
+
     public function getActiveQueue(int $planetId): array
     {
         $now = new \DateTimeImmutable();
@@ -1191,11 +1196,6 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
             ),
             array_values($active)
         );
-    }
-
-    public function countActive(int $planetId): int
-    {
-        return count($this->getActiveQueue($planetId));
     }
 
     public function enqueue(int $planetId, string $shipKey, int $quantity, int $durationSeconds): void
@@ -1265,18 +1265,46 @@ class InMemoryShipBuildQueueRepository implements ShipBuildQueueRepositoryInterf
  */
 class InMemoryPlayerStatsRepository implements PlayerStatsRepositoryInterface
 {
-    private int $total = 0;
+    private int $buildingSpent = 0;
+
+    private int $scienceSpent = 0;
+
+    private int $fleetSpent = 0;
+
+    public function addBuildingSpending(int $playerId, int $amount): void
+    {
+        if ($amount > 0) {
+            $this->buildingSpent += $amount;
+        }
+    }
 
     public function addScienceSpending(int $playerId, int $amount): void
     {
         if ($amount > 0) {
-            $this->total += $amount;
+            $this->scienceSpent += $amount;
         }
+    }
+
+    public function addFleetSpending(int $playerId, int $amount): void
+    {
+        if ($amount > 0) {
+            $this->fleetSpent += $amount;
+        }
+    }
+
+    public function getBuildingSpending(int $playerId): int
+    {
+        return $this->buildingSpent;
     }
 
     public function getScienceSpending(int $playerId): int
     {
-        return $this->total;
+        return $this->scienceSpent;
+    }
+
+    public function getFleetSpending(int $playerId): int
+    {
+        return $this->fleetSpent;
     }
 }
 

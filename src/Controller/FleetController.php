@@ -22,17 +22,17 @@ use InvalidArgumentException;
 class FleetController extends AbstractController
 {
     public function __construct(
-        private readonly PlanetRepositoryInterface $planets,
+        private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
-        private readonly FleetRepositoryInterface $fleets,
-        private readonly ShipCatalog $shipCatalog,
-        private readonly ProcessShipBuildQueue $shipQueueProcessor,
-        private readonly FleetNavigationService $navigationService,
-        ViewRenderer $renderer,
-        SessionInterface $session,
-        FlashBag $flashBag,
-        CsrfTokenManager $csrfTokenManager,
-        string $baseUrl
+        private readonly FleetRepositoryInterface         $fleets,
+        private readonly ShipCatalog                      $shipCatalog,
+        private readonly ProcessShipBuildQueue            $shipQueueProcessor,
+        private readonly FleetNavigationService           $navigationService,
+        ViewRenderer                                      $renderer,
+        SessionInterface                                  $session,
+        FlashBag                                          $flashBag,
+        CsrfTokenManager                                  $csrfTokenManager,
+        string                                            $baseUrl
     ) {
         parent::__construct($renderer, $session, $flashBag, $csrfTokenManager, $baseUrl);
     }
@@ -74,7 +74,7 @@ class FleetController extends AbstractController
             ]);
         }
 
-        $selectedId = (int) ($request->getQueryParams()['planet'] ?? $planets[0]->getId());
+        $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
         $selectedPlanet = null;
         foreach ($planets as $planet) {
             if ($planet->getId() === $selectedId) {
@@ -117,7 +117,7 @@ class FleetController extends AbstractController
         $shipStats = [];
 
         foreach ($fleet as $shipKey => $quantity) {
-            $quantity = (int) $quantity;
+            $quantity = (int)$quantity;
             if ($quantity <= 0) {
                 continue;
             }
@@ -131,16 +131,16 @@ class FleetController extends AbstractController
 
             $label = $definition ? $definition->getLabel() : $shipKey;
             $stats = $definition ? $definition->getStats() : [];
-            $attack = (int) ($stats['attaque'] ?? 0);
-            $defense = (int) ($stats['défense'] ?? 0);
-            $speed = (int) ($stats['vitesse'] ?? 0);
+            $attack = (int)($stats['attaque'] ?? 0);
+            $defense = (int)($stats['défense'] ?? 0);
+            $speed = (int)($stats['vitesse'] ?? 0);
             $category = $definition ? $definition->getCategory() : 'Divers';
             $role = $definition ? $definition->getRole() : '';
             $image = $definition ? $definition->getImage() : null;
             $fuelRate = 0;
             if ($definition) {
                 $baseCost = $definition->getBaseCost();
-                $fuelRate = (int) max(1, ceil(($baseCost['hydrogen'] ?? 0) / 25));
+                $fuelRate = (int)max(1, ceil(($baseCost['hydrogen'] ?? 0) / 25));
             }
 
             $power = max(0, ($attack + $defense) * $quantity);
@@ -190,16 +190,16 @@ class FleetController extends AbstractController
             } else {
                 // Je récupère les coordonnées visées dans le formulaire.
                 $destination = [
-                    'galaxy' => max(1, (int) ($data['destination_galaxy'] ?? $origin['galaxy'])),
-                    'system' => max(1, (int) ($data['destination_system'] ?? $origin['system'])),
-                    'position' => max(1, (int) ($data['destination_position'] ?? $origin['position'])),
+                    'galaxy' => max(1, (int)($data['destination_galaxy'] ?? $origin['galaxy'])),
+                    'system' => max(1, (int)($data['destination_system'] ?? $origin['system'])),
+                    'position' => max(1, (int)($data['destination_position'] ?? $origin['position'])),
                 ];
                 $submittedDestination = $destination;
 
                 $composition = [];
                 foreach ($availableShips as $ship) {
                     $key = $ship['key'];
-                    $requested = (int) ($data['composition'][$key] ?? 0);
+                    $requested = (int)($data['composition'][$key] ?? 0);
                     if ($requested < 0) {
                         $requested = 0;
                     }
@@ -216,7 +216,7 @@ class FleetController extends AbstractController
 
                 $speedFactor = 1.0;
                 if (isset($data['speed_factor'])) {
-                    $speedFactorInput = (float) $data['speed_factor'];
+                    $speedFactorInput = (float)$data['speed_factor'];
                     if ($speedFactorInput > 1) {
                         $speedFactorInput /= 100;
                     }

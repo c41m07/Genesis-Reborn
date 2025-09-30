@@ -1,16 +1,17 @@
 <svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="lw-bg" x1="14" y1="10" x2="80" y2="86" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#5DE0FF"/>
-      <stop offset="1" stop-color="#2450A8"/>
-    </linearGradient>
-    <linearGradient id="lw-core" x1="48" y1="20" x2="48" y2="76" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#B1D6FF" stop-opacity="0.8"/>
-    </linearGradient>
-  </defs>
-  <rect x="8" y="8" width="80" height="80" rx="18" fill="url(#lw-bg)"/>
-  <path d="M48 20L56 40L76 46L56 52L48 72L40 52L20 46L40 40L48 20Z" fill="url(#lw-core)" stroke="#0F1A3C" stroke-opacity="0.25" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M48 34L53 44L48 56L43 44L48 34Z" fill="#162554" fill-opacity="0.45"/>
-  <circle cx="48" cy="46" r="5" fill="#0F1A3C" fill-opacity="0.4"/>
+    <defs>
+        <linearGradient id="lw-bg" x1="14" y1="10" x2="80" y2="86" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#5DE0FF"/>
+            <stop offset="1" stop-color="#2450A8"/>
+        </linearGradient>
+        <linearGradient id="lw-core" x1="48" y1="20" x2="48" y2="76" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"/>
+            <stop offset="1" stop-color="#B1D6FF" stop-opacity="0.8"/>
+        </linearGradient>
+    </defs>
+    <rect x="8" y="8" width="80" height="80" rx="18" fill="url(#lw-bg)"/>
+    <path d="M48 20L56 40L76 46L56 52L48 72L40 52L20 46L40 40L48 20Z" fill="url(#lw-core)" stroke="#0F1A3C"
+          stroke-opacity="0.25" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M48 34L53 44L48 56L43 44L48 34Z" fill="#162554" fill-opacity="0.45"/>
+    <circle cx="48" cy="46" r="5" fill="#0F1A3C" fill-opacity="0.4"/>
 </svg>

@@ -9,10 +9,10 @@ use DateTimeImmutable;
 class ShipBuildJob
 {
     public function __construct(
-        private readonly int $id,
-        private readonly int $planetId,
-        private readonly string $shipKey,
-        private readonly int $quantity,
+        private readonly int               $id,
+        private readonly int               $planetId,
+        private readonly string            $shipKey,
+        private readonly int               $quantity,
         private readonly DateTimeImmutable $endsAt
     ) {
     }

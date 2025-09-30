@@ -22,9 +22,9 @@ if (!function_exists('getTechState')) {
         }
 
         return [
-            'met' => $met,
-            'total' => $total,
-            'allMet' => $total === 0 ? true : ($met === $total),
+                'met' => $met,
+                'total' => $total,
+                'allMet' => $total === 0 ? true : ($met === $total),
         ];
     }
 }
@@ -34,8 +34,8 @@ foreach ($groups as $group) {
         continue;
     }
 
-    $groupKey = (string) ($group['key'] ?? '');
-    $groupLabel = (string) ($group['label'] ?? '');
+    $groupKey = (string)($group['key'] ?? '');
+    $groupLabel = (string)($group['label'] ?? '');
     $rawCategories = $group['categories'] ?? [];
     if (!is_array($rawCategories)) {
         continue;
@@ -47,12 +47,12 @@ foreach ($groups as $group) {
             continue;
         }
 
-        $categoryKey = (string) ($category['key'] ?? '');
+        $categoryKey = (string)($category['key'] ?? '');
         if ($categoryKey === '') {
             continue;
         }
 
-        $categoryLabel = (string) ($category['label'] ?? '');
+        $categoryLabel = (string)($category['label'] ?? '');
         $rawItems = $category['items'] ?? [];
         if (!is_array($rawItems)) {
             continue;
@@ -64,7 +64,7 @@ foreach ($groups as $group) {
                 continue;
             }
 
-            $itemKey = (string) ($item['key'] ?? '');
+            $itemKey = (string)($item['key'] ?? '');
             if ($itemKey === '') {
                 continue;
             }
@@ -90,9 +90,9 @@ foreach ($groups as $group) {
         }
 
         $preparedCategories[] = [
-            'key' => $categoryKey,
-            'label' => $categoryLabel,
-            'items' => $preparedItems,
+                'key' => $categoryKey,
+                'label' => $categoryLabel,
+                'items' => $preparedItems,
         ];
     }
 
@@ -101,9 +101,9 @@ foreach ($groups as $group) {
     }
 
     $preparedGroups[] = [
-        'key' => $groupKey,
-        'label' => $groupLabel,
-        'categories' => $preparedCategories,
+            'key' => $groupKey,
+            'label' => $groupLabel,
+            'categories' => $preparedCategories,
     ];
 }
 $groups = $preparedGroups;
@@ -115,11 +115,14 @@ ob_start();
     <section class="page-header">
         <div>
             <h1>Arbre technologique</h1>
-            <p class="page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs prérequis.</p>
+            <p class="page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs
+                prérequis.</p>
         </div>
         <div class="page-header__actions">
             <?php if ($selectedPlanetId): ?>
-                <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Retour au laboratoire</a>
+                <a class="button button--ghost"
+                   href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Retour au
+                    laboratoire</a>
             <?php endif; ?>
         </div>
     </section>
@@ -135,33 +138,37 @@ ob_start();
         <div class="tech-tree__layout">
             <aside class="tech-tree__sidebar">
                 <?php foreach ($groups as $group): ?>
-                    <?php $groupKey = (string) ($group['key'] ?? ''); ?>
-                    <?php $groupLabel = (string) ($group['label'] ?? ''); ?>
+                    <?php $groupKey = (string)($group['key'] ?? ''); ?>
+                    <?php $groupLabel = (string)($group['label'] ?? ''); ?>
                     <?php $categories = $group['categories'] ?? []; ?>
                     <?php if (empty($categories)) {
                         continue;
                     } ?>
-                    <details class="tech-section tech-section--group" data-tech-group="<?= htmlspecialchars($groupKey) ?>">
+                    <details class="tech-section tech-section--group"
+                             data-tech-group="<?= htmlspecialchars($groupKey) ?>">
                         <summary class="tech-section__summary">
-                            <span class="tech-section__title" role="heading" aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
+                            <span class="tech-section__title" role="heading"
+                                  aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
                             <span class="tech-section__icon" aria-hidden="true"></span>
                         </summary>
                         <div class="tech-section__groups ">
                             <?php foreach ($categories as $category): ?>
-                                <?php $categoryKey = (string) ($category['key'] ?? ''); ?>
-                                <?php $categoryLabel = (string) ($category['label'] ?? ''); ?>
+                                <?php $categoryKey = (string)($category['key'] ?? ''); ?>
+                                <?php $categoryLabel = (string)($category['label'] ?? ''); ?>
                                 <?php $items = $category['items'] ?? []; ?>
                                 <?php if (empty($items)) {
                                     continue;
                                 } ?>
-                                <details class="tech-subsection" data-tech-category="<?= htmlspecialchars($categoryKey) ?>">
+                                <details class="tech-subsection"
+                                         data-tech-category="<?= htmlspecialchars($categoryKey) ?>">
                                     <summary class="tech-subsection__summary">
-                                        <span class="tech-subsection__title" role="heading" aria-level="3"><?= htmlspecialchars($categoryLabel) ?></span>
+                                        <span class="tech-subsection__title" role="heading"
+                                              aria-level="3"><?= htmlspecialchars($categoryLabel) ?></span>
                                         <span class="tech-subsection__icon" aria-hidden="true"></span>
                                     </summary>
                                     <ul class="tech-section__list tech-section__list--nested">
                                         <?php foreach ($items as $item): ?>
-                                            <?php $itemKey = (string) ($item['key'] ?? ''); ?>
+                                            <?php $itemKey = (string)($item['key'] ?? ''); ?>
                                             <?php if ($itemKey === '') {
                                                 continue;
                                             } ?>
@@ -170,16 +177,16 @@ ob_start();
                                             <?php $state = $node['state'] ?? getTechState($item['requires'] ?? []); ?>
                                             <li>
                                                 <button
-                                                    class="tech-node-link<?= !empty($state['allMet']) ? ' tech-node-link--ready' : '' ?>"
-                                                    type="button"
-                                                    data-tech-target="<?= htmlspecialchars($nodeId) ?>"
-                                                    data-tech-ready="<?= !empty($state['allMet']) ? '1' : '0' ?>"
-                                                    data-tech-group="<?= htmlspecialchars($groupKey) ?>"
-                                                    data-tech-category="<?= htmlspecialchars($categoryKey) ?>"
+                                                        class="tech-node-link<?= !empty($state['allMet']) ? ' tech-node-link--ready' : '' ?>"
+                                                        type="button"
+                                                        data-tech-target="<?= htmlspecialchars($nodeId) ?>"
+                                                        data-tech-ready="<?= !empty($state['allMet']) ? '1' : '0' ?>"
+                                                        data-tech-group="<?= htmlspecialchars($groupKey) ?>"
+                                                        data-tech-category="<?= htmlspecialchars($categoryKey) ?>"
                                                 >
                                                     <span class="tech-node-link__label"><?= htmlspecialchars($item['label'] ?? $itemKey) ?></span>
                                                     <?php if (isset($item['level'])): ?>
-                                                        <span class="tech-node-link__level">Niveau <?= number_format((int) $item['level']) ?></span>
+                                                        <span class="tech-node-link__level">Niveau <?= number_format((int)$item['level']) ?></span>
                                                     <?php endif; ?>
                                                 </button>
                                             </li>
@@ -191,11 +198,14 @@ ob_start();
                     </details>
                 <?php endforeach; ?>
             </aside>
-<!--            <section class="tech-tree__details" id="tech-tree-detail" data-initial="--><?php //= htmlspecialchars($initialNodeId ?? '')?><!--" data-base-url="--><?php //= htmlspecialchars($baseUrl)?><!--">-->
-<!--                <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>-->
-<!--            </section>-->
             <div class="tech-tree__details-column">
-                <section class="tech-tree__details tech-tree__details--sticky" id="tech-tree-detail" data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
+                <section
+                        class="tech-tree__details tech-tree__details--sticky"
+                        id="tech-tree-detail"
+                        data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>"
+                        data-base-url="<?= htmlspecialchars($baseUrl) ?>"
+                        data-planet-id="<?= $selectedPlanetId !== null ? (int)$selectedPlanetId : '' ?>"
+                >
                     <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
                 </section>
             </div>

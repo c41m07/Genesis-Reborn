@@ -53,7 +53,6 @@ class Container
     }
 
 
-
     public function getParameter(string $name, mixed $default = null): mixed
     {
         return $this->parameters[$name] ?? $default;

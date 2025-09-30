@@ -40,36 +40,6 @@ final class FleetControllerAccessTest extends TestCase
         self::assertSame('Le chantier spatial n’est pas disponible sur cette planète.', $flashes[0]['message'] ?? null);
     }
 
-    public function testIndexReturnsJsonErrorWhenShipyardUnavailable(): void
-    {
-        [$controller, $session] = $this->createController(false);
-
-        $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, ['Accept' => 'application/json']);
-        $response = $controller->index($request);
-
-        self::assertSame(403, $this->getResponseStatus($response));
-        self::assertSame('application/json', $this->getResponseHeader($response, 'Content-Type'));
-
-        $payload = json_decode($this->getResponseContent($response), true);
-        self::assertIsArray($payload);
-        self::assertSame([
-            'success' => false,
-            'message' => 'Le chantier spatial n’est pas disponible sur cette planète.',
-            'planetId' => 1,
-        ], $payload);
-    }
-
-    public function testIndexRendersWhenShipyardAvailable(): void
-    {
-        [$controller, $session] = $this->createController(true);
-
-        $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, []);
-        $response = $controller->index($request);
-
-        self::assertSame(200, $this->getResponseStatus($response));
-        self::assertSame('rendered', $this->getResponseContent($response));
-    }
-
     /**
      * @return array{0: FleetController, 1: Session}
      */
@@ -131,22 +101,41 @@ final class FleetControllerAccessTest extends TestCase
         $property = new ReflectionProperty(Response::class, 'statusCode');
         $property->setAccessible(true);
 
-        return (int) $property->getValue($response);
+        return (int)$property->getValue($response);
     }
 
     private function getResponseHeader(Response $response, string $name): ?string
     {
         $property = new ReflectionProperty(Response::class, 'headers');
         $property->setAccessible(true);
-        $headers = (array) $property->getValue($response);
+        $headers = (array)$property->getValue($response);
 
         foreach ($headers as $headerName => $value) {
-            if (strtolower((string) $headerName) === strtolower($name)) {
-                return (string) $value;
+            if (strtolower((string)$headerName) === strtolower($name)) {
+                return (string)$value;
             }
         }
 
         return null;
+    }
+
+    public function testIndexReturnsJsonErrorWhenShipyardUnavailable(): void
+    {
+        [$controller, $session] = $this->createController(false);
+
+        $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, ['Accept' => 'application/json']);
+        $response = $controller->index($request);
+
+        self::assertSame(403, $this->getResponseStatus($response));
+        self::assertSame('application/json', $this->getResponseHeader($response, 'Content-Type'));
+
+        $payload = json_decode($this->getResponseContent($response), true);
+        self::assertIsArray($payload);
+        self::assertSame([
+            'success' => false,
+            'message' => 'Le chantier spatial n’est pas disponible sur cette planète.',
+            'planetId' => 1,
+        ], $payload);
     }
 
     private function getResponseContent(Response $response): string
@@ -154,7 +143,18 @@ final class FleetControllerAccessTest extends TestCase
         $property = new ReflectionProperty(Response::class, 'content');
         $property->setAccessible(true);
 
-        return (string) $property->getValue($response);
+        return (string)$property->getValue($response);
+    }
+
+    public function testIndexRendersWhenShipyardAvailable(): void
+    {
+        [$controller, $session] = $this->createController(true);
+
+        $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, []);
+        $response = $controller->index($request);
+
+        self::assertSame(200, $this->getResponseStatus($response));
+        self::assertSame('rendered', $this->getResponseContent($response));
     }
 }
 

@@ -15,13 +15,13 @@ class ResearchDefinition
         private readonly string $label,
         private readonly string $category,
         private readonly string $description,
-        private readonly array $baseCost,
-        private readonly int $baseTime,
-        private readonly float $growthCost,
-        private readonly float $growthTime,
-        private readonly int $maxLevel,
-        private readonly array $requires,
-        private readonly int $requiresLab,
+        private readonly array  $baseCost,
+        private readonly int    $baseTime,
+        private readonly float  $growthCost,
+        private readonly float  $growthTime,
+        private readonly int    $maxLevel,
+        private readonly array  $requires,
+        private readonly int    $requiresLab,
         private readonly string $image
     ) {
     }

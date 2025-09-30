@@ -31,12 +31,26 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
         return $jobs;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function hydrate(array $row): ShipBuildJob
+    {
+        return new ShipBuildJob(
+            (int)$row['id'],
+            (int)$row['planet_id'],
+            $row['skey'],
+            (int)$row['quantity'],
+            new DateTimeImmutable($row['ends_at'])
+        );
+    }
+
     public function countActive(int $planetId): int
     {
         $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM ship_build_queue WHERE planet_id = :planet AND ends_at > NOW()');
         $stmt->execute(['planet' => $planetId]);
 
-        return (int) $stmt->fetchColumn();
+        return (int)$stmt->fetchColumn();
     }
 
     public function enqueue(int $planetId, string $shipKey, int $quantity, int $durationSeconds): void
@@ -49,7 +63,7 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
 
         $startAt = new DateTimeImmutable();
         if ($lastEndsAt !== false && $lastEndsAt !== null) {
-            $lastEndsAtTime = new DateTimeImmutable((string) $lastEndsAt);
+            $lastEndsAtTime = new DateTimeImmutable((string)$lastEndsAt);
             if ($lastEndsAtTime > $startAt) {
                 $startAt = $lastEndsAtTime;
             }
@@ -69,6 +83,19 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
         ]);
     }
 
+    private function getPlayerIdForPlanet(int $planetId): int
+    {
+        $stmt = $this->pdo->prepare('SELECT player_id FROM planets WHERE id = :planet');
+        $stmt->execute(['planet' => $planetId]);
+        $playerId = $stmt->fetchColumn();
+
+        if ($playerId === false) {
+            throw new RuntimeException('Planète inconnue pour la file de construction spatiale.');
+        }
+
+        return (int)$playerId;
+    }
+
     /** @return ShipBuildJob[] */
     public function finalizeDueJobs(int $planetId): array
     {
@@ -80,7 +107,7 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
 
         while ($row = $stmt->fetch()) {
             $jobs[] = $this->hydrate($row);
-            $ids[] = (int) $row['id'];
+            $ids[] = (int)$row['id'];
         }
 
         if ($ids) {
@@ -90,32 +117,5 @@ class PdoShipBuildQueueRepository implements ShipBuildQueueRepositoryInterface
         }
 
         return $jobs;
-    }
-
-    /**
-     * @param array<string, mixed> $row
-     */
-    private function hydrate(array $row): ShipBuildJob
-    {
-        return new ShipBuildJob(
-            (int) $row['id'],
-            (int) $row['planet_id'],
-            $row['skey'],
-            (int) $row['quantity'],
-            new DateTimeImmutable($row['ends_at'])
-        );
-    }
-
-    private function getPlayerIdForPlanet(int $planetId): int
-    {
-        $stmt = $this->pdo->prepare('SELECT player_id FROM planets WHERE id = :planet');
-        $stmt->execute(['planet' => $planetId]);
-        $playerId = $stmt->fetchColumn();
-
-        if ($playerId === false) {
-            throw new RuntimeException('Planète inconnue pour la file de construction spatiale.');
-        }
-
-        return (int) $playerId;
     }
 }
