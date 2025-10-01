@@ -40,8 +40,8 @@ ON DUPLICATE KEY UPDATE
 
 DROP TEMPORARY TABLE IF EXISTS tmp_technology_key_map;
 CREATE TEMPORARY TABLE tmp_technology_key_map (
-    old_key VARCHAR(64) PRIMARY KEY,
-    new_key VARCHAR(64) NOT NULL
+    old_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci PRIMARY KEY,
+    new_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 );
 INSERT INTO tmp_technology_key_map (old_key, new_key) VALUES
     ('energy_technology', 'life_support'),
@@ -56,19 +56,19 @@ INSERT INTO tmp_technology_key_map (old_key, new_key) VALUES
     ('astrophysics', 'fleet_networks');
 
 UPDATE research_queue rq
-JOIN tmp_technology_key_map map ON rq.rkey = map.old_key
+JOIN tmp_technology_key_map map ON rq.rkey COLLATE utf8mb4_unicode_ci = map.old_key
 SET rq.rkey = map.new_key;
 
 INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
 SELECT pt.player_id, tnew.id, pt.level, pt.created_at, NOW()
 FROM player_technologies pt
 JOIN technologies told ON pt.technology_id = told.id
-JOIN tmp_technology_key_map map ON told.`key` = map.old_key
-JOIN technologies tnew ON tnew.`key` = map.new_key
+JOIN tmp_technology_key_map map ON told.`key` COLLATE utf8mb4_unicode_ci = map.old_key
+JOIN technologies tnew ON tnew.`key` COLLATE utf8mb4_unicode_ci = map.new_key
 ON DUPLICATE KEY UPDATE level = GREATEST(player_technologies.level, VALUES(level)), updated_at = VALUES(updated_at);
 
 DELETE t FROM technologies t
-JOIN tmp_technology_key_map map ON t.`key` = map.old_key;
+JOIN tmp_technology_key_map map ON t.`key` COLLATE utf8mb4_unicode_ci = map.old_key;
 
 INSERT INTO player_technologies (player_id, technology_id, level, created_at, updated_at)
 SELECT p.id, t.id, 0, NOW(), NOW()
@@ -110,23 +110,23 @@ ON DUPLICATE KEY UPDATE
 
 DROP TEMPORARY TABLE IF EXISTS tmp_building_key_map;
 CREATE TEMPORARY TABLE tmp_building_key_map (
-    old_key VARCHAR(64) PRIMARY KEY,
-    new_key VARCHAR(64) NOT NULL
+    old_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci PRIMARY KEY,
+    new_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 );
 INSERT INTO tmp_building_key_map (old_key, new_key) VALUES ('hydrogen_extractor', 'hydrogen_plant');
 
 UPDATE build_queue b
-JOIN tmp_building_key_map map ON b.bkey = map.old_key
+JOIN tmp_building_key_map map ON b.bkey COLLATE utf8mb4_unicode_ci = map.old_key
 SET b.bkey = map.new_key;
 
 UPDATE planet_buildings pb
 JOIN buildings bold ON pb.building_id = bold.id
-JOIN tmp_building_key_map map ON bold.`key` = map.old_key
-JOIN buildings bnew ON bnew.`key` = map.new_key
+JOIN tmp_building_key_map map ON bold.`key` COLLATE utf8mb4_unicode_ci = map.old_key
+JOIN buildings bnew ON bnew.`key` COLLATE utf8mb4_unicode_ci = map.new_key
 SET pb.building_id = bnew.id;
 
 DELETE b FROM buildings b
-JOIN tmp_building_key_map map ON b.`key` = map.old_key;
+JOIN tmp_building_key_map map ON b.`key` COLLATE utf8mb4_unicode_ci = map.old_key;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_building_key_map;
 
@@ -172,8 +172,8 @@ ON DUPLICATE KEY UPDATE
 
 DROP TEMPORARY TABLE IF EXISTS tmp_ship_key_map;
 CREATE TEMPORARY TABLE tmp_ship_key_map (
-    old_key VARCHAR(64) PRIMARY KEY,
-    new_key VARCHAR(64) NOT NULL
+    old_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci PRIMARY KEY,
+    new_key VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 );
 INSERT INTO tmp_ship_key_map (old_key, new_key) VALUES
     ('small_cargo', 'heavy_transport'),
@@ -184,24 +184,24 @@ INSERT INTO tmp_ship_key_map (old_key, new_key) VALUES
     ('battleship', 'battleship');
 
 UPDATE ship_build_queue sbq
-JOIN tmp_ship_key_map map ON sbq.skey = map.old_key
+JOIN tmp_ship_key_map map ON sbq.skey COLLATE utf8mb4_unicode_ci = map.old_key
 SET sbq.skey = map.new_key;
 
 INSERT INTO fleet_ships (player_id, fleet_id, ship_id, quantity, created_at, updated_at)
 SELECT fs.player_id, fs.fleet_id, snew.id, SUM(fs.quantity), NOW(), NOW()
 FROM fleet_ships fs
 JOIN ships sold ON sold.id = fs.ship_id
-JOIN tmp_ship_key_map map ON sold.`key` = map.old_key
-JOIN ships snew ON snew.`key` = map.new_key
+JOIN tmp_ship_key_map map ON sold.`key` COLLATE utf8mb4_unicode_ci = map.old_key
+JOIN ships snew ON snew.`key` COLLATE utf8mb4_unicode_ci = map.new_key
 GROUP BY fs.player_id, fs.fleet_id, snew.id
 ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity), updated_at = VALUES(updated_at);
 
 DELETE fs FROM fleet_ships fs
 JOIN ships sold ON sold.id = fs.ship_id
-JOIN tmp_ship_key_map map ON sold.`key` = map.old_key;
+JOIN tmp_ship_key_map map ON sold.`key` COLLATE utf8mb4_unicode_ci = map.old_key;
 
 DELETE s FROM ships s
-JOIN tmp_ship_key_map map ON s.`key` = map.old_key;
+JOIN tmp_ship_key_map map ON s.`key` COLLATE utf8mb4_unicode_ci = map.old_key;
 
 DROP TEMPORARY TABLE IF EXISTS tmp_ship_key_map;
 
