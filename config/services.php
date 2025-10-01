@@ -14,9 +14,13 @@ use App\Application\UseCase\Dashboard\GetDashboard;
 use App\Application\UseCase\Fleet\LaunchFleetMission;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Galaxy\GetGalaxyOverview;
+use App\Application\UseCase\Journal\GetJournalOverview;
 use App\Application\UseCase\Research\GetResearchOverview;
 use App\Application\UseCase\Research\GetTechTree;
 use App\Application\UseCase\Research\StartResearch;
+use App\Application\UseCase\Profile\GetProfileOverview;
+use App\Application\UseCase\Resource\GetResourceSnapshot;
 use App\Application\UseCase\Shipyard\BuildShips;
 use App\Application\UseCase\Shipyard\GetShipyardOverview;
 use App\Controller\AuthController;
@@ -254,6 +258,36 @@ return function (Container $container): void {
         $c->get(ProcessResearchQueue::class),
         $c->get(ProcessShipBuildQueue::class)
     ));
+    $container->set(GetGalaxyOverview::class, fn (Container $c) => new GetGalaxyOverview(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(UserRepositoryInterface::class)
+    ));
+    $container->set(GetJournalOverview::class, fn (Container $c) => new GetJournalOverview(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(BuildQueueRepositoryInterface::class),
+        $c->get(ResearchQueueRepositoryInterface::class),
+        $c->get(ShipBuildQueueRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingCatalog::class),
+        $c->get(ResearchCatalog::class),
+        $c->get(ShipCatalog::class)
+    ));
+    $container->set(GetProfileOverview::class, fn (Container $c) => new GetProfileOverview(
+        $c->get(UserRepositoryInterface::class),
+        $c->get(GetDashboard::class)
+    ));
+    $container->set(GetResourceSnapshot::class, fn (Container $c) => new GetResourceSnapshot(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(ProcessBuildQueue::class),
+        $c->get(ProcessResearchQueue::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(ResourceTickService::class)
+    ));
 
     $container->set(GetBuildingsOverview::class, fn (Container $c) => new GetBuildingsOverview(
         $c->get(PlanetRepositoryInterface::class),
@@ -348,9 +382,7 @@ return function (Container $container): void {
     ));
 
     $container->set(GalaxyController::class, fn (Container $c) => new GalaxyController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(UserRepositoryInterface::class),
+        $c->get(GetGalaxyOverview::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -421,17 +453,7 @@ return function (Container $container): void {
     ));
 
     $container->set(JournalController::class, fn (Container $c) => new JournalController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(BuildQueueRepositoryInterface::class),
-        $c->get(ResearchQueueRepositoryInterface::class),
-        $c->get(ShipBuildQueueRepositoryInterface::class),
-        $c->get(ProcessBuildQueue::class),
-        $c->get(ProcessResearchQueue::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(BuildingCatalog::class),
-        $c->get(ResearchCatalog::class),
-        $c->get(ShipCatalog::class),
+        $c->get(GetJournalOverview::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -440,8 +462,7 @@ return function (Container $container): void {
     ));
 
     $container->set(ProfileController::class, fn (Container $c) => new ProfileController(
-        $c->get(UserRepositoryInterface::class),
-        $c->get(GetDashboard::class),
+        $c->get(GetProfileOverview::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -450,12 +471,7 @@ return function (Container $container): void {
     ));
 
     $container->set(ResourceApiController::class, fn (Container $c) => new ResourceApiController(
-        $c->get(PlanetRepositoryInterface::class),
-        $c->get(ProcessBuildQueue::class),
-        $c->get(ProcessResearchQueue::class),
-        $c->get(ProcessShipBuildQueue::class),
-        $c->get(BuildingStateRepositoryInterface::class),
-        $c->get(ResourceTickService::class),
+        $c->get(GetResourceSnapshot::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

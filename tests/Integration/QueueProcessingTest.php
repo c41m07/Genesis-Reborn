@@ -9,6 +9,7 @@ use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Research\StartResearch;
+use App\Application\UseCase\Resource\GetResourceSnapshot;
 use App\Application\UseCase\Shipyard\BuildShips;
 use App\Application\UseCase\Shipyard\GetShipyardOverview;
 use App\Controller\ResourceApiController;
@@ -697,13 +698,17 @@ class QueueProcessingTest extends TestCase
         $csrf = new CsrfTokenManager($session);
         $renderer = new ViewRenderer(__DIR__ . '/../../templates');
 
-        $controller = new ResourceApiController(
+        $getResourceSnapshot = new GetResourceSnapshot(
             $planetRepository,
             $buildQueue,
             $researchQueue,
             $shipQueue,
             $buildingStates,
-            $resourceTick,
+            $resourceTick
+        );
+
+        $controller = new ResourceApiController(
+            $getResourceSnapshot,
             $renderer,
             $session,
             $flashBag,
@@ -771,13 +776,17 @@ class QueueProcessingTest extends TestCase
         $csrf = new CsrfTokenManager($session);
         $renderer = new ViewRenderer(__DIR__ . '/../../templates');
 
-        $controller = new ResourceApiController(
+        $getResourceSnapshot = new GetResourceSnapshot(
             $planetRepository,
             $buildQueue,
             $researchQueue,
             $shipQueue,
             $buildingStates,
-            $resourceTick,
+            $resourceTick
+        );
+
+        $controller = new ResourceApiController(
+            $getResourceSnapshot,
             $renderer,
             $session,
             $flashBag,

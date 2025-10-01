@@ -36,11 +36,24 @@ class Response
         return $this;
     }
 
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
     public function addHeader(string $name, string $value): self
     {
         $this->headers[$name] = $value;
 
         return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
     }
 
     public function send(): void

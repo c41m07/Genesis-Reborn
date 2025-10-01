@@ -113,7 +113,9 @@ final class FleetControllerAccessTest extends TestCase
 
     private function getResponseHeader(Response $response, string $name): ?string
     {
-        return $response->headers->get($name);
+        $headers = method_exists($response, 'getHeaders') ? $response->getHeaders() : [];
+
+        return $headers[$name] ?? null;
     }
 
     public function testIndexReturnsJsonErrorWhenShipyardUnavailable(): void

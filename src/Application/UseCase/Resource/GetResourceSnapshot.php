@@ -1,0 +1,149 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\UseCase\Resource;
+
+use App\Application\Service\ProcessBuildQueue;
+use App\Application\Service\ProcessResearchQueue;
+use App\Application\Service\ProcessShipBuildQueue;
+use App\Domain\Entity\Planet;
+use App\Domain\Repository\BuildingStateRepositoryInterface;
+use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\Service\ResourceTickService;
+use DateTimeImmutable;
+
+final class GetResourceSnapshot
+{
+    public function __construct(
+        private readonly PlanetRepositoryInterface $planets,
+        private readonly ProcessBuildQueue $buildQueue,
+        private readonly ProcessResearchQueue $researchQueue,
+        private readonly ProcessShipBuildQueue $shipQueue,
+        private readonly BuildingStateRepositoryInterface $buildingStates,
+        private readonly ResourceTickService $resourceTickService
+    ) {
+    }
+
+    public function execute(int $userId, int $planetId): ResourceSnapshotResult
+    {
+        if ($planetId <= 0) {
+            return new ResourceSnapshotResult(400, [
+                'success' => false,
+                'message' => 'Planète invalide.',
+            ], null);
+        }
+
+        $planet = $this->planets->find($planetId);
+        if (!$planet instanceof Planet || $planet->getUserId() !== $userId) {
+            return new ResourceSnapshotResult(404, [
+                'success' => false,
+                'message' => 'Planète introuvable.',
+            ], null);
+        }
+
+        $previousBuildingLevels = $this->buildingStates->getLevels($planetId);
+
+        $this->buildQueue->process($planetId);
+        $this->researchQueue->process($planetId);
+        $this->shipQueue->process($planetId);
+
+        $planet = $this->planets->find($planetId) ?? $planet;
+
+        $buildingLevels = $this->buildingStates->getLevels($planetId);
+        $now = new DateTimeImmutable();
+
+        $correctedFutureTick = false;
+        $lastTick = $planet->getLastResourceTick();
+        if ($lastTick > $now) {
+            $planet->setLastResourceTick($now);
+            $this->planets->update($planet);
+            $lastTick = $now;
+            $correctedFutureTick = true;
+        }
+
+        $tickStates = [
+            $planetId => [
+                'planet_id' => $planetId,
+                'player_id' => $userId,
+                'resources' => [
+                    'metal' => $planet->getMetal(),
+                    'crystal' => $planet->getCrystal(),
+                    'hydrogen' => $planet->getHydrogen(),
+                    'energy' => $planet->getEnergy(),
+                ],
+                'capacities' => [
+                    'metal' => $planet->getMetalCapacity(),
+                    'crystal' => $planet->getCrystalCapacity(),
+                    'hydrogen' => $planet->getHydrogenCapacity(),
+                    'energy' => $planet->getEnergyCapacity(),
+                ],
+                'last_tick' => $lastTick,
+                'building_levels' => $buildingLevels,
+                'previous_building_levels' => $previousBuildingLevels,
+            ],
+        ];
+
+        $tickResults = $this->resourceTickService->tick($tickStates, $now);
+        $planetTick = $tickResults[$planetId] ?? null;
+
+        if ($planetTick !== null) {
+            $elapsed = (int)$planetTick['elapsed_seconds'];
+
+            /** @var array<string, int> $resources */
+            $resources = $planetTick['resources'];
+            if (isset($resources['metal'])) {
+                $planet->setMetal((int)$resources['metal']);
+            }
+            if (isset($resources['crystal'])) {
+                $planet->setCrystal((int)$resources['crystal']);
+            }
+            if (isset($resources['hydrogen'])) {
+                $planet->setHydrogen((int)$resources['hydrogen']);
+            }
+            if (isset($resources['energy'])) {
+                $planet->setEnergy((int)$resources['energy']);
+            }
+
+            /** @var array<string, int> $production */
+            $production = $planetTick['production_per_hour'];
+            if (isset($production['metal'])) {
+                $planet->setMetalPerHour((int)$production['metal']);
+            }
+            if (isset($production['crystal'])) {
+                $planet->setCrystalPerHour((int)$production['crystal']);
+            }
+            if (isset($production['hydrogen'])) {
+                $planet->setHydrogenPerHour((int)$production['hydrogen']);
+            }
+            if (isset($production['energy'])) {
+                $planet->setEnergyPerHour((int)$production['energy']);
+            }
+
+            /** @var array<string, int> $capacities */
+            $capacities = $planetTick['capacities'];
+            if (isset($capacities['metal'])) {
+                $planet->setMetalCapacity((int)$capacities['metal']);
+            }
+            if (isset($capacities['crystal'])) {
+                $planet->setCrystalCapacity((int)$capacities['crystal']);
+            }
+            if (isset($capacities['hydrogen'])) {
+                $planet->setHydrogenCapacity((int)$capacities['hydrogen']);
+            }
+            if (isset($capacities['energy'])) {
+                $planet->setEnergyCapacity((int)$capacities['energy']);
+            }
+
+            if ($elapsed > 0 || $correctedFutureTick) {
+                $planet->setLastResourceTick($now);
+                $this->planets->update($planet);
+            }
+        }
+
+        return new ResourceSnapshotResult(200, [
+            'success' => true,
+            'planetId' => $planetId,
+        ], $planet);
+    }
+}
