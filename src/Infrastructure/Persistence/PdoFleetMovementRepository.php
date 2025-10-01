@@ -178,6 +178,9 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
         }
     }
 
+    /**
+     * @param array<string, int> $composition
+     */
     private function insertMission(
         int $playerId,
         int $originPlanetId,

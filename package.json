@@ -11,7 +11,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "test": "node --test public/assets/js/__tests__/**/*.test.js",
     "fmt": "prettier --check \"public/assets/js/**/*.js\" \"public/assets/css/**/*.css\"",
-    "svgo": "svgo -f public/assets/svg --config=.svgo.yml",
+    "svgo": "svgo -f public/assets/svg/icons -o public/assets/svg/icons --config=tools/svgo.config.mjs && node tools/build-sprite.mjs",
     "check": "npm run lint:js && npm run lint:css && npm run fmt"
   },
   "devDependencies": {

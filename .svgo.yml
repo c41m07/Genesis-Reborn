@@ -1,9 +1,0 @@
-multipass: true
-plugins:
-  - name: removeViewBox
-    active: false
-  - name: cleanupIDs
-    params:
-      preserve: true
-  - name: removeDimensions
-    active: true

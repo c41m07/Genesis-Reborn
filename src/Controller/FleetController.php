@@ -106,7 +106,7 @@ class FleetController extends AbstractController
             $message = 'Pour gérer votre flotte, vous devez construire un chantier spatial.';
             if ($request->wantsJson()) {
                 return $this->json([
-                    'sucess' => false,
+                    'success' => false,
                     'message' => $message,
                     'planetId' => $selectedId,
                 ], 403);

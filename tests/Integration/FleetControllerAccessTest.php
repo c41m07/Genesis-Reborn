@@ -39,7 +39,7 @@ final class FleetControllerAccessTest extends TestCase
         $flashes = $session->toArray()['_flashes']['messages'] ?? [];
         self::assertNotEmpty($flashes);
         self::assertSame('warning', $flashes[0]['type'] ?? null);
-        self::assertSame('Le chantier spatial n’est pas disponible sur cette planète.', $flashes[0]['message'] ?? null);
+        self::assertSame('Pour gérer votre flotte, vous devez construire un chantier spatial.', $flashes[0]['message'] ?? null);
     }
 
     /**
@@ -68,7 +68,7 @@ final class FleetControllerAccessTest extends TestCase
         $movements = $this->createMock(FleetMovementRepositoryInterface::class);
         $planFleetMission = $this->createMock(PlanFleetMission::class);
         $processArrivals = $this->createMock(ProcessFleetArrivals::class);
-        $processArrivals->expects(self::once())
+        $processArrivals->expects($hasShipyard ? self::once() : self::never())
             ->method('execute')
             ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
             ->willReturn(0);
@@ -143,7 +143,7 @@ final class FleetControllerAccessTest extends TestCase
         self::assertIsArray($payload);
         self::assertSame([
             'success' => false,
-            'message' => 'Le chantier spatial n’est pas disponible sur cette planète.',
+            'message' => 'Pour gérer votre flotte, vous devez construire un chantier spatial.',
             'planetId' => 1,
         ], $payload);
     }
