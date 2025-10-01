@@ -51,7 +51,8 @@ export const submitAsyncForm = async (form) => {
     const data = await response.json().catch(() => null);
 
     if (!data) {
-      throw new Error('Invalid JSON response');
+      showFlashMessage('danger', 'Impossible de traiter votre demande pour le moment.');
+      return;
     }
 
     const queueTarget = form.dataset.queueTarget || '';

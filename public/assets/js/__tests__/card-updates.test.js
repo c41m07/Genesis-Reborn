@@ -161,7 +161,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
             </header>
             <div class="panel__body">
                 <div class="tech-card__progress">
-                    <div class="progress-bar"><span class="progress-bar__value" style="width: 0%"></span></div>
+                    <div class="progress-bar"><span class="progress-bar__value" style="width: 0"></span></div>
                     <p class="tech-card__level">Niveau actuel 0</p>
                 </div>
                 <div class="tech-card__section">

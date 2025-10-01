@@ -2,7 +2,7 @@ import { afterEach, beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { JSDOM } from 'jsdom';
 
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
+const dom = new JSDOM('<!DOCTYPE html><html lang="en"><body></body></html>', {
   url: 'https://example.com/',
 });
 

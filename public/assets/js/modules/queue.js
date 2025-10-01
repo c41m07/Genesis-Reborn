@@ -72,12 +72,10 @@ const renderQueueItem = (job, queueKey, serverNow) => {
       ? Math.floor(endDate.getTime() / 1000)
       : Math.floor(serverNow + toSeconds(job.remaining ?? 0, 0));
 
-  let detail = '';
-  if (queueKey === 'shipyard') {
-    detail = `${formatNumber(job.quantity ?? 0)} unité(s)`;
-  } else {
-    detail = `Niveau ${formatNumber(job.targetLevel ?? 0)}`;
-  }
+  const detail =
+    queueKey === 'shipyard'
+      ? `${formatNumber(job.quantity ?? 0)} unité(s)`
+      : `Niveau ${formatNumber(job.targetLevel ?? 0)}`;
 
   const timeHtml =
     endDate instanceof Date && !Number.isNaN(endDate.getTime())

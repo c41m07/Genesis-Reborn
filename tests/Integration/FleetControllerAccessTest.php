@@ -108,25 +108,12 @@ final class FleetControllerAccessTest extends TestCase
 
     private function getResponseStatus(Response $response): int
     {
-        $property = new ReflectionProperty(Response::class, 'statusCode');
-        $property->setAccessible(true);
-
-        return (int)$property->getValue($response);
+        return $response->getStatusCode();
     }
 
     private function getResponseHeader(Response $response, string $name): ?string
     {
-        $property = new ReflectionProperty(Response::class, 'headers');
-        $property->setAccessible(true);
-        $headers = (array)$property->getValue($response);
-
-        foreach ($headers as $headerName => $value) {
-            if (strtolower((string)$headerName) === strtolower($name)) {
-                return (string)$value;
-            }
-        }
-
-        return null;
+        return $response->headers->get($name);
     }
 
     public function testIndexReturnsJsonErrorWhenShipyardUnavailable(): void
@@ -150,10 +137,7 @@ final class FleetControllerAccessTest extends TestCase
 
     private function getResponseContent(Response $response): string
     {
-        $property = new ReflectionProperty(Response::class, 'content');
-        $property->setAccessible(true);
-
-        return (string)$property->getValue($response);
+        return (string)$response->getContent();
     }
 
     public function testIndexRendersWhenShipyardAvailable(): void
