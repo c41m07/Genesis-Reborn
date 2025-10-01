@@ -446,30 +446,48 @@ export const updateResearchCard = (research) => {
     }
 
     const subtitle = card.querySelector('.panel__subtitle');
-    const level = Number.isFinite(research.level)
-        ? Number(research.level)
-        : Number(research.level ?? 0);
-    const normalizedLevel = Number.isFinite(level) ? Math.max(0, Math.floor(level)) : 0;
+    const rawLevel = Number(research.level ?? 0);
+    const normalizedLevel = Number.isFinite(rawLevel) ? Math.max(0, Math.floor(rawLevel)) : 0;
+    const maxLevelValue =
+        typeof research.maxLevel === 'number' && Number.isFinite(research.maxLevel)
+            ? Math.max(0, Math.floor(research.maxLevel))
+            : null;
+    const formattedLevel = formatNumber(normalizedLevel);
+    const hasFiniteMax = maxLevelValue !== null && maxLevelValue > 0;
+    const maxLabel = hasFiniteMax ? ` / ${formatNumber(maxLevelValue)}` : '';
+    const badgeLabel = hasFiniteMax ? ` / ${formatNumber(maxLevelValue)}` : ' / ∞';
+
     if (subtitle) {
-        const maxLabel =
-            typeof research.maxLevel === 'number' && Number.isFinite(research.maxLevel)
-                ? ` / ${formatNumber(Math.max(0, research.maxLevel))}`
-                : '';
         subtitle.textContent =
             normalizedLevel > 0
-                ? `Niveau actuel ${formatNumber(normalizedLevel)}${maxLabel}`
+                ? `Niveau actuel ${formattedLevel}${maxLabel}`
                 : 'Non recherché';
     }
 
-    const progressBar = card.querySelector('.tech-card__progress');
-    if (progressBar instanceof HTMLElement) {
-        const progress = Math.max(0, Math.min(1, Number(research.progress ?? 0)));
-        progressBar.style.setProperty('--progress', `${Math.round(progress * 100)}%`);
+    const badge = card.querySelector('.panel__badge');
+    if (badge) {
+        badge.textContent = `Niveau ${formattedLevel}${badgeLabel}`;
     }
 
-    const costSection = card.querySelector('.tech-card__costs');
-    if (costSection) {
-        costSection.innerHTML = renderCostList(
+    const levelElement = card.querySelector('.tech-card__level');
+    if (levelElement) {
+        levelElement.textContent = `Niveau actuel ${formattedLevel}${maxLabel}`;
+    }
+
+    const progressRatio = Math.max(0, Math.min(1, Number(research.progress ?? 0)));
+    const progressBar = card.querySelector('.tech-card__progress');
+    if (progressBar instanceof HTMLElement) {
+        progressBar.style.setProperty('--progress', `${Math.round(progressRatio * 100)}%`);
+    }
+
+    const progressValue = card.querySelector('.progress-bar__value');
+    if (progressValue instanceof HTMLElement) {
+        progressValue.style.width = `${Math.round(progressRatio * 100)}%`;
+    }
+
+    const costList = card.querySelector('.tech-card__section .resource-list');
+    if (costList) {
+        costList.outerHTML = renderCostList(
             research.nextCost ?? {},
             research.nextTime ?? 0,
             research.nextBaseTime ?? null,
@@ -504,6 +522,8 @@ export const updateResearchCard = (research) => {
             button.classList.remove('button--resource-warning');
         }
     }
+
+    card.classList.toggle('is-locked', !requirements.ok);
 };
 
 export const updateShipCard = (ship) => {
@@ -527,6 +547,7 @@ export const updateShipCard = (ship) => {
     const canBuild = Boolean(ship.canBuild);
     const affordable = Boolean(ship.affordable);
     const requirements = ship.requirements ?? {ok: true};
+    const missingResources = ship.missingResources ?? {};
 
     card.classList.toggle('is-locked', !requirements.ok);
 
@@ -550,12 +571,33 @@ export const updateShipCard = (ship) => {
 
     const costSection = card.querySelector('.ship-card__section--costs');
     if (costSection) {
-        costSection.innerHTML = renderCostList(
-            ship.cost ?? {},
-            ship.time ?? 0,
-            ship.baseTime ?? null,
-            ship.missingResources ?? {}
-        );
+        const hasCostData =
+            ship.cost && typeof ship.cost === 'object' && Object.keys(ship.cost).length > 0;
+        const hasTimeData = ship.time !== undefined || ship.baseTime !== undefined;
+
+        if (hasCostData || hasTimeData) {
+            costSection.innerHTML = renderCostList(
+                ship.cost ?? {},
+                ship.time ?? 0,
+                ship.baseTime ?? null,
+                missingResources
+            );
+        }
+
+        const list = costSection.querySelector('.resource-list');
+        if (list) {
+            list.querySelectorAll('[data-resource]').forEach((item) => {
+                if (!(item instanceof HTMLElement)) {
+                    return;
+                }
+                const resourceKey = item.getAttribute('data-resource');
+                if (!resourceKey) {
+                    return;
+                }
+                const shortage = Number(missingResources[resourceKey] ?? 0);
+                item.classList.toggle('resource-list__item--missing', Number.isFinite(shortage) && shortage > 0);
+            });
+        }
     }
 
     const requirementsSection = card.querySelector('.ship-card__requirements');

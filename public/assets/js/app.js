@@ -7,6 +7,7 @@ import {initRequirementsPanels} from './modules/requirements.js';
 import {initTechTree} from './modules/tech-tree.js';
 import {renderQueue} from './modules/queue.js';
 import {updateBuildingCard, updateResearchCard, updateShipCard} from './modules/cards.js';
+import {initFleetPlanner} from './modules/fleet-planner.js';
 
 const ready = () => {
     initSidebar();
@@ -16,6 +17,7 @@ const ready = () => {
     initResourcePolling();
     initRequirementsPanels();
     initTechTree();
+    initFleetPlanner();
 };
 
 document.addEventListener('DOMContentLoaded', ready, {once: true});

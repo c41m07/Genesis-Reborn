@@ -11,6 +11,9 @@ use App\Application\UseCase\Auth\RegisterUser;
 use App\Application\UseCase\Building\GetBuildingsOverview;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Dashboard\GetDashboard;
+use App\Application\UseCase\Fleet\LaunchFleetMission;
+use App\Application\UseCase\Fleet\PlanFleetMission;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
 use App\Application\UseCase\Research\GetResearchOverview;
 use App\Application\UseCase\Research\GetTechTree;
 use App\Application\UseCase\Research\StartResearch;
@@ -21,6 +24,7 @@ use App\Controller\ChangeLogController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\FleetMissionController;
 use App\Controller\GalaxyController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
@@ -35,6 +39,7 @@ use App\Domain\Battle\DTO\FleetBattleRoundDTO;
 use App\Domain\Config\BalanceConfig;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
@@ -62,6 +67,7 @@ use App\Infrastructure\Http\Session\SessionInterface;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Persistence\PdoBuildingStateRepository;
 use App\Infrastructure\Persistence\PdoBuildQueueRepository;
+use App\Infrastructure\Persistence\PdoFleetMovementRepository;
 use App\Infrastructure\Persistence\PdoFleetRepository;
 use App\Infrastructure\Persistence\PdoPlanetRepository;
 use App\Infrastructure\Persistence\PdoPlayerStatsRepository;
@@ -202,6 +208,23 @@ return function (Container $container): void {
         $c->get(FleetRepositoryInterface::class)
     ));
     $container->set(ShipBuildQueueRepositoryInterface::class, fn (Container $c) => new PdoShipBuildQueueRepository($c->get(\PDO::class)));
+    $container->set(FleetMovementRepositoryInterface::class, fn (Container $c) => new PdoFleetMovementRepository($c->get(\PDO::class)));
+
+    $container->set(PlanFleetMission::class, fn (Container $c) => new PlanFleetMission(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(ShipCatalog::class),
+        $c->get(FleetNavigationService::class)
+    ));
+    $container->set(LaunchFleetMission::class, fn (Container $c) => new LaunchFleetMission(
+        $c->get(PlanFleetMission::class),
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetMovementRepositoryInterface::class)
+    ));
+    $container->set(ProcessFleetArrivals::class, fn (Container $c) => new ProcessFleetArrivals(
+        $c->get(FleetMovementRepositoryInterface::class)
+    ));
 
     $container->set(RegisterUser::class, fn (Container $c) => new RegisterUser(
         $c->get(UserRepositoryInterface::class),
@@ -375,9 +398,21 @@ return function (Container $container): void {
         $c->get(PlanetRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
+        $c->get(FleetMovementRepositoryInterface::class),
         $c->get(ShipCatalog::class),
         $c->get(ProcessShipBuildQueue::class),
-        $c->get(FleetNavigationService::class),
+        $c->get(PlanFleetMission::class),
+        $c->get(ProcessFleetArrivals::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
+    $container->set(FleetMissionController::class, fn (Container $c) => new FleetMissionController(
+        $c->get(PlanFleetMission::class),
+        $c->get(LaunchFleetMission::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),

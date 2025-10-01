@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\PlanFleetMission;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
-use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -25,9 +27,11 @@ class FleetController extends AbstractController
         private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly FleetRepositoryInterface         $fleets,
+        private readonly FleetMovementRepositoryInterface $movements,
         private readonly ShipCatalog                      $shipCatalog,
         private readonly ProcessShipBuildQueue            $shipQueueProcessor,
-        private readonly FleetNavigationService           $navigationService,
+        private readonly PlanFleetMission                 $planFleetMission,
+        private readonly ProcessFleetArrivals             $processFleetArrivals,
         ViewRenderer                                      $renderer,
         SessionInterface                                  $session,
         FlashBag                                          $flashBag,
@@ -66,11 +70,13 @@ class FleetController extends AbstractController
                 'flashes' => $this->flashBag->consume(),
                 'baseUrl' => $this->baseUrl,
                 'csrf_plan' => $this->generateCsrfToken('fleet_plan_0'),
+                'csrf_launch' => $this->generateCsrfToken('fleet_launch_0'),
                 'csrf_logout' => $this->generateCsrfToken('logout'),
                 'currentUserId' => $userId,
                 'activeSection' => 'fleet',
                 'activePlanetSummary' => null,
                 'facilityStatuses' => [],
+                'activeMissions' => [],
             ]);
         }
 
@@ -106,15 +112,17 @@ class FleetController extends AbstractController
                 ], 403);
             }
             $this->addFlash('warning', $message);
+
             return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
         }
+
+        $this->processFleetArrivals->execute($userId, new DateTimeImmutable());
 
         $fleet = $this->fleets->getFleet($selectedId);
         $fleetShips = [];
         $availableShips = [];
         $totalShips = 0;
         $totalPower = 0;
-        $shipStats = [];
 
         foreach ($fleet as $shipKey => $quantity) {
             $quantity = (int)$quantity;
@@ -162,18 +170,12 @@ class FleetController extends AbstractController
 
             $fleetShips[] = $entry;
             $availableShips[] = $entry;
-
-            $shipStats[$shipKey] = [
-                'speed' => $speed > 0 ? $speed : max(1, $fuelRate * 2),
-                'fuel_per_distance' => max(0.1, $fuelRate ?: 1),
-            ];
         }
 
         usort($fleetShips, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
         usort($availableShips, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
 
         $origin = $selectedPlanet->getCoordinates();
-        // Je prépare la destination par défaut avec les coordonnées actuelles.
         $submittedDestination = [
             'galaxy' => $origin['galaxy'],
             'system' => $origin['system'],
@@ -188,61 +190,38 @@ class FleetController extends AbstractController
             if (!$this->isCsrfTokenValid('fleet_plan_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $planErrors[] = 'Session expirée, veuillez recharger la page.';
             } else {
-                // Je récupère les coordonnées visées dans le formulaire.
-                $destination = [
-                    'galaxy' => max(1, (int)($data['destination_galaxy'] ?? $origin['galaxy'])),
-                    'system' => max(1, (int)($data['destination_system'] ?? $origin['system'])),
-                    'position' => max(1, (int)($data['destination_position'] ?? $origin['position'])),
+                $destinationInput = [
+                    'galaxy' => (int)($data['destination_galaxy'] ?? $origin['galaxy']),
+                    'system' => (int)($data['destination_system'] ?? $origin['system']),
+                    'position' => (int)($data['destination_position'] ?? $origin['position']),
                 ];
-                $submittedDestination = $destination;
 
-                $composition = [];
+                $speedFactor = isset($data['speed_factor']) ? (float)$data['speed_factor'] : 1.0;
+                if ($speedFactor > 1) {
+                    $speedFactor /= 100;
+                }
+
+                $compositionInput = [];
                 foreach ($availableShips as $ship) {
-                    $key = $ship['key'];
-                    $requested = (int)($data['composition'][$key] ?? 0);
-                    if ($requested < 0) {
-                        $requested = 0;
-                    }
-                    $assigned = min($requested, $ship['quantity']);
-                    $submittedComposition[$key] = $assigned;
-                    if ($assigned > 0) {
-                        $composition[$key] = $assigned;
-                    }
+                    $compositionInput[$ship['key']] = (int)($data['composition'][$ship['key']] ?? 0);
                 }
 
-                if ($composition === []) {
-                    $planErrors[] = 'Sélectionnez au moins un vaisseau pour planifier un trajet.';
-                }
+                $planResponse = $this->planFleetMission->execute(
+                    $userId,
+                    $selectedId,
+                    $compositionInput,
+                    $destinationInput,
+                    $speedFactor,
+                    (string)($data['mission'] ?? 'transport')
+                );
 
-                $speedFactor = 1.0;
-                if (isset($data['speed_factor'])) {
-                    $speedFactorInput = (float)$data['speed_factor'];
-                    if ($speedFactorInput > 1) {
-                        $speedFactorInput /= 100;
-                    }
-                    $speedFactor = max(0.1, min(1.0, $speedFactorInput));
-                }
+                $submittedComposition = $planResponse['composition'];
+                $submittedDestination = $planResponse['destination'];
 
-                if ($planErrors === []) {
-                    try {
-                        $plan = $this->navigationService->plan(
-                            $origin,
-                            $destination,
-                            $composition,
-                            $shipStats,
-                            new DateTimeImmutable(),
-                            [],
-                            $speedFactor
-                        );
-                        $planResult = [
-                            'plan' => $plan,
-                            'composition' => $composition,
-                            'destination' => $destination,
-                            'speedFactor' => $speedFactor,
-                        ];
-                    } catch (InvalidArgumentException $exception) {
-                        $planErrors[] = $exception->getMessage();
-                    }
+                if ($planResponse['success']) {
+                    $planResult = $planResponse['plan'];
+                } else {
+                    $planErrors = $planResponse['errors'];
                 }
             }
         }
@@ -250,6 +229,17 @@ class FleetController extends AbstractController
         foreach ($availableShips as $ship) {
             $submittedComposition[$ship['key']] = $submittedComposition[$ship['key']] ?? 0;
         }
+
+        $activeMissions = array_map(
+            static fn ($movement): array => [
+                'id' => $movement->getId(),
+                'mission' => $movement->getMission()->value,
+                'status' => $movement->getStatus()->value,
+                'destination' => $movement->getDestination()->toArray(),
+                'arrivalAt' => $movement->getArrivalAt()?->format('d/m/Y H:i'),
+            ],
+            $this->movements->findActiveByOriginPlanet($selectedId)
+        );
 
         $activePlanetSummary = [
             'planet' => $selectedPlanet,
@@ -280,11 +270,13 @@ class FleetController extends AbstractController
             'flashes' => $this->flashBag->consume(),
             'baseUrl' => $this->baseUrl,
             'csrf_plan' => $this->generateCsrfToken('fleet_plan_' . $selectedId),
+            'csrf_launch' => $this->generateCsrfToken('fleet_launch_' . $selectedId),
             'csrf_logout' => $this->generateCsrfToken('logout'),
             'currentUserId' => $userId,
             'activeSection' => 'fleet',
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
+            'activeMissions' => $activeMissions,
         ]);
     }
 }

@@ -9,6 +9,7 @@
     "lint:js": "node ./tools/run-eslint.cjs \"public/assets/js/**/*.js\"",
     "lint:css": "stylelint \"public/assets/css/**/*.css\"",
     "lint": "npm run lint:js && npm run lint:css",
+    "test": "node --test public/assets/js/__tests__/**/*.test.js",
     "fmt": "prettier --check \"public/assets/js/**/*.js\" \"public/assets/css/**/*.css\"",
     "svgo": "svgo -f public/assets/svg --config=.svgo.yml",
     "check": "npm run lint:js && npm run lint:css && npm run fmt"

@@ -7,6 +7,7 @@ const dom = new JSDOM('<!DOCTYPE html><body></body>', {url: 'https://example.com
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
 globalThis.HTMLElement = dom.window.HTMLElement;
+globalThis.HTMLInputElement = dom.window.HTMLInputElement;
 globalThis.Node = dom.window.Node;
 globalThis.CSS = {
     escape(value) {

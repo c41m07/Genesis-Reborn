@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\PlanFleetMission;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
 use App\Controller\FleetController;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
-use App\Domain\Service\FleetNavigationService;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -63,7 +65,13 @@ final class FleetControllerAccessTest extends TestCase
         $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $fleetRepository);
 
         $shipCatalog = new ShipCatalog([]);
-        $navigation = new FleetNavigationService();
+        $movements = $this->createMock(FleetMovementRepositoryInterface::class);
+        $planFleetMission = $this->createMock(PlanFleetMission::class);
+        $processArrivals = $this->createMock(ProcessFleetArrivals::class);
+        $processArrivals->expects(self::once())
+            ->method('execute')
+            ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
+            ->willReturn(0);
         $renderer = new class () extends ViewRenderer {
             public function __construct()
             {
@@ -83,9 +91,11 @@ final class FleetControllerAccessTest extends TestCase
             $planetRepository,
             $buildingStates,
             $fleetRepository,
+            $movements,
             $shipCatalog,
             $shipQueueProcessor,
-            $navigation,
+            $planFleetMission,
+            $processArrivals,
             $renderer,
             $session,
             $flashBag,

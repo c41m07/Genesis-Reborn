@@ -9,11 +9,12 @@
 /** @var array<int, string> $planErrors Liste des erreurs rencontrées. */
 /** @var string $baseUrl URL de base pour les liens. */
 /** @var string|null $csrf_plan Jeton CSRF du planificateur. */
+/** @var string|null $csrf_launch Jeton CSRF de lancement. */
 /** @var int|null $selectedPlanetId Identifiant de la planète active. */
 /** @var array{planet: \App\Domain\Entity\Planet, resources: array<string, array{value: int, perHour: int}>}|null $activePlanetSummary Résumé pour l’entête de page. */
+/** @var array<int, array{id: int, mission: string, status: string, destination: array{galaxy: int, system: int, position: int}, arrivalAt: ?string}> $activeMissions Missions en cours. */
 
 $title = $title ?? 'Flotte';
-$icon = require __DIR__ . '/../../components/_icon.php';
 $card = require __DIR__ . '/../../components/_card.php';
 require_once __DIR__ . '/../../components/helpers.php';
 
@@ -64,9 +65,51 @@ ob_start();
 ]) ?>
 
 <?= $card([
+        'title' => 'Missions actives',
+        'subtitle' => 'Trajets en cours pour cette planète',
+        'body' => static function () use ($activeMissions): void {
+            if ($activeMissions === []) {
+                echo '<p class="empty-state">Aucune mission en cours. Planifiez un trajet pour lancer votre flotte.</p>';
+
+                return;
+            }
+
+            echo '<table class="data-table">';
+            echo '<thead><tr><th>Mission</th><th>Destination</th><th>Statut</th><th>Arrivée</th></tr></thead>';
+            echo '<tbody>';
+            foreach ($activeMissions as $mission) {
+                $destination = $mission['destination'];
+                $arrival = $mission['arrivalAt'] ?? null;
+                echo '<tr>';
+                echo '<td>' . htmlspecialchars($mission['mission']) . '</td>';
+                echo '<td>' . htmlspecialchars($destination['galaxy'] . ':' . $destination['system'] . ':' . $destination['position']) . '</td>';
+                echo '<td>' . htmlspecialchars($mission['status']) . '</td>';
+                echo '<td>' . ($arrival ? htmlspecialchars($arrival) : '-') . '</td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
+        },
+]) ?>
+
+<?= $card([
         'title' => 'Planification de mission',
         'subtitle' => 'Calculez l’ETA et la consommation d’hydrogène',
-        'body' => static function () use ($planErrors, $availableShips, $submittedComposition, $submittedDestination, $planResult, $baseUrl, $icon, $csrf_plan, $selectedPlanetId): void {
+        'body' => static function () use ($planErrors, $availableShips, $submittedComposition, $submittedDestination, $planResult, $baseUrl, $csrf_plan, $csrf_launch, $selectedPlanetId): void {
+            echo '<form'
+                . ' class="fleet-planner"'
+                . ' method="post"'
+                . ' action="' . htmlspecialchars($baseUrl) . '/fleet?planet=' . (int)$selectedPlanetId . '"'
+                . ' data-fleet-planner'
+                . ' data-plan-endpoint="' . htmlspecialchars($baseUrl) . '/fleet/plan"'
+                . ' data-launch-endpoint="' . htmlspecialchars($baseUrl) . '/fleet/launch"'
+                . ' data-csrf-plan="' . htmlspecialchars((string)$csrf_plan) . '"'
+                . ' data-csrf-launch="' . htmlspecialchars((string)$csrf_launch) . '"'
+                . ' data-origin-planet="' . (int)$selectedPlanetId . '">';
+            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_plan) . '">';
+            echo '<input type="hidden" name="csrf_launch" value="' . htmlspecialchars((string)$csrf_launch) . '">';
+            echo '<input type="hidden" name="origin_planet_id" value="' . (int)$selectedPlanetId . '">';
+
+            echo '<div class="planner-feedback" data-fleet-plan-errors>';
             if (!empty($planErrors)) {
                 echo '<ul class="form-errors">';
                 foreach ($planErrors as $error) {
@@ -74,9 +117,7 @@ ob_start();
                 }
                 echo '</ul>';
             }
-
-            echo '<form class="fleet-planner" method="post" action="' . htmlspecialchars($baseUrl) . '/fleet?planet=' . (int)$selectedPlanetId . '">';
-            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_plan) . '">';
+            echo '</div>';
 
             echo '<fieldset class="fleet-planner__section">';
             echo '<legend>Destination</legend>';
@@ -109,24 +150,32 @@ ob_start();
             echo '<label>Vitesse (% maximum)<input type="number" name="speed_factor" min="10" max="100" step="5" value="100"></label>';
             echo '</fieldset>';
 
-            echo '<button class="button button--primary" type="submit">Calculer le trajet</button>';
-            echo '</form>';
+            echo '<div class="planner-actions">';
+            echo '<button class="button button--primary" type="submit" data-action="plan">Calculer le trajet</button>';
+            echo '<button class="button" type="button" data-action="launch">Lancer la mission</button>';
+            echo '</div>';
 
-            if ($planResult !== null) {
-                $plan = $planResult['plan'];
-                echo '<div class="planner-result">';
+            $plan = $planResult;
+            if ($plan !== null && isset($plan['arrival_time']) && $plan['arrival_time'] instanceof \DateTimeImmutable) {
+                $plan['arrival_time'] = $plan['arrival_time']->format('d/m/Y H:i');
+            }
+
+            echo '<div class="planner-result" data-fleet-plan-result>';
+            if ($plan !== null) {
                 echo '<h3>Résultat de la simulation</h3>';
                 echo '<ul class="metric-list">';
                 echo '<li><span>Distance</span><strong>' . format_number((int)$plan['distance']) . ' u</strong></li>';
                 echo '<li><span>Vitesse effective</span><strong>' . format_number((int)$plan['speed']) . ' u/h</strong></li>';
                 echo '<li><span>Durée</span><strong>' . htmlspecialchars(format_duration((int)$plan['travel_time'])) . '</strong></li>';
-                if (!empty($plan['arrival_time']) && $plan['arrival_time'] instanceof \DateTimeImmutable) {
-                    echo '<li><span>Arrivée estimée</span><strong>' . $plan['arrival_time']->format('d/m/Y H:i') . '</strong></li>';
+                if (!empty($plan['arrival_time'])) {
+                    echo '<li><span>Arrivée estimée</span><strong>' . htmlspecialchars((string)$plan['arrival_time']) . '</strong></li>';
                 }
                 echo '<li><span>Consommation d’hydrogène</span><strong>' . format_number((int)$plan['fuel']) . '</strong></li>';
                 echo '</ul>';
-                echo '</div>';
             }
+            echo '</div>';
+
+            echo '</form>';
         },
 ]) ?>
 

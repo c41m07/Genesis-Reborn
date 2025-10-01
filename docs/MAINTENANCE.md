@@ -15,6 +15,7 @@ et les commandes à exécuter avant chaque livraison.
 - Code ES2022 en modules ESM (import/export) centralisés sous `public/assets/js/`.
 - Linting **ESLint** (config `tools/run-eslint.cjs`, règles type Airbnb): `npm run lint:js`.
 - Formatage **Prettier** (`npm run fmt`) appliqué à tout le JS/CSS.
+- Tests Node via `node --test` pour les modules critiques (ex. `modules/countdown.js`) exécutables avec `npm test`.
 - Initialisation unique depuis `public/assets/js/app.js` exposant l’API `window.QueueCountdown` (`init`, `destroy`,
   `refresh`).
 
@@ -38,6 +39,7 @@ composer test      # suite de tests
 npm ci             # installe les dépendances
 npm run lint:js    # ESLint
 npm run lint:css   # Stylelint
+npm test           # Tests Node (jsdom)
 npm run fmt        # Vérifie le formatage Prettier
 npm run svgo       # Optimise les SVG
 
@@ -64,3 +66,12 @@ précédemment déclarés en bas de ces templates:
   duplication de logique.
 
 En appliquant systématiquement ces commandes et conventions, on garantit un dépôt homogène et facile à maintenir.
+
+## API flotte
+
+Deux points d’entrée JSON sont disponibles pour orchestrer la planification et le lancement des missions de flotte :
+
+- `POST /fleet/plan` : attend un corps JSON `{originPlanetId, destination, composition, speedFactor, mission, csrf_token}` et renvoie une simulation (`plan`) ou une liste d’erreurs.
+- `POST /fleet/launch` : mêmes paramètres avec `csrf_token` issu de `fleet_launch_{planetId}` ; déclenche la mission et retourne les métadonnées de la mission active.
+
+Les formulaires de la page `/fleet` sont enrichis côté client (`public/assets/js/modules/fleet-planner.js`) et retombent automatiquement sur le contrôleur `FleetController` en cas de soumission classique.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Service;
 
 use App\Domain\Config\BalanceConfig;
+use App\Domain\ValueObject\ResourceCost;
 
 class CostService
 {
@@ -13,41 +14,49 @@ class CostService
     }
 
     /**
-     * @param array<string, int|float> $baseCost
+     * @param ResourceCost|array<string, int|float> $baseCost
      *
-     * @return array<string, int>
+     * @return ResourceCost|array<string, int>
      */
-    public function nextLevelCost(array $baseCost, float $growthFactor, int $currentLevel): array
+    public function nextLevelCost(ResourceCost|array $baseCost, float $growthFactor, int $currentLevel): ResourceCost|array
     {
         $costs = [];
+        $baseValues = $baseCost instanceof ResourceCost ? $baseCost->toArray() : $baseCost;
 
-        foreach ($baseCost as $resource => $value) {
+        foreach ($baseValues as $resource => $value) {
             $costs[$resource] = (int)round(((float)$value) * pow($growthFactor, $currentLevel));
         }
 
-        return $costs;
+        $result = ResourceCost::fromArray($costs);
+
+        return $baseCost instanceof ResourceCost ? $result : $result->toArray();
     }
 
     /**
-     * @param array<string, int|float> $baseCost
+     * @param ResourceCost|array<string, int|float> $baseCost
      *
-     * @return array<string, int>
+     * @return ResourceCost|array<string, int>
      */
-    public function cumulativeCost(array $baseCost, float $growthFactor, int $startLevel, int $levels): array
+    public function cumulativeCost(ResourceCost|array $baseCost, float $growthFactor, int $startLevel, int $levels): ResourceCost|array
     {
         $totals = [];
-        foreach ($baseCost as $resource => $value) {
+        $baseValues = $baseCost instanceof ResourceCost ? $baseCost->toArray() : $baseCost;
+
+        foreach ($baseValues as $resource => $value) {
             $totals[$resource] = 0.0;
         }
 
         for ($i = 0; $i < $levels; $i++) {
             $levelIndex = $startLevel + $i;
-            foreach ($baseCost as $resource => $value) {
+            foreach ($baseValues as $resource => $value) {
                 $totals[$resource] += ((float)$value) * pow($growthFactor, $levelIndex);
             }
         }
 
-        return array_map(static fn (float $value) => (int)round($value), $totals);
+        $mapped = array_map(static fn (float $value) => (int)round($value), $totals);
+        $result = ResourceCost::fromArray($mapped);
+
+        return $baseCost instanceof ResourceCost ? $result : $result->toArray();
     }
 
     public function scaledDuration(int $baseDuration, float $growthFactor, int $currentLevel, float $speedModifier = 1.0): int
@@ -58,19 +67,24 @@ class CostService
     }
 
     /**
-     * @param array<string, int|float> $cost
+     * @param ResourceCost|array<string, int|float> $cost
      *
-     * @return array<string, int>
+     * @return ResourceCost|array<string, int>
      */
-    public function applyDiscount(array $cost, float $discount): array
+    public function applyDiscount(ResourceCost|array $cost, float $discount): ResourceCost|array
     {
         $discount = max(0.0, min($this->balanceConfig->getMaximumDiscount(), $discount));
 
         $result = [];
-        foreach ($cost as $resource => $value) {
+        $values = $cost instanceof ResourceCost ? $cost->toArray() : $cost;
+
+        foreach ($values as $resource => $value) {
             $result[$resource] = (int)max(0, round(((float)$value) * (1 - $discount)));
         }
 
-        return $result;
+        $resourceCost = ResourceCost::fromArray($result);
+
+        return $cost instanceof ResourceCost ? $resourceCost : $resourceCost->toArray();
     }
+
 }

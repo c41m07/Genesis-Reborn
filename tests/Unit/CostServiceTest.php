@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Unit;
 
 use App\Domain\Service\CostService;
+use App\Domain\ValueObject\ResourceCost;
 use App\Infrastructure\Config\BalanceConfigLoader;
 use PHPUnit\Framework\TestCase;
 
@@ -18,10 +19,13 @@ class CostServiceTest extends TestCase
     {
         $metalMine = $this->loader->getBuildingConfig('metal_mine');
 
-        $level5Cost = $this->service->nextLevelCost($metalMine->getBaseCost(), (float)$metalMine->getGrowthCost(), 5);
+        $baseCost = ResourceCost::fromArray($metalMine->getBaseCost());
+
+        $level5Cost = $this->service->nextLevelCost($baseCost, (float)$metalMine->getGrowthCost(), 5);
         $level9Cost = $this->service->nextLevelCost($metalMine->getBaseCost(), (float)$metalMine->getGrowthCost(), 9);
 
-        self::assertSame(['metal' => 629, 'crystal' => 157], $level5Cost);
+        self::assertInstanceOf(ResourceCost::class, $level5Cost);
+        self::assertSame(['metal' => 629, 'crystal' => 157], $level5Cost->toArray());
         self::assertSame(['metal' => 4123, 'crystal' => 1031], $level9Cost);
     }
 
@@ -29,13 +33,19 @@ class CostServiceTest extends TestCase
     {
         $technology = $this->loader->getTechnologyConfig('propulsion_basic');
 
-        $cumulative = $this->service->cumulativeCost($technology->getBaseCost(), (float)$technology->getGrowthCost(), 0, 3);
+        $cumulative = $this->service->cumulativeCost(
+            ResourceCost::fromArray($technology->getBaseCost()),
+            (float)$technology->getGrowthCost(),
+            0,
+            3
+        );
 
+        self::assertInstanceOf(ResourceCost::class, $cumulative);
         self::assertSame([
             'metal' => 645,
             'crystal' => 430,
             'hydrogen' => 215,
-        ], $cumulative);
+        ], $cumulative->toArray());
     }
 
     public function testScaledDurationAndDiscountMatchReferenceCalculations(): void
@@ -46,8 +56,9 @@ class CostServiceTest extends TestCase
         $duration = $this->service->scaledDuration($researchLab->getBaseTime(), (float)$researchLab->getGrowthTime(), 5, 1.35);
         self::assertSame(311, $duration);
 
-        $discounted = $this->service->applyDiscount($shipyard->getBaseCost(), 0.15);
-        self::assertSame(['metal' => 357, 'crystal' => 221, 'hydrogen' => 102], $discounted);
+        $discounted = $this->service->applyDiscount(ResourceCost::fromArray($shipyard->getBaseCost()), 0.15);
+        self::assertInstanceOf(ResourceCost::class, $discounted);
+        self::assertSame(['metal' => 357, 'crystal' => 221, 'hydrogen' => 102], $discounted->toArray());
     }
 
     protected function setUp(): void

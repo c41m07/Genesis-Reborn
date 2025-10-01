@@ -61,11 +61,28 @@ class Request
             }
         }
 
+        $body = $_POST;
+        $contentType = strtolower($headers['Content-Type'] ?? '');
+        if ($body === [] && str_contains($contentType, 'application/json')) {
+            $raw = file_get_contents('php://input');
+            if ($raw !== false && $raw !== '') {
+                try {
+                    $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+                    if (is_array($decoded)) {
+                        /** @var array<string, mixed> $decoded */
+                        $body = $decoded;
+                    }
+                } catch (\JsonException) {
+                    $body = [];
+                }
+            }
+        }
+
         return new self(
             strtoupper($method),
             $path,
             $_GET,
-            $_POST,
+            $body,
             $session,
             $headers
         );

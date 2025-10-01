@@ -7,6 +7,7 @@ use App\Controller\ChangeLogController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\FleetMissionController;
 use App\Controller\GalaxyController;
 use App\Controller\JournalController;
 use App\Controller\ProfileController;
@@ -39,6 +40,8 @@ return function (Router $router): void {
 
     $router->add('GET', '/fleet', [FleetController::class, 'index']);
     $router->add('POST', '/fleet', [FleetController::class, 'index']);
+    $router->add('POST', '/fleet/plan', [FleetMissionController::class, 'plan']);
+    $router->add('POST', '/fleet/launch', [FleetMissionController::class, 'launch']);
 
     $router->add('GET', '/journal', [JournalController::class, 'index']);
 
