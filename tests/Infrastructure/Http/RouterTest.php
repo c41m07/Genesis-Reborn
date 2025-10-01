@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Infrastructure\Http;
+namespace App\Tests\Infrastructure\Http;
 
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Router;

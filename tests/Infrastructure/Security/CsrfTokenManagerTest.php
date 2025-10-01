@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Infrastructure\Security;
+namespace App\Tests\Infrastructure\Security;
 
 use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Security\CsrfTokenManager;
