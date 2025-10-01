@@ -90,7 +90,7 @@ final class GetResourceSnapshotTest extends TestCase
      */
     private function createBuildingStateRepository(array $levels = []): BuildingStateRepositoryInterface
     {
-        return new class($levels) implements BuildingStateRepositoryInterface {
+        return new class ($levels) implements BuildingStateRepositoryInterface {
             public function __construct(private array $levels)
             {
             }
@@ -108,7 +108,7 @@ final class GetResourceSnapshotTest extends TestCase
 
     private function createPlanetRepository(?Planet $planet): PlanetRepositoryInterface
     {
-        return new class($planet) implements PlanetRepositoryInterface {
+        return new class ($planet) implements PlanetRepositoryInterface {
             public array $updates = [];
 
             public function __construct(private ?Planet $planet)
@@ -152,7 +152,7 @@ final class GetResourceSnapshotTest extends TestCase
 
     private function createBuildProcessorStub(): ProcessBuildQueue
     {
-        return new class() extends ProcessBuildQueue {
+        return new class () extends ProcessBuildQueue {
             public function __construct()
             {
             }
@@ -165,7 +165,7 @@ final class GetResourceSnapshotTest extends TestCase
 
     private function createResearchProcessorStub(): ProcessResearchQueue
     {
-        return new class() extends ProcessResearchQueue {
+        return new class () extends ProcessResearchQueue {
             public function __construct()
             {
             }
@@ -178,7 +178,7 @@ final class GetResourceSnapshotTest extends TestCase
 
     private function createShipProcessorStub(): ProcessShipBuildQueue
     {
-        return new class() extends ProcessShipBuildQueue {
+        return new class () extends ProcessShipBuildQueue {
             public function __construct()
             {
             }
@@ -194,7 +194,7 @@ final class GetResourceSnapshotTest extends TestCase
      */
     private function createTickServiceStub(array $result): ResourceTickService
     {
-        return new class($result) extends ResourceTickService {
+        return new class ($result) extends ResourceTickService {
             public function __construct(private array $result)
             {
             }

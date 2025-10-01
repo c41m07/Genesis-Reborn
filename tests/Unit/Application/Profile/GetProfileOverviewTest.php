@@ -18,7 +18,7 @@ final class GetProfileOverviewTest extends TestCase
     public function testThrowsWhenUserMissing(): void
     {
         $useCase = new GetProfileOverview(
-            new class() implements UserRepositoryInterface {
+            new class () implements UserRepositoryInterface {
                 public function findByEmail(string $email): ?User
                 {
                     return null;
@@ -34,7 +34,7 @@ final class GetProfileOverviewTest extends TestCase
                     throw new RuntimeException('Not implemented.');
                 }
             },
-            new class() extends GetDashboard {
+            new class () extends GetDashboard {
                 public function __construct()
                 {
                 }
@@ -70,7 +70,7 @@ final class GetProfileOverviewTest extends TestCase
         ];
 
         $useCase = new GetProfileOverview(
-            new class() implements UserRepositoryInterface {
+            new class () implements UserRepositoryInterface {
                 public function findByEmail(string $email): ?User
                 {
                     return null;
@@ -86,7 +86,7 @@ final class GetProfileOverviewTest extends TestCase
                     throw new RuntimeException('Not implemented.');
                 }
             },
-            new class($dashboard) extends GetDashboard {
+            new class ($dashboard) extends GetDashboard {
                 public function __construct(private array $dashboard)
                 {
                 }

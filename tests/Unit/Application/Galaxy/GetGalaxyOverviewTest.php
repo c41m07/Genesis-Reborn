@@ -18,7 +18,7 @@ final class GetGalaxyOverviewTest extends TestCase
     public function testReturnsEmptyStateWhenUserHasNoPlanets(): void
     {
         $useCase = new GetGalaxyOverview(
-            new class() implements PlanetRepositoryInterface {
+            new class () implements PlanetRepositoryInterface {
                 public function findByUser(int $userId): array
                 {
                     return [];
@@ -47,7 +47,7 @@ final class GetGalaxyOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements BuildingStateRepositoryInterface {
+            new class () implements BuildingStateRepositoryInterface {
                 public function getLevels(int $planetId): array
                 {
                     return [];
@@ -57,7 +57,7 @@ final class GetGalaxyOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements UserRepositoryInterface {
+            new class () implements UserRepositoryInterface {
                 public function findByEmail(string $email): ?User
                 {
                     return null;
@@ -91,7 +91,7 @@ final class GetGalaxyOverviewTest extends TestCase
         $planetB = $this->createPlanet(2, 99, 'Nemesis', 1, 1, 2);
 
         $useCase = new GetGalaxyOverview(
-            new class($planetA, $planetB) implements PlanetRepositoryInterface {
+            new class ($planetA, $planetB) implements PlanetRepositoryInterface {
                 public function __construct(private Planet $owned, private Planet $other)
                 {
                 }
@@ -128,7 +128,7 @@ final class GetGalaxyOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements BuildingStateRepositoryInterface {
+            new class () implements BuildingStateRepositoryInterface {
                 public function getLevels(int $planetId): array
                 {
                     return $planetId === 1 ? ['research_lab' => 2, 'shipyard' => 0] : [];
@@ -138,7 +138,7 @@ final class GetGalaxyOverviewTest extends TestCase
                 {
                 }
             },
-            new class($planetA, $planetB) implements UserRepositoryInterface {
+            new class ($planetA, $planetB) implements UserRepositoryInterface {
                 public function __construct(private Planet $owned, private Planet $other)
                 {
                 }

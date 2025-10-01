@@ -28,7 +28,7 @@ final class GetJournalOverviewTest extends TestCase
     public function testReturnsMessageWhenNoPlanets(): void
     {
         $useCase = new GetJournalOverview(
-            new class() implements PlanetRepositoryInterface {
+            new class () implements PlanetRepositoryInterface {
                 public function findByUser(int $userId): array
                 {
                     return [];
@@ -57,7 +57,7 @@ final class GetJournalOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements BuildingStateRepositoryInterface {
+            new class () implements BuildingStateRepositoryInterface {
                 public function getLevels(int $planetId): array
                 {
                     return [];
@@ -67,7 +67,7 @@ final class GetJournalOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements BuildQueueRepositoryInterface {
+            new class () implements BuildQueueRepositoryInterface {
                 public function getActiveQueue(int $planetId): array
                 {
                     return [];
@@ -87,7 +87,7 @@ final class GetJournalOverviewTest extends TestCase
                     return [];
                 }
             },
-            new class() implements ResearchQueueRepositoryInterface {
+            new class () implements ResearchQueueRepositoryInterface {
                 public function getActiveQueue(int $planetId): array
                 {
                     return [];
@@ -107,7 +107,7 @@ final class GetJournalOverviewTest extends TestCase
                     return [];
                 }
             },
-            new class() implements ShipBuildQueueRepositoryInterface {
+            new class () implements ShipBuildQueueRepositoryInterface {
                 public function getActiveQueue(int $planetId): array
                 {
                     return [];
@@ -127,7 +127,7 @@ final class GetJournalOverviewTest extends TestCase
                     return [];
                 }
             },
-            new class() extends ProcessBuildQueue {
+            new class () extends ProcessBuildQueue {
                 public array $calls = [];
 
                 public function __construct()
@@ -139,7 +139,7 @@ final class GetJournalOverviewTest extends TestCase
                     $this->calls[] = $planetId;
                 }
             },
-            new class() extends ProcessResearchQueue {
+            new class () extends ProcessResearchQueue {
                 public array $calls = [];
 
                 public function __construct()
@@ -151,7 +151,7 @@ final class GetJournalOverviewTest extends TestCase
                     $this->calls[] = $planetId;
                 }
             },
-            new class() extends ProcessShipBuildQueue {
+            new class () extends ProcessShipBuildQueue {
                 public array $calls = [];
 
                 public function __construct()
@@ -182,7 +182,7 @@ final class GetJournalOverviewTest extends TestCase
         $researchJob = new ResearchJob(2, 5, 'energy_technology', 2, new DateTimeImmutable('+20 minutes'));
         $shipJob = new ShipBuildJob(3, 5, 'fighter', 4, new DateTimeImmutable('+30 minutes'));
 
-        $buildProcessor = new class() extends ProcessBuildQueue {
+        $buildProcessor = new class () extends ProcessBuildQueue {
             public array $calls = [];
 
             public function __construct()
@@ -195,7 +195,7 @@ final class GetJournalOverviewTest extends TestCase
             }
         };
 
-        $researchProcessor = new class() extends ProcessResearchQueue {
+        $researchProcessor = new class () extends ProcessResearchQueue {
             public array $calls = [];
 
             public function __construct()
@@ -208,7 +208,7 @@ final class GetJournalOverviewTest extends TestCase
             }
         };
 
-        $shipProcessor = new class() extends ProcessShipBuildQueue {
+        $shipProcessor = new class () extends ProcessShipBuildQueue {
             public array $calls = [];
 
             public function __construct()
@@ -222,7 +222,7 @@ final class GetJournalOverviewTest extends TestCase
         };
 
         $useCase = new GetJournalOverview(
-            new class($planet) implements PlanetRepositoryInterface {
+            new class ($planet) implements PlanetRepositoryInterface {
                 public function __construct(private Planet $planet)
                 {
                 }
@@ -255,7 +255,7 @@ final class GetJournalOverviewTest extends TestCase
                 {
                 }
             },
-            new class() implements BuildingStateRepositoryInterface {
+            new class () implements BuildingStateRepositoryInterface {
                 public function getLevels(int $planetId): array
                 {
                     return ['research_lab' => 1, 'shipyard' => 1];
@@ -265,7 +265,7 @@ final class GetJournalOverviewTest extends TestCase
                 {
                 }
             },
-            new class($buildJob) implements BuildQueueRepositoryInterface {
+            new class ($buildJob) implements BuildQueueRepositoryInterface {
                 public function __construct(private BuildJob $job)
                 {
                 }
@@ -289,7 +289,7 @@ final class GetJournalOverviewTest extends TestCase
                     return [];
                 }
             },
-            new class($researchJob) implements ResearchQueueRepositoryInterface {
+            new class ($researchJob) implements ResearchQueueRepositoryInterface {
                 public function __construct(private ResearchJob $job)
                 {
                 }
@@ -313,7 +313,7 @@ final class GetJournalOverviewTest extends TestCase
                     return [];
                 }
             },
-            new class($shipJob) implements ShipBuildQueueRepositoryInterface {
+            new class ($shipJob) implements ShipBuildQueueRepositoryInterface {
                 public function __construct(private ShipBuildJob $job)
                 {
                 }
@@ -389,7 +389,7 @@ final class GetJournalOverviewTest extends TestCase
 
     private function createBuildingCatalogStub(): BuildingCatalog
     {
-        return new class([]) extends BuildingCatalog {
+        return new class ([]) extends BuildingCatalog {
             public function __construct(private array $definitions)
             {
             }
@@ -421,7 +421,7 @@ final class GetJournalOverviewTest extends TestCase
 
     private function createResearchCatalogStub(): ResearchCatalog
     {
-        return new class([]) extends ResearchCatalog {
+        return new class ([]) extends ResearchCatalog {
             public function __construct(private array $definitions)
             {
             }
@@ -448,7 +448,7 @@ final class GetJournalOverviewTest extends TestCase
 
     private function createShipCatalogStub(): ShipCatalog
     {
-        return new class([]) extends ShipCatalog {
+        return new class ([]) extends ShipCatalog {
             public function __construct(private array $definitions)
             {
             }
