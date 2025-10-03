@@ -14,7 +14,7 @@ class MigrationSystemTest extends TestCase
         $legacyDir = $projectRoot . '/migrations';
         $this->assertFalse(is_dir($legacyDir), 'Legacy migrations directory should be retired after cleanup.');
 
-        $migrationPath = $projectRoot . '/database/migrations/V1_0_0__init_schema.sql';
+        $migrationPath = $projectRoot . '/database/migrations/202509261000_V1_0_0__init_schema.sql';
         $this->assertFileExists($migrationPath, 'Initial migration must exist.');
 
         $content = file_get_contents($migrationPath);
