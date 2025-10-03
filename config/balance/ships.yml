@@ -11,7 +11,7 @@ fighter:
   stats:
     attaque: 6
     défense: 3
-    vitesse: 18
+    vitesse: 360
   requires_research:
     propulsion_basic: 1
     life_support: 2
@@ -19,6 +19,7 @@ fighter:
     weapon_light: 2
     radar_basic: 1
   image: assets/svg/illustrations/ships/light-wing.svg
+
 bomber:
   label: 'Maraudeur Obsidien'
   category: 'Petits vaisseaux'
@@ -32,7 +33,7 @@ bomber:
   stats:
     attaque: 15
     défense: 6
-    vitesse: 12
+    vitesse: 240
   requires_research:
     life_support: 2
     miniaturisation: 2
@@ -40,6 +41,7 @@ bomber:
     weapon_light: 6
     weapon_medium: 1
   image: assets/svg/illustrations/ships/light-wing.svg
+
 interceptor:
   label: 'Éclair Stentor'
   category: 'Petits vaisseaux'
@@ -53,7 +55,7 @@ interceptor:
   stats:
     attaque: 7
     défense: 4
-    vitesse: 24
+    vitesse: 480
   requires_research:
     propulsion_basic: 2
     life_support: 3
@@ -61,6 +63,7 @@ interceptor:
     weapon_light: 3
     radar_basic: 3
   image: assets/svg/illustrations/ships/light-wing.svg
+
 heavy_fighter:
   label: 'Griffon Halcyon'
   category: 'Petits vaisseaux'
@@ -74,7 +77,7 @@ heavy_fighter:
   stats:
     attaque: 18
     défense: 10
-    vitesse: 16
+    vitesse: 320
   requires_research:
     propulsion_basic: 3
     life_support: 3
@@ -83,6 +86,7 @@ heavy_fighter:
     radar_basic: 3
     armor_basic: 3
   image: assets/svg/illustrations/ships/light-wing.svg
+
 corvette:
   label: 'Corvette Vigilum'
   category: 'Unités d’escorte'
@@ -96,7 +100,7 @@ corvette:
   stats:
     attaque: 28
     défense: 22
-    vitesse: 14
+    vitesse: 280
   requires_research:
     propulsion_basic: 4
     life_support: 4
@@ -107,6 +111,7 @@ corvette:
     weapon_medium: 3
     radar_basic: 3
   image: assets/svg/illustrations/ships/escort-frigate.svg
+
 gunship:
   label: 'Havoc Aster'
   category: 'Unités d’escorte'
@@ -120,7 +125,7 @@ gunship:
   stats:
     attaque: 40
     défense: 28
-    vitesse: 12
+    vitesse: 240
   requires_research:
     armor_basic: 5
     armor_enhanced: 1
@@ -128,6 +133,7 @@ gunship:
     weapon_medium: 2
     radar_basic: 3
   image: assets/svg/illustrations/ships/escort-frigate.svg
+
 frigate:
   label: 'Frégate Solstice'
   category: 'Unités d’escorte'
@@ -141,7 +147,7 @@ frigate:
   stats:
     attaque: 55
     défense: 48
-    vitesse: 10
+    vitesse: 200
   requires_research:
     armor_basic: 5
     armor_enhanced: 3
@@ -153,6 +159,7 @@ frigate:
     logistics: 2
     tactical_coordination: 1
   image: assets/svg/illustrations/ships/escort-frigate.svg
+
 destroyer:
   label: 'Destroyer Fulguris'
   category: 'Navires de ligne'
@@ -166,7 +173,7 @@ destroyer:
   stats:
     attaque: 80
     défense: 60
-    vitesse: 9
+    vitesse: 180
   requires_research:
     engineering_heavy: 2
     propulsion_basic: 5
@@ -176,6 +183,7 @@ destroyer:
     weapon_heavy: 1
     tactical_coordination: 3
   image: assets/svg/illustrations/ships/line-cruiser.svg
+
 light_cruiser:
   label: 'Croiseur Lumen'
   category: 'Navires de ligne'
@@ -189,7 +197,7 @@ light_cruiser:
   stats:
     attaque: 110
     défense: 95
-    vitesse: 8
+    vitesse: 160
   requires_research:
     engineering_heavy: 3
     armor_basic: 6
@@ -201,6 +209,7 @@ light_cruiser:
     weapon_heavy: 2
     tactical_coordination: 3
   image: assets/svg/illustrations/ships/line-cruiser.svg
+
 heavy_cruiser:
   label: 'Croiseur Axiom'
   category: 'Navires de ligne'
@@ -214,7 +223,7 @@ heavy_cruiser:
   stats:
     attaque: 150
     défense: 140
-    vitesse: 7
+    vitesse: 140
   requires_research:
     engineering_heavy: 5
     superstructures: 1
@@ -228,6 +237,7 @@ heavy_cruiser:
     defense_multilayer: 2
     tactical_coordination: 4
   image: assets/svg/illustrations/ships/line-cruiser.svg
+
 battleship:
   label: 'Cuirassé Helior'
   category: 'Navires lourds'
@@ -241,7 +251,7 @@ battleship:
   stats:
     attaque: 220
     défense: 260
-    vitesse: 6
+    vitesse: 120
   requires_research:
     engineering_heavy: 5
     superstructures: 4
@@ -256,6 +266,7 @@ battleship:
     shield_energy: 5
     defense_multilayer: 3
   image: assets/svg/illustrations/ships/heavy-battleship.svg
+
 battlecruiser:
   label: 'Arbiter Solaris'
   category: 'Navires lourds'
@@ -269,7 +280,7 @@ battlecruiser:
   stats:
     attaque: 240
     défense: 210
-    vitesse: 7
+    vitesse: 140
   requires_research:
     engineering_heavy: 5
     superstructures: 2
@@ -278,6 +289,7 @@ battlecruiser:
     weapon_heavy: 4
     tactical_coordination: 5
   image: assets/svg/illustrations/ships/heavy-battleship.svg
+
 dreadnought:
   label: 'Dreadnought Orichal'
   category: 'Navires lourds'
@@ -291,7 +303,7 @@ dreadnought:
   stats:
     attaque: 320
     défense: 320
-    vitesse: 5
+    vitesse: 100
   requires_research:
     engineering_heavy: 7
     superstructures: 4
@@ -305,6 +317,7 @@ dreadnought:
     tactical_coordination: 6
     stellar_shipyards: 2
   image: assets/svg/illustrations/ships/heavy-battleship.svg
+
 carrier:
   label: 'Porte-chasseurs Aegira'
   category: 'Capitaux spécialisés'
@@ -318,7 +331,7 @@ carrier:
   stats:
     attaque: 180
     défense: 300
-    vitesse: 5
+    vitesse: 100
   requires_research:
     engineering_heavy: 7
     superstructures: 5
@@ -331,6 +344,7 @@ carrier:
     armor_enhanced: 6
     fleet_networks: 2
   image: assets/svg/illustrations/ships/capital-carrier.svg
+
 heavy_transport:
   label: 'Transporteur Atlas'
   category: 'Capitaux spécialisés'
@@ -344,7 +358,7 @@ heavy_transport:
   stats:
     attaque: 70
     défense: 150
-    vitesse: 6
+    vitesse: 120
   requires_research:
     propulsion_basic: 4
     life_support: 4
@@ -354,6 +368,7 @@ heavy_transport:
     weapon_light: 3
     tactical_coordination: 1
   image: assets/svg/illustrations/ships/capital-carrier.svg
+
 command_ship:
   label: 'Vaisseau de commandement Novarch'
   category: 'Capitaux spécialisés'
@@ -367,7 +382,7 @@ command_ship:
   stats:
     attaque: 160
     défense: 340
-    vitesse: 5
+    vitesse: 100
   requires_research:
     tactical_coordination: 5
     fleet_networks: 2
@@ -376,6 +391,7 @@ command_ship:
     armor_enhanced: 4
     weapon_medium: 4
   image: assets/svg/illustrations/ships/capital-carrier.svg
+
 super_battleship:
   label: 'Super-cuirassé Empyrium'
   category: 'Vaisseaux colossaux'
@@ -389,7 +405,7 @@ super_battleship:
   stats:
     attaque: 420
     défense: 520
-    vitesse: 4
+    vitesse: 80
   requires_research:
     engineering_heavy: 7
     superstructures: 5
@@ -402,6 +418,7 @@ super_battleship:
     shield_energy: 5
     defense_multilayer: 5
   image: assets/svg/illustrations/ships/colossus.svg
+
 siege_breaker:
   label: 'Cuirassé de siège Ragnarok'
   category: 'Vaisseaux colossaux'
@@ -415,7 +432,7 @@ siege_breaker:
   stats:
     attaque: 480
     défense: 480
-    vitesse: 4
+    vitesse: 80
   requires_research:
     engineering_heavy: 7
     superstructures: 5
@@ -426,6 +443,7 @@ siege_breaker:
     defense_multilayer: 4
     shield_energy: 5
   image: assets/svg/illustrations/ships/colossus.svg
+
 super_dreadnought:
   label: 'Super-dreadnought Nemesis'
   category: 'Vaisseaux colossaux'
@@ -439,7 +457,7 @@ super_dreadnought:
   stats:
     attaque: 560
     défense: 580
-    vitesse: 3
+    vitesse: 60
   requires_research:
     engineering_heavy: 7
     superstructures: 5
@@ -454,6 +472,7 @@ super_dreadnought:
     defense_multilayer: 5
     fleet_networks: 3
   image: assets/svg/illustrations/ships/colossus.svg
+
 battle_station:
   label: 'Citadelle Astra'
   category: 'Stations stellaires'
