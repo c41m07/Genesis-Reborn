@@ -1,4 +1,7 @@
--- migrate:up
+CREATE DATABASE IF NOT EXISTS `genesis_reborn`
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `genesis_reborn`;
+
 CREATE TABLE IF NOT EXISTS players (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(180) NOT NULL,
