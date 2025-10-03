@@ -63,13 +63,93 @@ foreach ($statement->fetchAll() as $row) {
 }
 
 // 4) Récupérer tous les fichiers .sql
-$migrationDir = $envPath . '/migrations';
-$files = glob($migrationDir . '/*.sql');
-if ($files === false) {
-    throw new \RuntimeException('Unable to read migrations directory.');
+function parseMigration(string $sql): array
+{
+    $sections = [
+        'up' => [],
+        'down' => [],
+    ];
+
+    $current = null;
+    foreach (preg_split("/(\r\n|\r|\n)/", $sql) as $line) {
+        if (preg_match('/^--\s*migrate:(up|down)\s*$/i', trim($line), $matches)) {
+            $current = strtolower($matches[1]);
+            continue;
+        }
+
+        if ($current !== null) {
+            $sections[$current][] = $line;
+        }
+    }
+
+    if (empty($sections['up'])) {
+        $sections['up'] = [$sql];
+    }
+
+    return [
+        'up' => trim(implode(PHP_EOL, $sections['up'])),
+        'down' => trim(implode(PHP_EOL, $sections['down'])),
+    ];
 }
 
-// Tri lexical (assure l’ordre si tes fichiers sont préfixés par timestamps)
+$command = $argv[1] ?? 'up';
+
+$migrationGlobs = [
+    $envPath . '/database/migrations/*.sql',
+];
+
+$files = [];
+foreach ($migrationGlobs as $pattern) {
+    $matches = glob($pattern);
+    if ($matches !== false) {
+        $files = array_merge($files, $matches);
+    }
+}
+
+if ($command === '--down') {
+    $target = $argv[2] ?? 'last';
+    $fileToRollback = null;
+    $filename = null;
+
+    if ($target === 'last') {
+        $stmt = $pdo->query('SELECT filename FROM migrations ORDER BY applied_at DESC LIMIT 1');
+        $row = $stmt->fetch();
+        if ($row === false) {
+            echo "No migrations have been applied yet." . PHP_EOL;
+            exit(0);
+        }
+        $filename = $row['filename'];
+    } else {
+        $filename = basename($target);
+    }
+
+    foreach ($files as $file) {
+        if (basename($file) === $filename) {
+            $fileToRollback = $file;
+            break;
+        }
+    }
+
+    if ($fileToRollback === null) {
+        throw new \RuntimeException(sprintf('Cannot find migration file to rollback: %s', $filename));
+    }
+
+    $sections = parseMigration((string) file_get_contents($fileToRollback));
+    if ($sections['down'] === '') {
+        throw new \RuntimeException(sprintf('Migration %s does not provide a -- migrate:down section.', $filename));
+    }
+
+    echo sprintf('Rolling back %s...%s', $filename, PHP_EOL);
+    $pdo->exec($sections['down']);
+    $pdo->prepare('DELETE FROM migrations WHERE filename = ?')->execute([$filename]);
+    echo 'Rollback completed.' . PHP_EOL;
+    exit(0);
+}
+
+if ($files === []) {
+    throw new \RuntimeException('Unable to read migrations directories.');
+}
+
 sort($files);
 
 $newMigrationsApplied = 0;
@@ -79,37 +159,21 @@ foreach ($files as $file) {
     $filename = basename($file);
     echo sprintf('[%s] Processing %s...%s', $now, $filename, PHP_EOL);
 
-//    // 4.a) Skip spécial pour une migration destructrice si des données existent
-//    if ($filename === '20250920_schema.sql') {
-//        $hasData = false;
-//        try {
-//            $checkStmt = $pdo->query('SELECT COUNT(*) AS count FROM players');
-//            $hasData = ((int) $checkStmt->fetch()['count']) > 0;
-//        } catch (\Throwable $e) {
-//            // Table players absente => pas de données, on pourra appliquer
-//        }
-//
-//        if ($hasData) {
-//            echo sprintf('[%s] %s SKIPPED (destructive, data exists).%s',
-//                (new \DateTimeImmutable())->format('H:i:s'), $filename, PHP_EOL);
-//
-//            if (!isset($appliedMigrations[$filename])) {
-//                $pdo->prepare('INSERT IGNORE INTO migrations (filename, checksum) VALUES (?, ?)')
-//                    ->execute([$filename, 'SKIPPED_DATA_EXISTS']);
-//                $appliedMigrations[$filename] = 'SKIPPED_DATA_EXISTS';
-//            }
-//            continue;
-//        }
-//    }
-
-    $sql = file_get_contents($file);
-    if ($sql === false) {
+    $rawSql = file_get_contents($file);
+    if ($rawSql === false) {
         throw new \RuntimeException(sprintf('Cannot read migration file: %s', $file));
     }
 
-    $checksum = hash('sha256', $sql);
+    $sections = parseMigration($rawSql);
+    $sql = $sections['up'];
+    if ($sql === '') {
+        echo sprintf('[%s] %s has no statements to execute.%s',
+            (new \DateTimeImmutable())->format('H:i:s'), $filename, PHP_EOL);
+        continue;
+    }
 
-    // 4.b) Déjà appliquée ?
+    $checksum = hash('sha256', $rawSql);
+
     if (isset($appliedMigrations[$filename])) {
         if ($appliedMigrations[$filename] !== $checksum && $appliedMigrations[$filename] !== 'SKIPPED_DATA_EXISTS') {
             echo sprintf('[%s] WARNING: %s has changed since last application!%s',
@@ -121,27 +185,16 @@ foreach ($files as $file) {
     }
 
     try {
-        // ❌ PAS de transaction autour d’un gros fichier DDL
-        // $pdo->beginTransaction();
-
-        // Exécuter le fichier SQL (multi-statements OK)
         $pdo->exec($sql);
 
-        // Marquer comme appliqué
         $pdo->prepare('INSERT INTO migrations (filename, checksum) VALUES (?, ?)')
             ->execute([$filename, $checksum]);
-
-        // ❌ Pas de commit non plus
-        // if ($pdo->inTransaction()) { $pdo->commit(); }
 
         echo sprintf('[%s] %s applied.%s',
             (new \DateTimeImmutable())->format('H:i:s'), $filename, PHP_EOL);
         $newMigrationsApplied++;
 
     } catch (\Throwable $e) {
-        // ⚠️ Ne JAMAIS rollback ici: DDL = commits implicites
-        // if ($pdo->inTransaction()) { try { $pdo->rollBack(); } catch (\Throwable $ignored) {} }
-
         throw new \RuntimeException(sprintf(
             'Failed to apply migration %s: %s',
             $filename,

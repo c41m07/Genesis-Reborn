@@ -8,22 +8,35 @@ use PHPUnit\Framework\TestCase;
 
 class MigrationSystemTest extends TestCase
 {
-    public function testMigrationFilesExist(): void
+    public function testInitialMigrationIsAvailable(): void
     {
-        $migrationDir = dirname(__DIR__, 2) . '/migrations';
+        $projectRoot = dirname(__DIR__, 2);
+        $legacyDir = $projectRoot . '/migrations';
+        $this->assertFalse(is_dir($legacyDir), 'Legacy migrations directory should be retired after cleanup.');
 
-        $this->assertDirectoryExists($migrationDir, 'Migration directory should exist');
+        $migrationPath = $projectRoot . '/database/migrations/V1_0_0__init_schema.sql';
+        $this->assertFileExists($migrationPath, 'Initial migration must exist.');
 
-        $criticalMigrations = [
-            '20250920_migration_tracking.sql',
-            '20250920_schema_safe.sql',
-        ];
+        $content = file_get_contents($migrationPath);
+        $this->assertNotFalse($content, 'Initial migration should be readable.');
+        $this->assertStringContainsString('-- migrate:up', $content);
+        $this->assertStringContainsString('-- migrate:down', $content);
+        $this->assertStringContainsString('CREATE TABLE players', $content);
+        $this->assertStringNotContainsString('player_technology_queue_legacy', $content);
+    }
 
-        foreach ($criticalMigrations as $migration) {
-            $filePath = $migrationDir . '/' . $migration;
-            $this->assertFileExists($filePath, "Critical migration file {$migration} should exist");
-            $this->assertNotEmpty(file_get_contents($filePath), "Migration file {$migration} should not be empty");
-        }
+    public function testSchemaDumpExistsAndMatchesIntent(): void
+    {
+        $projectRoot = dirname(__DIR__, 2);
+        $schemaPath = $projectRoot . '/schema.sql';
+        $this->assertFileExists($schemaPath, 'Reference schema dump must exist.');
+
+        $schemaContent = file_get_contents($schemaPath);
+        $this->assertNotFalse($schemaContent, 'Reference schema dump should be readable.');
+        $this->assertStringContainsString('CREATE TABLE players', $schemaContent);
+        $this->assertStringContainsString('CREATE TABLE planets', $schemaContent);
+        $this->assertStringNotContainsString('CREATE TABLE resources', $schemaContent);
+        $this->assertStringNotContainsString('player_technology_queue_legacy', $schemaContent);
     }
 
     public function testMigrationScriptsHaveValidSyntax(): void
@@ -32,7 +45,7 @@ class MigrationSystemTest extends TestCase
 
         $scripts = [
             'migrate.php',
-            'create-database.php',
+            'backup.php',
         ];
 
         foreach ($scripts as $script) {
@@ -47,59 +60,6 @@ class MigrationSystemTest extends TestCase
                 0,
                 $returnCode,
                 "Migration script {$script} should have valid PHP syntax. Output: " . implode("\n", $output)
-            );
-        }
-    }
-
-    public function testSafeSchemaMigrationUsesSafeStatements(): void
-    {
-        $schemaFile = dirname(__DIR__, 2) . '/migrations/20250920_schema_safe.sql';
-        $content = file_get_contents($schemaFile);
-
-        // Should use CREATE IF NOT EXISTS
-        $this->assertStringContainsString(
-            'CREATE TABLE IF NOT EXISTS',
-            $content,
-            'Safe schema migration should use CREATE TABLE IF NOT EXISTS'
-        );
-
-        // Should NOT contain destructive DROP statements
-        $this->assertStringNotContainsString(
-            'DROP TABLE',
-            $content,
-            'Safe schema migration should not contain DROP TABLE statements'
-        );
-
-        // Should contain essential tables
-        $essentialTables = ['players', 'planets', 'buildings', 'technologies'];
-        foreach ($essentialTables as $table) {
-            $this->assertStringContainsString(
-                $table,
-                $content,
-                "Safe schema migration should define {$table} table"
-            );
-        }
-    }
-
-    public function testMigrationTrackingTableDefinition(): void
-    {
-        $trackingFile = dirname(__DIR__, 2) . '/migrations/20250920_migration_tracking.sql';
-        $content = file_get_contents($trackingFile);
-
-        // Should create migrations table
-        $this->assertStringContainsString(
-            'CREATE TABLE IF NOT EXISTS migrations',
-            $content,
-            'Migration tracking should create migrations table'
-        );
-
-        // Should have required columns
-        $requiredColumns = ['filename', 'applied_at', 'checksum'];
-        foreach ($requiredColumns as $column) {
-            $this->assertStringContainsString(
-                $column,
-                $content,
-                "Migration tracking table should have {$column} column"
             );
         }
     }

@@ -1,52 +1,36 @@
--- Genesis Reborn - Solo schema for multiplayer-ready foundation
-
+-- Genesis Reborn canonical schema dump (post-cleanup)
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-# CREATE DATABASE IF NOT EXISTS genesis_reborn DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-# DROP VIEW IF EXISTS users;
-# DROP TABLE IF EXISTS events;
-# DROP TABLE IF EXISTS player_pve_runs;
-# DROP TABLE IF EXISTS fleet_ships;
-# DROP TABLE IF EXISTS fleets;
-# DROP TABLE IF EXISTS ships;
-# DROP TABLE IF EXISTS player_technologies;
-# DROP TABLE IF EXISTS technologies;
-# DROP TABLE IF EXISTS planet_buildings;
-# DROP TABLE IF EXISTS buildings;
-# DROP TABLE IF EXISTS planets;
-# DROP TABLE IF EXISTS resources;
-# DROP TABLE IF EXISTS players;
-# DROP TABLE IF EXISTS pve_missions;
-
--- legacy tables from previous prototype
-# DROP TABLE IF EXISTS build_queue;
-# DROP TABLE IF EXISTS planet_fleet;
-# DROP TABLE IF EXISTS planet_research;
+DROP TABLE IF EXISTS ship_build_queue;
+DROP TABLE IF EXISTS research_queue;
+DROP TABLE IF EXISTS build_queue;
+DROP TABLE IF EXISTS fleet_ships;
+DROP TABLE IF EXISTS fleets;
+DROP TABLE IF EXISTS ships;
+DROP TABLE IF EXISTS player_technologies;
+DROP TABLE IF EXISTS technologies;
+DROP TABLE IF EXISTS planet_buildings;
+DROP TABLE IF EXISTS buildings;
+DROP TABLE IF EXISTS planets;
+DROP TABLE IF EXISTS players;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE players (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(180) NOT NULL UNIQUE,
-    username VARCHAR(60) NOT NULL UNIQUE,
+    email VARCHAR(180) NOT NULL,
+    username VARCHAR(60) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    science_spent BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    building_spent BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    fleet_spent BIGINT UNSIGNED NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     last_login_at DATETIME NULL,
+    UNIQUE KEY uniq_players_email (email),
+    UNIQUE KEY uniq_players_username (username),
     INDEX idx_players_email (email)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE resources (
-    id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `key` VARCHAR(32) NOT NULL UNIQUE,
-    name VARCHAR(60) NOT NULL,
-    description TEXT NULL,
-    unit VARCHAR(16) NOT NULL DEFAULT 'unités',
-    is_tradable TINYINT(1) NOT NULL DEFAULT 1,
-    is_consumable TINYINT(1) NOT NULL DEFAULT 1,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE planets (
@@ -63,6 +47,10 @@ CREATE TABLE planets (
     metal BIGINT UNSIGNED NOT NULL DEFAULT 0,
     crystal BIGINT UNSIGNED NOT NULL DEFAULT 0,
     hydrogen BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    prod_metal_per_hour INT NOT NULL DEFAULT 0,
+    prod_crystal_per_hour INT NOT NULL DEFAULT 0,
+    prod_hydrogen_per_hour INT NOT NULL DEFAULT 0,
+    prod_energy_per_hour INT NOT NULL DEFAULT 0,
     energy BIGINT NOT NULL DEFAULT 0,
     metal_capacity BIGINT UNSIGNED NOT NULL DEFAULT 10000,
     crystal_capacity BIGINT UNSIGNED NOT NULL DEFAULT 10000,
@@ -135,15 +123,12 @@ CREATE TABLE player_technologies (
     player_id BIGINT UNSIGNED NOT NULL,
     technology_id BIGINT UNSIGNED NOT NULL,
     level INT UNSIGNED NOT NULL DEFAULT 0,
-    researching_planet_id BIGINT UNSIGNED NULL,
-    queued_until DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uniq_player_technology (player_id, technology_id),
     INDEX idx_player_technologies_player (player_id),
     CONSTRAINT fk_player_technologies_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
-    CONSTRAINT fk_player_technologies_technology FOREIGN KEY (technology_id) REFERENCES technologies(id) ON DELETE CASCADE,
-    CONSTRAINT fk_player_technologies_planet FOREIGN KEY (researching_planet_id) REFERENCES planets(id) ON DELETE SET NULL
+    CONSTRAINT fk_player_technologies_technology FOREIGN KEY (technology_id) REFERENCES technologies(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE ships (
@@ -205,62 +190,48 @@ CREATE TABLE fleet_ships (
     CONSTRAINT fk_fleet_ships_ship FOREIGN KEY (ship_id) REFERENCES ships(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE pve_missions (
-    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `key` VARCHAR(64) NOT NULL UNIQUE,
-    name VARCHAR(120) NOT NULL,
-    description TEXT NULL,
-    difficulty ENUM('easy','normal','hard','extreme','legendary') NOT NULL DEFAULT 'easy',
-    recommended_power INT UNSIGNED NOT NULL DEFAULT 0,
-    base_duration_seconds INT UNSIGNED NOT NULL DEFAULT 600,
-    reward_metal BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_crystal BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_hydrogen BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_experience INT UNSIGNED NOT NULL DEFAULT 0,
-    unlock_requirements JSON NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE player_pve_runs (
+CREATE TABLE build_queue (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     player_id BIGINT UNSIGNED NOT NULL,
-    mission_id BIGINT UNSIGNED NOT NULL,
-    fleet_id BIGINT UNSIGNED NULL,
-    status ENUM('queued','launched','resolving','succeeded','failed','aborted') NOT NULL DEFAULT 'queued',
-    started_at DATETIME NULL,
-    completed_at DATETIME NULL,
-    outcome JSON NULL,
-    reward_metal BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_crystal BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_hydrogen BIGINT UNSIGNED NOT NULL DEFAULT 0,
-    reward_experience INT UNSIGNED NOT NULL DEFAULT 0,
+    planet_id BIGINT UNSIGNED NOT NULL,
+    bkey VARCHAR(64) NOT NULL,
+    target_level INT UNSIGNED NOT NULL,
+    ends_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_player_runs (player_id, status),
-    CONSTRAINT fk_player_runs_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
-    CONSTRAINT fk_player_runs_mission FOREIGN KEY (mission_id) REFERENCES pve_missions(id) ON DELETE CASCADE,
-    CONSTRAINT fk_player_runs_fleet FOREIGN KEY (fleet_id) REFERENCES fleets(id) ON DELETE SET NULL
+    INDEX idx_build_queue_planet (planet_id),
+    INDEX idx_build_queue_player (player_id),
+    CONSTRAINT fk_build_queue_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    CONSTRAINT fk_build_queue_planet FOREIGN KEY (planet_id) REFERENCES planets(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE events (
+CREATE TABLE research_queue (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     player_id BIGINT UNSIGNED NOT NULL,
-    related_player_id BIGINT UNSIGNED NULL,
-    planet_id BIGINT UNSIGNED NULL,
-    fleet_id BIGINT UNSIGNED NULL,
-    event_type VARCHAR(64) NOT NULL,
-    severity ENUM('info','success','warning','danger') NOT NULL DEFAULT 'info',
-    payload JSON NULL,
-    occurred_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    planet_id BIGINT UNSIGNED NOT NULL,
+    rkey VARCHAR(64) NOT NULL,
+    target_level INT UNSIGNED NOT NULL,
+    ends_at DATETIME NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_events_player (player_id, occurred_at DESC),
-    INDEX idx_events_related (related_player_id),
-    CONSTRAINT fk_events_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
-    CONSTRAINT fk_events_related FOREIGN KEY (related_player_id) REFERENCES players(id) ON DELETE SET NULL,
-    CONSTRAINT fk_events_planet FOREIGN KEY (planet_id) REFERENCES planets(id) ON DELETE SET NULL,
-    CONSTRAINT fk_events_fleet FOREIGN KEY (fleet_id) REFERENCES fleets(id) ON DELETE SET NULL
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_research_queue_planet (planet_id),
+    INDEX idx_research_queue_player (player_id),
+    CONSTRAINT fk_research_queue_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    CONSTRAINT fk_research_queue_planet FOREIGN KEY (planet_id) REFERENCES planets(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE OR REPLACE VIEW users AS
-SELECT id, email, password_hash AS password FROM players;
+CREATE TABLE ship_build_queue (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    player_id BIGINT UNSIGNED NOT NULL,
+    planet_id BIGINT UNSIGNED NOT NULL,
+    skey VARCHAR(64) NOT NULL,
+    quantity INT UNSIGNED NOT NULL,
+    ends_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ship_queue_planet (planet_id),
+    INDEX idx_ship_queue_player (player_id),
+    CONSTRAINT fk_ship_queue_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ship_queue_planet FOREIGN KEY (planet_id) REFERENCES planets(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

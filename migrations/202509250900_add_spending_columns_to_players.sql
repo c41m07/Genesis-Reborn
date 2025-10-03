@@ -1,3 +1,0 @@
-ALTER TABLE players
-    ADD COLUMN building_spent BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER science_spent,
-    ADD COLUMN fleet_spent BIGINT UNSIGNED NOT NULL DEFAULT 0 AFTER building_spent;
