@@ -42,11 +42,6 @@ final class ResourceCost
         return new self($normalized);
     }
 
-    public static function fromStock(ResourceStock $stock): self
-    {
-        return new self($stock->toArray());
-    }
-
     public function amount(string $resource): int
     {
         return $this->amounts[$resource] ?? 0;

@@ -3,7 +3,7 @@
   "description": "Browser strategy game refactored to PSR-4 architecture",
   "type": "project",
   "require": {
-    "php": "^8.1",
+    "php": "^8.2",
     "ext-pdo": "*",
     "symfony/yaml": "^7.3",
     "vlucas/phpdotenv": "^5.5"

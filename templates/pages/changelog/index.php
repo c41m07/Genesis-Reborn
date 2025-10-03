@@ -5,17 +5,7 @@
 
 $title = $title ?? 'Journal des versions';
 $baseUrl = $baseUrl ?? '';
-$changelog = [];
-
-// Chemin vers le fichier JSON contenant le journal des versions.
-$changelogPath = __DIR__ . '/../../../public/data/changelog.json';
-if (is_readable($changelogPath)) {
-    $jsonContent = file_get_contents($changelogPath);
-    $decoded = json_decode($jsonContent, true);
-    if (is_array($decoded)) {
-        $changelog = $decoded;
-    }
-}
+$changelog = is_array($changelog ?? null) ? $changelog : [];
 
 // Section active du menu pour mettre en surbrillance "Changelog" dans la sidebar.
 $activeSection = $activeSection ?? 'changelog';

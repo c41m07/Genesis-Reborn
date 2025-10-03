@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Domain\ValueObject;
 
 use App\Domain\ValueObject\ResourceCost;
-use App\Domain\ValueObject\ResourceStock;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
@@ -28,11 +27,4 @@ final class ResourceCostTest extends TestCase
         ResourceCost::fromArray(['metal' => 'invalid']);
     }
 
-    public function testItCanBeCreatedFromStock(): void
-    {
-        $stock = ResourceStock::fromArray(['metal' => 10]);
-        $cost = ResourceCost::fromStock($stock);
-
-        self::assertSame(['metal' => 10], $cost->toArray());
-    }
 }

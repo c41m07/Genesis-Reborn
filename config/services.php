@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
+use App\Application\Service\Queue\QueueFinalizer;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Auth\LoginUser;
 use App\Application\UseCase\Auth\LogoutUser;
@@ -36,10 +37,6 @@ use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
 use App\Controller\ShipyardController;
 use App\Controller\TechTreeController;
-use App\Domain\Battle\DTO\AttackingFleetDTO;
-use App\Domain\Battle\DTO\DefendingFleetDTO;
-use App\Domain\Battle\DTO\FleetBattleResultDTO;
-use App\Domain\Battle\DTO\FleetBattleRoundDTO;
 use App\Domain\Config\BalanceConfig;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
@@ -55,7 +52,6 @@ use App\Domain\Service\BuildingCalculator;
 use App\Domain\Service\BuildingCatalog;
 use App\Domain\Service\CostService;
 use App\Domain\Service\FleetNavigationService;
-use App\Domain\Service\FleetResolutionService;
 use App\Domain\Service\ResearchCalculator;
 use App\Domain\Service\ResearchCatalog;
 use App\Domain\Service\ResourceEffectFactory;
@@ -151,40 +147,6 @@ return function (Container $container): void {
         return new ShipCatalog($c->get(BalanceConfigLoader::class)->getShipConfigs());
     });
 
-    $container->set(FleetResolutionService::class, fn (Container $c) => new FleetResolutionService(
-        $c->get(ShipCatalog::class),
-        $c->get(BalanceConfigLoader::class)
-    ));
-
-    $container->set(FleetBattleRoundDTO::class, static fn () => static function (
-        int   $round,
-        array $attackerLosses,
-        array $defenderLosses,
-        array $attackerRemaining,
-        array $defenderRemaining
-    ): FleetBattleRoundDTO {
-        return new FleetBattleRoundDTO($round, $attackerLosses, $defenderLosses, $attackerRemaining, $defenderRemaining);
-    });
-
-    $container->set(FleetBattleResultDTO::class, static fn () => static function (
-        string $winner,
-        array  $attackerRemaining,
-        array  $defenderRemaining,
-        array  $rounds,
-        bool   $attackerRetreated,
-        bool   $defenderRetreated
-    ): FleetBattleResultDTO {
-        return new FleetBattleResultDTO($winner, $attackerRemaining, $defenderRemaining, $rounds, $attackerRetreated, $defenderRetreated);
-    });
-
-    $container->set(AttackingFleetDTO::class, static fn () => static function (array $composition, array $modifiers = []): AttackingFleetDTO {
-        return new AttackingFleetDTO($composition, $modifiers);
-    });
-
-    $container->set(DefendingFleetDTO::class, static fn () => static function (array $composition, array $modifiers = []): DefendingFleetDTO {
-        return new DefendingFleetDTO($composition, $modifiers);
-    });
-
     $container->set(UserRepositoryInterface::class, fn (Container $c) => new PdoUserRepository($c->get(\PDO::class)));
     $container->set(PlanetRepositoryInterface::class, fn (Container $c) => new PdoPlanetRepository(
         $c->get(\PDO::class),
@@ -203,13 +165,17 @@ return function (Container $container): void {
         $c->get(BuildingCatalog::class),
         $c->get(BuildingCalculator::class)
     ));
+    $container->set(QueueFinalizer::class, fn () => new QueueFinalizer());
+
     $container->set(ProcessResearchQueue::class, fn (Container $c) => new ProcessResearchQueue(
         $c->get(ResearchQueueRepositoryInterface::class),
-        $c->get(ResearchStateRepositoryInterface::class)
+        $c->get(ResearchStateRepositoryInterface::class),
+        $c->get(QueueFinalizer::class)
     ));
     $container->set(ProcessShipBuildQueue::class, fn (Container $c) => new ProcessShipBuildQueue(
         $c->get(ShipBuildQueueRepositoryInterface::class),
-        $c->get(FleetRepositoryInterface::class)
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(QueueFinalizer::class)
     ));
     $container->set(ShipBuildQueueRepositoryInterface::class, fn (Container $c) => new PdoShipBuildQueueRepository($c->get(\PDO::class)));
     $container->set(FleetMovementRepositoryInterface::class, fn (Container $c) => new PdoFleetMovementRepository($c->get(\PDO::class)));

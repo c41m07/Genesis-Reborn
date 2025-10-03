@@ -43,27 +43,26 @@ Genesis Reborn propose une expérience de gestion de colonie spatiale. Chaque jo
 
 ```
 /config
-  /game (buildings.yaml, research.yaml, ships.yaml)
-  /migrations (SQL de référence)
+  balance/*.yml (définitions bâtiments/recherches/vaisseaux)
+  bootstrap.php, parameters.php, routes.php, services.php
+/database/migrations (SQL incrémental)
 /public
-  /assets/css (tokens.css, app.css)
-  /assets/js (app.js, modules/*)
-  /assets/svg (sprite.svg, icons/)
+  assets/css (tokens.css, app.css)
+  assets/js (app.js, modules/*)
+  assets/svg (sprite.svg, icons/)
   index.php
 /src
-  /Domain (Entity, ValueObject, Service)
-  /Application (UseCase, DTO, Process)
-  /Infrastructure (HTTP, DB, Security, Container)
+  Domain (Entities, ValueObjects, Services, interfaces de repositories)
+  Application (UseCases, DTO, services de queue)
+  Infrastructure (HTTP, DB, Sécurité, adaptateurs de config)
 /templates
-  /layouts (base.php)
-  /components (*.php)
-  /pages (auth, colony, dashboard, fleet, galaxy, journal, profile, research, shipyard, tech-tree)
+  layouts/, components/, pages/
 tests (PHPUnit)
 ```
 
-- **Back-end** : PHP 8.2, architecture MVC maison, autoload PSR-4 via Composer.
-- **Front-end** : Vanilla JS (modules ESM), CSS tokens, pipeline d\'icônes SVG, Vite pour le bundling et outils de linting.
-- **Tests & QA** : PHPUnit, PHPStan (niveau 6), PHP-CS-Fixer, ESLint (config Airbnb), Stylelint, tests Node (`node --test`).
+- **Back-end** : PHP 8.2+, architecture en couches, autoload PSR-4 via Composer.
+- **Front-end** : Vanilla JS (modules ESM), CSS tokens, pipeline d'icônes SVG, Vite pour le bundling et outils de linting.
+- **Tests & QA** : PHPUnit, PHPStan (niveau 6), PHP-CS-Fixer, ESLint, Stylelint, tests Node (`node --test`).
 
 ---
 
@@ -74,7 +73,7 @@ tests (PHPUnit)
 - **Technologie** : progression par joueur, dépendances croisées (bâtiments, recherches) et impact sur les temps de recherche.
 - **Flotte & missions** : `FleetMovement` représente chaque mission, orchestrée par le `FleetNavigationService` et persistée via un repository dédié.
 - **Journal** : événements PvE, synthèse d\'activité, points de progression.
-- **Équilibrage** : YAML dans `config/game/` chargés par `BalanceConfigLoader` pour alimenter les catalogues (`BuildingCatalog`, `ResearchCatalog`, `ShipCatalog`).
+- **Équilibrage** : YAML dans `config/balance/` chargés par `BalanceConfigLoader` pour alimenter les catalogues (`BuildingCatalog`, `ResearchCatalog`, `ShipCatalog`).
 
 ---
 
@@ -99,13 +98,15 @@ tests (PHPUnit)
 
 ## Équilibrage & configuration YAML
 
-Les fichiers YAML se trouvent dans `config/game/` :
+Les fichiers YAML se trouvent dans `config/balance/` :
 
 - **`buildings.yaml`** : coûts (`base_cost`, `growth_cost`), temps (`base_time`, `growth_time`), production, énergie, bonus (recherche, chantier, construction), stockage et entretien. Chaque entrée est normalisée en `BuildingDefinition`.
 - **`research.yaml`** : catégories, prérequis (`requires`, `requires_lab`), multiplicateurs (`growth_cost`, `growth_time`), niveau maximum et illustrations. Le loader applique des images par défaut selon la catégorie.
 - **`ships.yaml`** : catégories, rôles, statistiques (`attack`, `defense`, `speed`…), prérequis de recherche et temps de construction. Les catégories fournissent aussi les illustrations par défaut.
 
-`BalanceConfigLoader` vérifie les champs, applique les valeurs par défaut et transmet les données aux catalogues pour les cas d\'usage (survol, fiches, files d\'attente).
+`BalanceConfigLoader` vérifie les champs, applique les valeurs par défaut et transmet les données aux catalogues pour les cas d'usage (survol, fiches, files d'attente).
+
+Les conventions de nommage et règles de couche sont détaillées dans `docs/baseline.md` et la structure globale est décrite dans `ARCHITECTURE.md`.
 
 ---
 
@@ -179,7 +180,7 @@ php -S localhost:8000 -t public
 
 ## Notes de conception
 
-- **Value Objects & enums** : `Coordinates`, `ResourceStock`, `ResourceCost`, `FleetMission`, `FleetStatus` sécurisent les entrées, conservent une compatibilité tableau et exposent des helpers (`toArray()`, `fromString()`).
+- **Value Objects & enums** : `Coordinates`, `ResourceCost`, `FleetMission`, `FleetStatus` sécurisent les entrées, conservent une compatibilité tableau et exposent des helpers (`toArray()`, `fromString()`).
 - **Refonte flotte v1** : use cases `PlanFleetMission`, `LaunchFleetMission`, `ProcessFleetArrivals` orchestrent les missions, alimentés par `FleetMovementRepositoryInterface` et un module JS asynchrone avec repli serveur.
 - **Qualité ciblée** : tests dédiés pour le routeur HTTP et le gestionnaire CSRF, test Node pour le module `countdown`, pipeline CI exécutant les suites PHP & JS.
 

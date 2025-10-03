@@ -6,6 +6,7 @@ namespace App\Tests\Integration;
 
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
+use App\Application\Service\Queue\QueueFinalizer;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Research\StartResearch;
@@ -144,7 +145,7 @@ class QueueProcessingTest extends TestCase
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new StartResearch($planetRepository, $buildingStates, $researchStates, $researchQueue, $playerStats, $catalog, $calculator);
-        $processor = new ProcessResearchQueue($researchQueue, $researchStates);
+        $processor = new ProcessResearchQueue($researchQueue, $researchStates, new QueueFinalizer());
 
         $result = $useCase->execute(1, 42, 'propulsion_basic');
         self::assertTrue($result['success']);
@@ -221,7 +222,7 @@ class QueueProcessingTest extends TestCase
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
-        $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
+        $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
 
         $result = $useCase->execute(1, 42, 'fighter', 3);
         self::assertTrue($result['success']);
@@ -349,7 +350,7 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]));
-        $queueProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
+        $queueProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
 
         $overviewUseCase = new GetShipyardOverview(
             $planetRepository,
@@ -861,7 +862,7 @@ class QueueProcessingTest extends TestCase
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
-        $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository);
+        $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
 
         $result = $buildShips->execute(1, 7, 'fighter', 4);
         self::assertTrue($result['success']);

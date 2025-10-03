@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Service;
 
+use App\Application\Service\Queue\QueueFinalizer;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 
@@ -11,19 +12,22 @@ class ProcessShipBuildQueue
 {
     public function __construct(
         private readonly ShipBuildQueueRepositoryInterface $queue,
-        private readonly FleetRepositoryInterface          $fleets
+        private readonly FleetRepositoryInterface          $fleets,
+        private readonly QueueFinalizer                    $finalizer
     ) {
     }
 
     public function process(int $planetId): void
     {
-        $jobs = $this->queue->finalizeDueJobs($planetId);
-        if ($jobs === []) {
-            return;
-        }
-
-        foreach ($jobs as $job) {
-            $this->fleets->addShips($planetId, $job->getShipKey(), $job->getQuantity());
-        }
+        $this->finalizer->finalize(
+            $planetId,
+            fn (int $id): array => $this->queue->finalizeDueJobs($id),
+            function (array $jobs) use ($planetId): void {
+                /** @var array<int, \App\Domain\Entity\ShipBuildJob> $jobs */
+                foreach ($jobs as $job) {
+                    $this->fleets->addShips($planetId, $job->getShipKey(), $job->getQuantity());
+                }
+            }
+        );
     }
 }

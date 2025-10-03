@@ -96,23 +96,4 @@ class ChangeLogController extends AbstractController
         ]);
     }
 
-    public function api(): Response
-    {
-        // Lecture identique du JSON pour l’API
-        $filePath = dirname(__DIR__, 3) . '/public/data/changelog.json';
-        $data = [];
-        if (is_readable($filePath)) {
-            try {
-                $json = file_get_contents($filePath);
-                $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-                if (is_array($decoded)) {
-                    $data = $decoded;
-                }
-            } catch (\Throwable) {
-                // On ignore l’erreur et renvoie un tableau vide
-            }
-        }
-
-        return $this->json($data);
-    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\Service\Queue\QueueFinalizer;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
 use App\Controller\FleetController;
@@ -62,7 +63,7 @@ final class FleetControllerAccessTest extends TestCase
         ]);
         $fleetRepository = new TestFleetRepository();
         $shipQueueRepository = new TestShipBuildQueueRepository();
-        $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $fleetRepository);
+        $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $fleetRepository, new QueueFinalizer());
 
         $shipCatalog = new ShipCatalog([]);
         $movements = $this->createMock(FleetMovementRepositoryInterface::class);
