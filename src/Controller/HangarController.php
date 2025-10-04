@@ -70,8 +70,7 @@ final class HangarController extends AbstractController
                 'facilityStatuses' => [],
                 'transferErrors' => [],
                 'submittedTransfer' => [
-                    'ship' => '',
-                    'quantity' => 0,
+                    'ships' => [],
                     'mode' => 'existing',
                     'fleet_id' => '',
                     'new_fleet_name' => '',
@@ -152,8 +151,7 @@ final class HangarController extends AbstractController
         $renameErrors = [];
         $mergeErrors = [];
         $submittedTransfer = [
-            'ship' => '',
-            'quantity' => 0,
+            'ships' => [],
             'mode' => 'existing',
             'fleet_id' => $defaultFleetId !== null ? (string)$defaultFleetId : '',
             'new_fleet_name' => '',
@@ -250,21 +248,39 @@ final class HangarController extends AbstractController
                         break;
 
                     default:
-                        $shipKey = (string)($data['ship'] ?? '');
-                        $quantity = isset($data['quantity']) ? (int)$data['quantity'] : 0;
+                        $rawQuantities = $data['ships'] ?? [];
+                        if (!is_array($rawQuantities)) {
+                            $rawQuantities = [];
+                        }
+
+                        $normalizedQuantities = [];
+                        $positiveQuantities = [];
+                        foreach ($rawQuantities as $shipKey => $value) {
+                            $key = (string)$shipKey;
+                            $quantityValue = (int)$value;
+                            if ($quantityValue < 0) {
+                                $quantityValue = 0;
+                            }
+
+                            $normalizedQuantities[$key] = $quantityValue;
+
+                            if ($quantityValue > 0) {
+                                $positiveQuantities[$key] = $quantityValue;
+                            }
+                        }
+
                         $mode = (string)($data['target_mode'] ?? 'existing');
                         $fleetId = isset($data['fleet_id']) && $data['fleet_id'] !== '' ? (string)$data['fleet_id'] : '';
                         $newFleetName = (string)($data['new_fleet_name'] ?? '');
                         $submittedTransfer = [
-                            'ship' => $shipKey,
-                            'quantity' => $quantity,
+                            'ships' => $normalizedQuantities,
                             'mode' => in_array($mode, ['existing', 'new'], true) ? $mode : 'existing',
                             'fleet_id' => $fleetId,
                             'new_fleet_name' => $newFleetName,
                         ];
 
-                        if ($shipKey === '') {
-                            $transferErrors[] = 'Veuillez sélectionner un vaisseau.';
+                        if ($positiveQuantities === []) {
+                            $transferErrors[] = 'Veuillez saisir une quantité positive pour au moins un vaisseau.';
                             break;
                         }
 
@@ -275,21 +291,31 @@ final class HangarController extends AbstractController
 
                         $newFleetNameValue = $submittedTransfer['mode'] === 'new' ? $submittedTransfer['new_fleet_name'] : null;
 
-                        $result = $this->assembleFleet->execute(
-                            $userId,
-                            $selectedId,
-                            $shipKey,
-                            $quantity,
-                            $selectedFleetId,
-                            $newFleetNameValue
-                        );
-                        if ($result['success']) {
-                            $this->addFlash('success', $result['message']);
+                        $resultMessage = null;
+                        foreach ($positiveQuantities as $shipKey => $quantity) {
+                            $result = $this->assembleFleet->execute(
+                                $userId,
+                                $selectedId,
+                                $shipKey,
+                                $quantity,
+                                $selectedFleetId,
+                                $newFleetNameValue
+                            );
+
+                            if (!$result['success']) {
+                                $transferErrors[] = $result['message'];
+
+                                break 2;
+                            }
+
+                            $resultMessage = $result['message'];
+                        }
+
+                        if ($resultMessage !== null) {
+                            $this->addFlash('success', $resultMessage);
 
                             return $this->redirect($this->baseUrl . '/hangar?planet=' . $selectedId);
                         }
-
-                        $transferErrors[] = $result['message'];
                         break;
                 }
             }

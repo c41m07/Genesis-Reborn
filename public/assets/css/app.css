@@ -408,7 +408,8 @@ main.workspace__content {
   gap: var(--space-1);
 }
 
-.topbar__selector select {
+.topbar__selector select,
+.hangar-table__quantity-input {
   appearance: none;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -424,9 +425,28 @@ main.workspace__content {
   background-size: 0.9rem;
 }
 
-.topbar__selector select:focus {
+.topbar__selector select:focus,
+.hangar-table__quantity-input:focus {
   outline: 2px solid rgba(100, 180, 255, 0.6);
   outline-offset: 2px;
+}
+
+.hangar-table__quantity-input {
+  min-width: 0;
+  padding-right: 0.75rem;
+  background-image: none;
+  cursor: text;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hangar-table__quantity-input::-webkit-outer-spin-button,
+.hangar-table__quantity-input::-webkit-inner-spin-button {
+  margin: 0;
+}
+
+.hangar-table__quantity-input {
+  -moz-appearance: textfield;
 }
 
 .topbar__label {
