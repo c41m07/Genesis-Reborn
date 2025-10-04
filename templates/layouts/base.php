@@ -27,6 +27,7 @@ $spriteIcon = static fn (string $name): string => $asset('assets/svg/sprite.svg#
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/tokens.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap.min.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap-bridge.css'), ENT_QUOTES) ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/theme.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/components.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/app.css'), ENT_QUOTES) ?>">
 </head>
