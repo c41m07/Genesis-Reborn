@@ -1118,6 +1118,14 @@ body.is-bootstrapized .card-title {
   font-weight: 600;
 }
 
+body.is-bootstrapized .card h2 {
+  font-size: 1.25rem;
+}
+
+body.is-bootstrapized .card h3 {
+  font-size: 1rem;
+}
+
 body.is-bootstrapized .card-subtitle {
   margin: 0;
   color: var(--color-muted);
@@ -1966,6 +1974,10 @@ body.is-bootstrapized .planet-summary .card-body {
   flex-direction: column;
   gap: var(--space-2);
 }
+.tech-card__section h3 {
+    margin: 0;
+    font-size: 1rem;
+}
 
 /* Metrics */
 .metrics {
@@ -2129,7 +2141,7 @@ body.is-bootstrapized .planet-summary .card-body {
 .production-card h3 {
   margin: 0;
   text-transform: uppercase;
-  font-size: var(--font-size-sm);
+  font-size: 1rem;
   letter-spacing: 0.12em;
   color: var(--color-muted);
 }
@@ -2815,6 +2827,11 @@ body.is-bootstrapized .planet-summary .card-body {
   flex-direction: column;
   gap: var(--space-2);
 }
+
+.ship-card__section h3 {
+    margin: 0;
+    font-size: 1rem;
+    }
 
 .ship-card__footer form {
   display: flex;
