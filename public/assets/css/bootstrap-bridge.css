@@ -15,7 +15,9 @@
   --bs-body-font-size: var(--font-size-base);
   --bs-body-font-weight: 400;
   --bs-body-line-height: var(--line-height-base);
-  --bs-body-color: var(--color-fg, var(--color-text));
+
+  /* Bridge update: map Genesis tokens to Bootstrap palette */
+  --bs-body-color: var(--color-text, #f4f7ff);
   --bs-body-color-rgb: 244, 247, 255;
   --bs-heading-color: var(--color-text);
   --bs-link-color: var(--color-primary);
@@ -38,13 +40,13 @@
   /* Semantic palette */
   --bs-primary: var(--color-primary);
   --bs-primary-rgb: 77, 163, 255;
-  --bs-secondary: var(--color-secondary, var(--color-accent));
+  --bs-secondary: var(--color-secondary, #6cd8ff);
   --bs-secondary-rgb: 108, 216, 255;
   --bs-success: var(--color-success);
   --bs-success-rgb: 77, 214, 178;
-  --bs-info: var(--color-info, var(--color-accent));
+  --bs-info: var(--color-info, #6cd8ff);
   --bs-info-rgb: 108, 216, 255;
-  --bs-warning: var(--color-warning, var(--color-accent));
+  --bs-warning: var(--color-warning, #ff7a7a);
   --bs-warning-rgb: 255, 122, 122;
   --bs-danger: var(--color-danger);
   --bs-danger-rgb: 255, 122, 122;

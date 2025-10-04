@@ -34,7 +34,7 @@ Conserver cet ordre dans `templates/layouts/base.php` afin que Bootstrap consomm
 
 | Avant (classes maison) | Après (Bootstrap) | Règles CSS conservées / ajustées | Points d’attention |
 | --- | --- | --- | --- |
-| `section.dashboard` sans container | `section.dashboard.container-xxl` | `main.workspace__content` garde son padding global ; `container-xxl` garantit l’alignement avec les grilles Bootstrap. | Vérifier que la largeur max reste cohérente avec `var(--container-max)`.
+| `section.dashboard` sans container | `section.dashboard.container-xxl` | `main.workspace__content` garde son padding global ; `container-xxl` garantit l’alignement avec les grilles Bootstrap. | Vérifier que la largeur max reste cohérente avec `var(--container-max)`. |
 | `.dashboard-layout` (grid 2 colonnes) | `.row.g-4.g-xl-5` | Bloc legacy conservé dans `app.css` mais annoté comme à déprécier. | Les colonnes Bootstrap apportent les gutters ; vérifier les espacements mobiles (`g-4`). |
 | `.dashboard-main` / `.dashboard-side` seuls | `col-12 col-xl-8` + `col-12 col-xl-4` (avec classes historiques pour le gap interne) | Les classes historiques gardent le `gap` vertical, mais la largeur repose désormais sur les colonnes. | Les composants enfants doivent occuper toute la hauteur (ajout de `h-100` sur les cards principales). |
 
@@ -57,3 +57,9 @@ Conserver cet ordre dans `templates/layouts/base.php` afin que Bootstrap consomm
 | Formulaires | À planifier | Mapper `.form-field` vers `.form-control`, vérifier focus et contrastes. |
 
 Mettre à jour ce tableau à chaque composant migré : l’objectif est de noter le mapping, les règles conservées/supprimées et les points d’attention (responsive, focus, contrastes, dark mode le cas échéant).
+
+## Note de migration des tokens
+
+- Les design tokens sont centralisés dans `public/assets/css/tokens.css`, qui reste la source de vérité de la palette et des espacements.
+- `public/assets/css/bootstrap-bridge.css` expose ces tokens vers les variables `--bs-*` de Bootstrap via le bridge (couleurs, rayons, espacements) en s'appuyant sur les alias harmonisés `--color-body`, `--color-secondary`, `--color-info` et `--color-warning`.
+- Pour étendre le système, ajouter d’abord le token dans `tokens.css`, puis le mapper dans `bootstrap-bridge.css` avant d’ajuster les composants `app.css` sous le guard `body.is-bootstrapized`.
