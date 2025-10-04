@@ -107,62 +107,72 @@ if ($isUiCard) {
 
     $header = '';
     if ($title !== '' || $subtitle !== '' || $eyebrow !== '' || $badge !== '' || $actions !== '' || $illustration) {
-    $header .= '<header class="' . htmlspecialchars($headerClass, ENT_QUOTES) . '">';
-    if ($isUiCard) {
-        $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
-        if ($eyebrow !== '') {
-            $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
-        }
-        if ($title !== '') {
-            $header .= sprintf(
-                '<%1$s class="%2$s">%3$s</%1$s>',
-                preg_replace('/[^a-z0-9:-]+/i', '', (string)$titleTag) ?: 'h2',
-                htmlspecialchars($titleClass, ENT_QUOTES),
-                htmlspecialchars($title, ENT_QUOTES)
-            );
-        }
-        if ($subtitle !== '') {
-            $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
-        }
-        $header .= '</div>';
-
-        if ($badge !== '') {
-            $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
-        }
-
-        if ($actions !== '') {
-            $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
-        }
-
+        $computedHeaderClass = $headerClass;
         if ($illustration) {
-            $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
-        }
-    } else {
-        $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
-        if ($eyebrow !== '') {
-            $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
-        }
-        if ($title !== '') {
-            $header .= '<' . htmlspecialchars($titleTag, ENT_QUOTES) . '>' . htmlspecialchars($title, ENT_QUOTES) . '</' . htmlspecialchars($titleTag, ENT_QUOTES) . '>';
-        }
-        if ($subtitle !== '') {
-            $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
-        }
-        if ($badge !== '') {
-            $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
-        }
-        $header .= '</div>';
-
-        if ($actions !== '') {
-            $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
+            if ($isUiCard) {
+                $computedHeaderClass = trim($computedHeaderClass . ' ui-card__header--with-media');
+            } else {
+                $computedHeaderClass = trim($computedHeaderClass . ' panel__header--with-media');
+            }
         }
 
-        if ($illustration) {
-            $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
-        }
-    }
+        $header .= '<header class="' . htmlspecialchars($computedHeaderClass, ENT_QUOTES) . '">';
+        if ($isUiCard) {
+            if ($illustration) {
+                $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
+            }
 
-    $header .= '</header>';
+            $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
+            if ($eyebrow !== '') {
+                $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
+            }
+            if ($title !== '') {
+                $header .= sprintf(
+                    '<%1$s class="%2$s">%3$s</%1$s>',
+                    preg_replace('/[^a-z0-9:-]+/i', '', (string)$titleTag) ?: 'h2',
+                    htmlspecialchars($titleClass, ENT_QUOTES),
+                    htmlspecialchars($title, ENT_QUOTES)
+                );
+            }
+            if ($subtitle !== '') {
+                $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
+            }
+            $header .= '</div>';
+
+            if ($badge !== '') {
+                $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
+            }
+
+            if ($actions !== '') {
+                $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
+            }
+
+        } else {
+            if ($illustration) {
+                $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
+            }
+
+            $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
+            if ($eyebrow !== '') {
+                $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
+            }
+            if ($title !== '') {
+                $header .= '<' . htmlspecialchars($titleTag, ENT_QUOTES) . '>' . htmlspecialchars($title, ENT_QUOTES) . '</' . htmlspecialchars($titleTag, ENT_QUOTES) . '>';
+            }
+            if ($subtitle !== '') {
+                $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
+            }
+            if ($badge !== '') {
+                $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
+            }
+            $header .= '</div>';
+
+            if ($actions !== '') {
+                $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
+            }
+        }
+
+        $header .= '</header>';
     }
 
     $output = sprintf('<%s%s>', $tag, $attributeString);
