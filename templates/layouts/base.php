@@ -25,6 +25,8 @@ $spriteIcon = static fn (string $name): string => $asset('assets/svg/sprite.svg#
     <title><?= htmlspecialchars($title ?? 'Genesis Reborn') ?></title>
     <link rel="preload" href="<?= htmlspecialchars($spriteHref, ENT_QUOTES) ?>" as="image" type="image/svg+xml">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/tokens.css'), ENT_QUOTES) ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap.min.css'), ENT_QUOTES) ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap-bridge.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/app.css'), ENT_QUOTES) ?>">
 </head>
 <?php
@@ -33,6 +35,18 @@ $selectedPlanetId = $selectedPlanetId ?? null;
 $activeSection = $activeSection ?? null;
 $activePlanetSummary = $activePlanetSummary ?? null;
 $isAuthenticated = !empty($currentUserId);
+
+$bodyClassList = ['app', $isAuthenticated ? 'app--secured' : 'app--guest'];
+$layoutBodyClasses = trim($layoutBodyClasses ?? '');
+if ($layoutBodyClasses !== '') {
+    foreach (preg_split('/\s+/', $layoutBodyClasses) as $className) {
+        if ($className !== '') {
+            $bodyClassList[] = $className;
+        }
+    }
+}
+
+$bodyClassAttribute = htmlspecialchars(implode(' ', $bodyClassList), ENT_QUOTES);
 
 $activePlanet = null;
 if (is_array($activePlanetSummary) && isset($activePlanetSummary['planet']) && $activePlanetSummary['planet'] instanceof \App\Domain\Entity\Planet) {
@@ -87,7 +101,7 @@ foreach ($menuCategories as $category) {
 }
 $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
 ?>
-<body class="app <?= $isAuthenticated ? 'app--secured' : 'app--guest' ?>">
+<body class="<?= $bodyClassAttribute ?>">
 <div class="app-shell">
     <?php if ($isAuthenticated): ?>
         <aside class="sidebar" id="primary-sidebar" data-sidebar>

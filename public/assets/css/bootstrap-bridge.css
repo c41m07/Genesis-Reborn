@@ -1,0 +1,114 @@
+/*
+ * Bootstrap bridge layer
+ * ----------------------
+ *
+ * This stylesheet adapts Bootstrap's design tokens to the Genesis Reborn
+ * design system. It remaps Bootstrap CSS custom properties to the values
+ * defined in tokens.css so that enabling Bootstrap utilities preserves the
+ * existing look & feel.
+ */
+
+:root {
+  /* Typography */
+  --bs-font-sans-serif: var(--font-family-base);
+  --bs-body-font-family: var(--font-family-base);
+  --bs-body-font-size: var(--font-size-base);
+  --bs-body-font-weight: 400;
+  --bs-body-line-height: var(--line-height-base);
+  --bs-body-color: var(--color-fg, var(--color-text));
+  --bs-body-color-rgb: 244, 247, 255;
+  --bs-heading-color: var(--color-text);
+  --bs-link-color: var(--color-primary);
+  --bs-link-hover-color: var(--color-primary-strong);
+  --bs-link-decoration: none;
+
+  /* Base palette */
+  --bs-body-bg: var(--color-bg);
+  --bs-body-bg-rgb: 5, 11, 31;
+  --bs-emphasis-color: var(--color-text);
+  --bs-secondary-color: var(--color-muted);
+  --bs-secondary-bg: var(--color-surface-soft);
+  --bs-tertiary-color: var(--color-muted);
+  --bs-tertiary-bg: rgba(255, 255, 255, 0.06);
+  --bs-border-color: var(--color-border);
+  --bs-border-width: 1px;
+  --bs-border-style: solid;
+  --bs-border-opacity: 1;
+
+  /* Semantic palette */
+  --bs-primary: var(--color-primary);
+  --bs-primary-rgb: 77, 163, 255;
+  --bs-secondary: var(--color-secondary, var(--color-accent));
+  --bs-secondary-rgb: 108, 216, 255;
+  --bs-success: var(--color-success);
+  --bs-success-rgb: 77, 214, 178;
+  --bs-info: var(--color-info, var(--color-accent));
+  --bs-info-rgb: 108, 216, 255;
+  --bs-warning: var(--color-warning, var(--color-accent));
+  --bs-warning-rgb: 255, 122, 122;
+  --bs-danger: var(--color-danger);
+  --bs-danger-rgb: 255, 122, 122;
+  --bs-light: var(--color-surface-soft);
+  --bs-light-rgb: 255, 255, 255;
+  --bs-dark: var(--color-bg);
+  --bs-dark-rgb: 5, 11, 31;
+
+  /* Radius */
+  --bs-border-radius-sm: var(--radius-sm);
+  --bs-border-radius: var(--radius);
+  --bs-border-radius-lg: var(--radius-lg);
+  --bs-border-radius-xl: var(--radius-lg);
+  --bs-border-radius-xxl: var(--radius-lg);
+  --bs-border-radius-2xl: var(--radius-lg);
+  --bs-border-radius-pill: 999px;
+
+  --bs-btn-border-radius: var(--radius-sm);
+  --bs-btn-border-radius-sm: var(--radius-sm);
+  --bs-btn-border-radius-lg: var(--radius-lg);
+
+  /* Focus */
+  --bs-focus-ring-width: 3px;
+  --bs-focus-ring-opacity: 0.55;
+  --bs-focus-ring-color: rgba(77, 163, 255, 0.55);
+  --bs-btn-focus-shadow-rgb: 77, 163, 255;
+
+  /* Spacing */
+  --bs-spacer: var(--space-4);
+  --bs-spacer-1: var(--space-1);
+  --bs-spacer-2: var(--space-2);
+  --bs-spacer-3: var(--space-3);
+  --bs-spacer-4: var(--space-4);
+  --bs-spacer-5: var(--space-5);
+  --bs-spacer-6: var(--space-6);
+  --bs-gutter-x: var(--space-5);
+  --bs-gutter-y: var(--space-5);
+  --bs-btn-padding-y: var(--space-2);
+  --bs-btn-padding-x: var(--space-4);
+  --bs-btn-padding-y-sm: var(--space-1);
+  --bs-btn-padding-x-sm: var(--space-3);
+  --bs-btn-padding-y-lg: var(--space-3);
+  --bs-btn-padding-x-lg: var(--space-5);
+
+  /* Components */
+  --bs-card-bg: var(--bg-panel);
+  --bs-card-color: var(--color-text);
+  --bs-card-border-color: var(--color-border);
+  --bs-card-border-width: 1px;
+  --bs-card-border-radius: var(--radius);
+  --bs-card-spacer-y: var(--space-5);
+  --bs-card-spacer-x: var(--space-5);
+  --bs-card-cap-bg: transparent;
+  --bs-card-cap-color: var(--color-text);
+  --bs-card-box-shadow: var(--shadow-card);
+  --bs-alert-border-radius: var(--radius-sm);
+  --bs-alert-border-color: var(--color-border);
+  --bs-alert-bg: var(--color-surface-soft);
+  --bs-alert-color: var(--color-text);
+
+  --bs-form-control-bg: var(--surface-input);
+  --bs-form-control-color: var(--color-text);
+  --bs-form-control-border-color: var(--color-border);
+  --bs-form-control-border-radius: var(--radius-sm);
+  --bs-form-control-focus-border-color: var(--color-primary);
+  --bs-form-control-focus-box-shadow: var(--focus-ring);
+}
