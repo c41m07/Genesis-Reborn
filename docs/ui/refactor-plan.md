@@ -87,7 +87,6 @@
 - **Ombres** : `--shadow-sm: 0 4px 12px rgba(5, 10, 30, 0.25)`, `--shadow-md: 0 12px 24px rgba(5, 10, 30, 0.35)`, `--shadow-lg: 0 24px 48px rgba(5, 10, 30, 0.45)`.
 - **Transitions** : `--transition-fast: 120ms ease`, `--transition-base: 180ms ease`, `--transition-slow: 280ms ease`. Focus ring `--focus-ring-primary: 0 0 0 3px rgba(77, 163, 255, 0.55)`, `--focus-ring-inverse: 0 0 0 3px rgba(4, 16, 33, 0.6)`.
 - **Z-index** : `--z-base: 1`, `--z-overlay: 10`, `--z-dropdown: 100`, `--z-modal: 1000`, `--z-toast: 1100`.
-
 ## 4. Risques & points de vigilance
 
 | Risque | Impact | Mitigation |
