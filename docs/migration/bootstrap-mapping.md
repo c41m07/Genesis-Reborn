@@ -56,6 +56,14 @@ Conserver cet ordre dans `templates/layouts/base.php` afin que Bootstrap consomm
 | Alertes | À planifier | Revoir les messages flash → `.alert.alert-*` en réutilisant les tokens `--success-soft`, etc. |
 | Formulaires | À planifier | Mapper `.form-field` vers `.form-control`, vérifier focus et contrastes. |
 
+### Accessibilité et focus management
+
+| Élément | Mapping Bootstrap / JS | Tokens utilisés | Points d’attention |
+| --- | --- | --- | --- |
+| Sidebar mobile | `.sidebar` + focus trap JS (`createFocusTrap`) | `--focus-ring`, `--color-overlay` | `data-focus-trap` garantit la navigation clavier et verrouille le focus pendant l’ouverture. |
+| Messages flash | `.flashes` + rôles `status`/`alert` | `--color-info`, `--color-warning`, `--color-danger` | `aria-live` est configuré (`polite`/`assertive`) pour annoncer les retours utilisateur sans dupliquer les alertes. |
+| Ressources en header | `.resource-meter` (list `role="list"`) | `--text-primary`, `--color-border` | Zones `role="status"` pour chaque ressource afin d’annoncer les variations sans perturber la navigation. |
+
 Mettre à jour ce tableau à chaque composant migré : l’objectif est de noter le mapping, les règles conservées/supprimées et les points d’attention (responsive, focus, contrastes, dark mode le cas échéant).
 
 ## Note de migration des tokens

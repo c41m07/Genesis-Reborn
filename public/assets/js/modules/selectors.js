@@ -18,6 +18,7 @@ export const SELECTORS = {
   sidebarToggle: '[data-sidebar-toggle]',
   sidebarClose: '[data-sidebar-close]',
   sidebarOverlay: '[data-sidebar-overlay]',
+  focusTrap: '[data-focus-trap]',
   autoSubmitSelect: 'select[data-auto-submit]',
   requirementsPanel: '[data-requirements-panel]',
   requirementsSummary: '[data-requirements-summary]',

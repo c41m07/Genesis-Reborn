@@ -27,6 +27,7 @@ $spriteIcon = static fn (string $name): string => $asset('assets/svg/sprite.svg#
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/tokens.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap.min.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/bootstrap-bridge.css'), ENT_QUOTES) ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/components.css'), ENT_QUOTES) ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars($asset('assets/css/app.css'), ENT_QUOTES) ?>">
 </head>
 <?php
@@ -104,7 +105,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
 <body class="<?= $bodyClassAttribute ?>">
 <div class="app-shell">
     <?php if ($isAuthenticated): ?>
-        <aside class="sidebar" id="primary-sidebar" data-sidebar>
+        <aside class="sidebar" id="primary-sidebar" data-sidebar data-focus-trap>
             <div class="sidebar__inner">
                 <div class="sidebar__header">
                     <div class="sidebar__brand">
@@ -201,7 +202,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         </form>
                     <?php endif; ?>
                 </div>
-                <div class="topbar__resources">
+                <div class="topbar__resources" data-resource-ticker role="list" aria-label="Production des ressources">
                     <?php foreach (['metal' => 'Métal', 'crystal' => 'Cristal', 'hydrogen' => 'Hydrogène', 'energy' => 'Énergie'] as $key => $label): ?>
                         <?php
                         $data = $resourceSummary[$key] ?? ['value' => 0, 'perHour' => 0, 'capacity' => 0];
@@ -215,7 +216,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         $capacityDisplay = $capacityValue > 0 ? format_number($capacityValue) : '—';
                         $meterClasses = 'resource-meter' . (($value <= 0 && $perHourValue < 0) ? ' resource-meter--warning' : '');
                         ?>
-                        <div class="<?= $meterClasses ?>" role="group" aria-label="<?= htmlspecialchars($label) ?>"
+                        <div class="<?= $meterClasses ?>" role="listitem" aria-label="<?= htmlspecialchars($label) ?>"
                              data-resource="<?= htmlspecialchars($key) ?>"
                              data-resource-capacity="<?= $capacityValue ?>">
                             <div class="resource-meter__icon">
@@ -225,11 +226,11 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                             </div>
                             <div class="resource-meter__details">
                                 <span class="resource-meter__label"><?= htmlspecialchars($label) ?></span>
-                                <div class="resource-meter__values">
-                                    <div class="resource-meter__primary">
+                                <div class="resource-meter__values" aria-live="polite">
+                                    <div class="resource-meter__primary" role="status" aria-live="polite" aria-atomic="true">
                                         <span class="resource-meter__value"
                                               data-resource-value><?= format_number($value) ?></span>
-                                        <span class="resource-meter__rate <?= $rateClass ?>"
+                                        <span class="resource-meter__rate <?= $rateClass ?>" role="text"
                                               data-resource-rate><?= htmlspecialchars($rateDisplay) ?></span>
                                     </div>
                                     <span class="resource-meter__capacity"
@@ -264,9 +265,16 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
         </header>
         <main class="workspace__content">
             <?php if (!empty($flashes)): ?>
-                <div class="flashes">
+                <div class="flashes" role="status" aria-live="polite" aria-atomic="true">
                     <?php foreach ($flashes as $flash): ?>
-                        <div class="flash flash--<?= htmlspecialchars($flash['type']) ?>">
+                        <?php
+                        $flashType = (string)($flash['type'] ?? 'info');
+                        $isAssertive = in_array($flashType, ['danger', 'error', 'warning'], true);
+                        $flashRole = $isAssertive ? 'alert' : 'status';
+                        $flashLive = $isAssertive ? 'assertive' : 'polite';
+                        ?>
+                        <div class="flash flash--<?= htmlspecialchars($flashType) ?>" role="<?= $flashRole ?>"
+                             aria-live="<?= $flashLive ?>" aria-atomic="true">
                             <?= htmlspecialchars($flash['message']) ?>
                         </div>
                     <?php endforeach; ?>

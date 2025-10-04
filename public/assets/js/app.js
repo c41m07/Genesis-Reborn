@@ -12,9 +12,11 @@ import { initTechTree } from './modules/tech-tree.js';
 import { renderQueue } from './modules/queue.js';
 import { updateBuildingCard, updateResearchCard, updateShipCard } from './modules/cards.js';
 import { initFleetPlanner } from './modules/fleet-planner.js';
+import { initFocusTraps } from './modules/focus-trap.js';
 
 const ready = () => {
   initSidebar();
+  initFocusTraps();
   initAutoSubmitSelects();
   initAsyncForms();
   bootstrapResourceTicker();

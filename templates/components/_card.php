@@ -22,13 +22,39 @@ declare(strict_types=1);
  * } $props
  */
 return static function (array $props): string {
-    $tag = 'article';
-    $baseClass = $props['baseClass'] ?? 'panel';
-    $classNames = trim($baseClass . ' ' . ($props['class'] ?? ''));
-    $headerClass = $props['headerClass'] ?? $baseClass . '__header';
-    $bodyClass = $props['bodyClass'] ?? $baseClass . '__body';
-    $footerClass = $props['footerClass'] ?? $baseClass . '__footer';
-    $status = $props['status'] ?? null;
+$tag = isset($props['tag']) && is_string($props['tag']) && $props['tag'] !== ''
+    ? $props['tag']
+    : 'article';
+$baseClass = trim((string)($props['baseClass'] ?? 'panel'));
+if ($baseClass === '') {
+    $baseClass = 'panel';
+}
+$classNames = trim($baseClass . ' ' . (string)($props['class'] ?? ''));
+$headerClass = $props['headerClass'] ?? $baseClass . '__header';
+$bodyClass = $props['bodyClass'] ?? $baseClass . '__body';
+$footerClass = $props['footerClass'] ?? $baseClass . '__footer';
+$status = $props['status'] ?? null;
+
+$titleClass = $props['titleClass'] ?? $baseClass . '__title';
+$subtitleClass = $props['subtitleClass'] ?? $baseClass . '__subtitle';
+$eyebrowClass = $props['eyebrowClass'] ?? $baseClass . '__eyebrow';
+$badgeClass = $props['badgeClass'] ?? $baseClass . '__badge';
+$actionsClass = $props['actionsClass'] ?? $baseClass . '__actions';
+$illustrationClass = $props['illustrationClass'] ?? $baseClass . '__illustration';
+$metaClass = $props['metaClass'] ?? $baseClass . '__heading';
+$titleTag = $props['titleTag'] ?? 'h2';
+
+$isUiCard = str_starts_with($baseClass, 'ui-card');
+if ($isUiCard) {
+    $titleClass = $props['titleClass'] ?? 'ui-card__title';
+    $subtitleClass = $props['subtitleClass'] ?? 'ui-card__subtitle';
+    $eyebrowClass = $props['eyebrowClass'] ?? 'ui-card__eyebrow';
+    $badgeClass = $props['badgeClass'] ?? 'ui-card__badge';
+    $actionsClass = $props['actionsClass'] ?? 'ui-card__actions';
+    $illustrationClass = $props['illustrationClass'] ?? 'ui-card__media';
+    $metaClass = $props['metaClass'] ?? 'ui-card__meta';
+    $titleTag = $props['titleTag'] ?? 'h2';
+}
 
     if (is_string($status) && $status !== '') {
         $classNames .= ' ' . $status;
@@ -81,31 +107,62 @@ return static function (array $props): string {
 
     $header = '';
     if ($title !== '' || $subtitle !== '' || $eyebrow !== '' || $badge !== '' || $actions !== '' || $illustration) {
-        $header .= '<header class="' . htmlspecialchars($headerClass, ENT_QUOTES) . '">';
-        $header .= '<div class="panel__heading">';
+    $header .= '<header class="' . htmlspecialchars($headerClass, ENT_QUOTES) . '">';
+    if ($isUiCard) {
+        $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
         if ($eyebrow !== '') {
-            $header .= '<span class="panel__eyebrow">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
+            $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
         }
         if ($title !== '') {
-            $header .= '<h2>' . htmlspecialchars($title, ENT_QUOTES) . '</h2>';
+            $header .= sprintf(
+                '<%1$s class="%2$s">%3$s</%1$s>',
+                preg_replace('/[^a-z0-9:-]+/i', '', (string)$titleTag) ?: 'h2',
+                htmlspecialchars($titleClass, ENT_QUOTES),
+                htmlspecialchars($title, ENT_QUOTES)
+            );
         }
         if ($subtitle !== '') {
-            $header .= '<p class="panel__subtitle">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
+            $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
+        }
+        $header .= '</div>';
+
+        if ($badge !== '') {
+            $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
+        }
+
+        if ($actions !== '') {
+            $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
+        }
+
+        if ($illustration) {
+            $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
+        }
+    } else {
+        $header .= '<div class="' . htmlspecialchars($metaClass, ENT_QUOTES) . '">';
+        if ($eyebrow !== '') {
+            $header .= '<span class="' . htmlspecialchars($eyebrowClass, ENT_QUOTES) . '">' . htmlspecialchars($eyebrow, ENT_QUOTES) . '</span>';
+        }
+        if ($title !== '') {
+            $header .= '<' . htmlspecialchars($titleTag, ENT_QUOTES) . '>' . htmlspecialchars($title, ENT_QUOTES) . '</' . htmlspecialchars($titleTag, ENT_QUOTES) . '>';
+        }
+        if ($subtitle !== '') {
+            $header .= '<p class="' . htmlspecialchars($subtitleClass, ENT_QUOTES) . '">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</p>';
         }
         if ($badge !== '') {
-            $header .= '<span class="panel__badge">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
+            $header .= '<span class="' . htmlspecialchars($badgeClass, ENT_QUOTES) . '">' . htmlspecialchars($badge, ENT_QUOTES) . '</span>';
         }
         $header .= '</div>';
 
         if ($actions !== '') {
-            $header .= '<div class="panel__actions">' . $actions . '</div>';
+            $header .= '<div class="' . htmlspecialchars($actionsClass, ENT_QUOTES) . '">' . $actions . '</div>';
         }
 
         if ($illustration) {
-            $header .= '<img class="panel__illustration" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
+            $header .= '<img class="' . htmlspecialchars($illustrationClass, ENT_QUOTES) . '" src="' . htmlspecialchars($illustration, ENT_QUOTES) . '" alt="" loading="lazy" decoding="async">';
         }
+    }
 
-        $header .= '</header>';
+    $header .= '</header>';
     }
 
     $output = sprintf('<%s%s>', $tag, $attributeString);

@@ -53,24 +53,27 @@ $availableTargets = array_values(array_filter(
 
 ob_start();
 ?>
-<section class="page-header">
-    <div>
-        <h1>Commandement de la flotte</h1>
+<header class="ui-page-header">
+    <div class="ui-page-header__titles">
+        <h1 class="ui-page-header__title">Commandement de la flotte</h1>
         <?php if ($selectedPlanetId !== null): ?>
-            <p class="page-header__subtitle">Organisez vos flottes en orbite autour de la planète sélectionnée et préparez leurs prochaines opérations.</p>
+            <p class="ui-page-header__subtitle">Organisez vos flottes en orbite autour de la planète sélectionnée et préparez leurs prochaines opérations.</p>
         <?php else: ?>
-            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour afficher et gérer ses flottes.</p>
+            <p class="ui-page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour afficher et gérer ses flottes.</p>
         <?php endif; ?>
     </div>
-    <div class="page-header__actions">
+    <div class="ui-page-header__actions">
         <?php if ($selectedFleet !== null): ?>
-            <a class="button button--ghost" href="<?= htmlspecialchars($backToListUrl, ENT_QUOTES) ?>">Retour aux flottes</a>
+            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($backToListUrl, ENT_QUOTES) ?>">
+                <span class="ui-button__label">Retour aux flottes</span>
+            </a>
         <?php endif; ?>
     </div>
-</section>
+</header>
 
 <?php if ($selectedPlanetId === null): ?>
     <?= $card([
+        'baseClass' => 'ui-card',
         'title' => 'Aucune planète active',
         'body' => static function (): void {
             echo '<p>Choisissez une planète à gérer pour accéder au détail des flottes stationnées en orbite.</p>';
@@ -78,26 +81,31 @@ ob_start();
     ]) ?>
 <?php else: ?>
     <?= $card([
+        'baseClass' => 'ui-card',
         'title' => 'Créer une nouvelle flotte',
         'subtitle' => 'Assemblez un nouveau groupe de combat en orbite.',
+        'bodyClass' => 'ui-card__body fleet-create__body',
         'body' => static function () use ($fleetActionUrl, $csrf_create, $selectedPlanetId): void {
-            echo '<form class="form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+            echo '<form class="d-flex flex-column gap-4" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
             if ($csrf_create !== null) {
                 echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_create, ENT_QUOTES) . '">';
             }
             echo '<input type="hidden" name="action" value="create_fleet">';
-            echo '<div class="form__field">';
-            echo '<label for="fleet-name">Nom de la flotte</label>';
-            echo '<input class="form__control form__control--text" id="fleet-name" type="text" name="fleet_name" placeholder="Flotte d’intervention" maxlength="50" required>';
+            echo '<div class="ui-field">';
+            echo '<label class="ui-field__label" for="fleet-name">Nom de la flotte</label>';
+            echo '<input class="ui-input" id="fleet-name" type="text" name="fleet_name" placeholder="Flotte d’intervention" maxlength="50" required autocomplete="off">';
             echo '</div>';
-            echo '<div class="form__actions">';
-            echo '<button class="button button--primary" type="submit">Créer la flotte</button>';
+            echo '<div class="d-flex justify-content-end">';
+            echo '<button class="ui-button ui-button--primary ui-button--sm" type="submit">';
+            echo '<span class="ui-button__label">Créer la flotte</span>';
+            echo '</button>';
             echo '</div>';
             echo '</form>';
         },
     ]) ?>
 
     <?= $card([
+        'baseClass' => 'ui-card',
         'title' => 'Flottes en orbite',
         'subtitle' => 'Vue d’ensemble des groupes disponibles autour de la planète.',
         'body' => static function () use ($idleFleets, $selectedPlanetId, $basePath): void {
@@ -139,7 +147,9 @@ ob_start();
                 echo '<td class="fleet-table__metric">' . format_number($totalShips) . '</td>';
                 echo '<td>' . htmlspecialchars($statusLabel) . '</td>';
                 echo '<td class="fleet-table__actions">';
-                echo '<a class="button button--small" href="' . htmlspecialchars($manageUrl, ENT_QUOTES) . '">Gérer</a>';
+                echo '<a class="ui-button ui-button--neutral ui-button--sm" href="' . htmlspecialchars($manageUrl, ENT_QUOTES) . '">';
+                echo '<span class="ui-button__label">Gérer</span>';
+                echo '</a>';
                 echo '</td>';
                 echo '</tr>';
             }
@@ -151,8 +161,10 @@ ob_start();
 
     <?php if ($selectedFleet !== null): ?>
         <?= $card([
+            'baseClass' => 'ui-card',
             'title' => 'Gestion de « ' . htmlspecialchars($selectedFleet['label'], ENT_QUOTES) . ' »',
             'subtitle' => 'Ajustez sa composition et préparez ses prochaines actions.',
+            'bodyClass' => 'ui-card__body fleet-manage',
             'body' => static function () use (
                 $selectedFleet,
                 $fleetActionUrl,
@@ -170,8 +182,8 @@ ob_start();
 
                 echo '<section class="fleet-manage__section fleet-manage__section--mission">';
                 echo '<h3>Envoyer en mission</h3>';
-                echo '<p class="form__hint">Les types de mission sont en cours de développement. Sélectionnez celui à préparer.</p>';
-                echo '<form class="mission-form form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                echo '<p class="fleet-manage__hint">Les types de mission sont en cours de développement. Sélectionnez celui à préparer.</p>';
+                echo '<form class="mission-form d-flex flex-column gap-4" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
                 if ($csrf_manage_mission !== null) {
                     echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_manage_mission, ENT_QUOTES) . '">';
                 }
@@ -199,7 +211,9 @@ ob_start();
                 }
                 echo '</div>';
                 echo '<div class="mission-form__actions">';
-                echo '<button class="button button--primary" type="submit" disabled>Planifier la mission (à venir)</button>';
+                echo '<button class="ui-button ui-button--primary ui-button--sm" type="submit" disabled>';
+                echo '<span class="ui-button__label">Planifier la mission (à venir)</span>';
+                echo '</button>';
                 echo '</div>';
                 echo '</form>';
                 echo '</section>';
@@ -211,7 +225,7 @@ ob_start();
                 } else {
                     $formOpened = false;
                     if ($hasTransferOptions) {
-                        echo '<form class="fleet-transfer" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                        echo '<form class="fleet-transfer d-flex flex-column gap-4" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
                         if ($csrf_transfer !== null) {
                             echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_transfer, ENT_QUOTES) . '">';
                         }
@@ -243,9 +257,9 @@ ob_start();
                         echo '<td class="fleet-transfer__input-cell">';
                         if ($formOpened && $shipQuantity > 0) {
                             echo '<label class="visually-hidden" for="' . htmlspecialchars($inputId, ENT_QUOTES) . '">Quantité à transférer</label>';
-                            echo '<input class="form__control form__control--number fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" max="' . $shipQuantity . '" step="1" placeholder="0">';
+                            echo '<input class="ui-input fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" max="' . $shipQuantity . '" step="1" placeholder="0">';
                         } elseif ($formOpened) {
-                            echo '<input class="form__control form__control--number fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" step="1" value="0" disabled>';
+                            echo '<input class="ui-input fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" step="1" value="0" disabled>';
                         } else {
                             echo '—';
                         }
@@ -257,10 +271,9 @@ ob_start();
                     echo '</div>';
 
                     if ($formOpened) {
-                        echo '<div class="fleet-transfer__destination form__field">';
-                        echo '<label for="transfer-target">Destination</label>';
-                        echo '<div class="form__select">';
-                        echo '<select class="form__control form__control--select" id="transfer-target" name="target_fleet_id" required>';
+                        echo '<div class="fleet-transfer__destination ui-field">';
+                        echo '<label class="ui-field__label" for="transfer-target">Destination</label>';
+                        echo '<select class="ui-select" id="transfer-target" name="target_fleet_id" required>';
                         echo '<option value="">Choisissez une destination</option>';
                         if ($garrisonFleetId !== null && $garrisonFleetId !== $selectedFleetId) {
                             echo '<option value="hangar">Hangar planétaire</option>';
@@ -274,10 +287,11 @@ ob_start();
                         }
                         echo '</select>';
                         echo '</div>';
-                        echo '</div>';
 
-                        echo '<div class="fleet-transfer__actions form__actions form__actions--end">';
-                        echo '<button class="button button--primary" type="submit">Transférer les vaisseaux sélectionnés</button>';
+                        echo '<div class="fleet-transfer__actions d-flex justify-content-end">';
+                        echo '<button class="ui-button ui-button--primary ui-button--sm" type="submit">';
+                        echo '<span class="ui-button__label">Transférer les vaisseaux sélectionnés</span>';
+                        echo '</button>';
                         echo '</div>';
                         echo '</form>';
                     } else {
@@ -288,35 +302,39 @@ ob_start();
 
                 echo '<section class="fleet-manage__section">';
                 echo '<h3>Renommer la flotte</h3>';
-                echo '<form class="form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                echo '<form class="d-flex flex-column gap-4" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
                 if ($csrf_rename !== null) {
                     echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_rename, ENT_QUOTES) . '">';
                 }
                 echo '<input type="hidden" name="action" value="rename_fleet">';
                 echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
                 $currentName = $selectedFleet['name'] ?? '';
-                echo '<div class="form__field">';
-                echo '<label for="rename-fleet">Nouveau nom</label>';
-                echo '<input class="form__control form__control--text" id="rename-fleet" type="text" name="new_name" value="' . htmlspecialchars((string)$currentName, ENT_QUOTES) . '" placeholder="Flotte d’élite" maxlength="50" required>';
+                echo '<div class="ui-field">';
+                echo '<label class="ui-field__label" for="rename-fleet">Nouveau nom</label>';
+                echo '<input class="ui-input" id="rename-fleet" type="text" name="new_name" value="' . htmlspecialchars((string)$currentName, ENT_QUOTES) . '" placeholder="Flotte d’élite" maxlength="50" required autocomplete="off">';
                 echo '</div>';
-                echo '<div class="form__actions form__actions--end">';
-                echo '<button class="button" type="submit">Renommer</button>';
+                echo '<div class="d-flex justify-content-end">';
+                echo '<button class="ui-button ui-button--primary ui-button--sm" type="submit">';
+                echo '<span class="ui-button__label">Renommer</span>';
+                echo '</button>';
                 echo '</div>';
                 echo '</form>';
                 echo '</section>';
 
                 echo '<section class="fleet-manage__section">';
                 echo '<h3>Supprimer la flotte</h3>';
-                echo '<p class="form__hint">Les vaisseaux restants seront automatiquement renvoyés au hangar planétaire.</p>';
-                echo '<form class="form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                echo '<p class="fleet-manage__hint">Les vaisseaux restants seront automatiquement renvoyés au hangar planétaire.</p>';
+                echo '<form class="d-flex flex-column gap-4" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
                 if ($csrf_delete !== null) {
                     echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_delete, ENT_QUOTES) . '">';
                 }
                 echo '<input type="hidden" name="action" value="delete_fleet">';
                 echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
-                echo '<div class="form__actions form__actions--end">';
+                echo '<div class="d-flex justify-content-end">';
                 $confirmMessage = htmlspecialchars(sprintf('Êtes-vous certain de vouloir dissoudre définitivement la flotte "%s" ?', (string)($selectedFleet['label'] ?? 'Flotte')), ENT_QUOTES);
-                echo '<button class="button button--danger" type="submit" onclick="return confirm(\'' . $confirmMessage . '\');">Supprimer cette flotte</button>';
+                echo '<button class="ui-button ui-button--danger ui-button--sm" type="submit" onclick="return confirm(\'' . $confirmMessage . '\');">';
+                echo '<span class="ui-button__label">Supprimer cette flotte</span>';
+                echo '</button>';
                 echo '</div>';
                 echo '</form>';
                 echo '</section>';

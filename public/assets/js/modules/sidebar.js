@@ -1,4 +1,5 @@
 import SELECTORS from './selectors.js';
+import { createFocusTrap, getRegisteredFocusTrap } from './focus-trap.js';
 
 export const initSidebar = () => {
   const sidebar = document.querySelector(SELECTORS.sidebar);
@@ -10,6 +11,7 @@ export const initSidebar = () => {
   const toggles = Array.from(document.querySelectorAll(SELECTORS.sidebarToggle));
   const closes = Array.from(document.querySelectorAll(SELECTORS.sidebarClose));
   const body = document.body;
+  const focusTrap = getRegisteredFocusTrap(sidebar) ?? createFocusTrap(sidebar);
 
   const setSidebarState = (isOpen) => {
     sidebar.classList.toggle('sidebar--open', isOpen);
@@ -20,6 +22,14 @@ export const initSidebar = () => {
         toggle.setAttribute('aria-expanded', String(isOpen));
       }
     });
+
+    if (isOpen) {
+      focusTrap.refresh();
+      const initialFocus = closes.find((closeControl) => closeControl instanceof HTMLElement);
+      focusTrap.activate({ initialFocus });
+    } else {
+      focusTrap.deactivate();
+    }
   };
 
   const closeSidebar = () => setSidebarState(false);
