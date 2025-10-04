@@ -1445,6 +1445,44 @@ class InMemoryFleetRepository implements FleetRepositoryInterface
         }
     }
 
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->fleetMeta[$fleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->fleetMeta[$fleetId]['ships'][$key] = $available - $quantity;
+            if ($this->fleetMeta[$fleetId]['ships'][$key] === 0) {
+                unset($this->fleetMeta[$fleetId]['ships'][$key]);
+            }
+
+            if ($this->fleetMeta[$fleetId]['is_garrison']) {
+                $planetId = $this->fleetMeta[$fleetId]['origin_planet_id'];
+                $current = $this->fleets[$planetId][$key] ?? 0;
+                $current -= $quantity;
+                if ($current > 0) {
+                    $this->fleets[$planetId][$key] = $current;
+                } else {
+                    unset($this->fleets[$planetId][$key]);
+                }
+            }
+        }
+
+        if ($deleteFleetIfEmpty && empty($this->fleetMeta[$fleetId]['ships']) && !$this->fleetMeta[$fleetId]['is_garrison']) {
+            unset($this->fleetMeta[$fleetId]);
+        }
+    }
+
     private function ensureGarrison(int $planetId): int
     {
         if (isset($this->garrisons[$planetId])) {

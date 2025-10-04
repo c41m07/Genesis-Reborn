@@ -95,9 +95,9 @@ final class FleetControllerAccessTest extends TestCase
         };
 
         $createFleet = new CreateIdleFleet($planetRepository, $fleetRepository);
-        $transferFleetShips = new TransferIdleFleetShips($planetRepository, $fleetRepository);
+        $transferFleetShips = new TransferIdleFleetShips($planetRepository, $hangarRepository, $fleetRepository);
         $renameFleet = new RenameIdleFleet($planetRepository, $fleetRepository);
-        $deleteFleet = new DeleteIdleFleet($planetRepository, $fleetRepository);
+        $deleteFleet = new DeleteIdleFleet($planetRepository, $hangarRepository, $fleetRepository);
 
         $controller = new FleetController(
             $planetRepository,
@@ -370,6 +370,41 @@ final class TestFleetRepository implements FleetRepositoryInterface
 
         if ($deleteSourceIfEmpty && empty($this->fleetMeta[$sourceFleetId]['ships']) && !$this->fleetMeta[$sourceFleetId]['is_garrison']) {
             unset($this->fleetMeta[$sourceFleetId]);
+        }
+    }
+
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->fleetMeta[$fleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->fleetMeta[$fleetId]['ships'][$key] = $available - $quantity;
+            if ($this->fleetMeta[$fleetId]['ships'][$key] === 0) {
+                unset($this->fleetMeta[$fleetId]['ships'][$key]);
+            }
+
+            if ($this->fleetMeta[$fleetId]['is_garrison']) {
+                $planetId = $this->fleetMeta[$fleetId]['origin_planet_id'];
+                $this->fleets[$planetId][$key] = ($this->fleets[$planetId][$key] ?? 0) - $quantity;
+                if (($this->fleets[$planetId][$key] ?? 0) <= 0) {
+                    unset($this->fleets[$planetId][$key]);
+                }
+            }
+        }
+
+        if ($deleteFleetIfEmpty && empty($this->fleetMeta[$fleetId]['ships']) && !$this->fleetMeta[$fleetId]['is_garrison']) {
+            unset($this->fleetMeta[$fleetId]);
         }
     }
 

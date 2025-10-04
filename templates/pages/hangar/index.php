@@ -141,9 +141,6 @@ ob_start();
             echo '<div class="hangar-table__input">';
             echo '<label for="' . htmlspecialchars($inputId, ENT_QUOTES) . '-qty" class="visually-hidden">Quantité à retirer</label>';
             echo '<input class="hangar-table__quantity-input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '-qty" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" step="1"' . $maxAttr . $valueAttr . $disabled . ' placeholder="0">';
-            if ($shipQuantity > 0) {
-                echo '<small class="hangar-table__hint">max ' . format_number($shipQuantity) . '</small>';
-            }
             echo '</div>';
             echo '</td>';
             echo '</tr>';

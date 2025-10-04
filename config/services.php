@@ -521,11 +521,13 @@ return function (Container $container): void {
 
     $container->set(TransferIdleFleetShips::class, fn (Container $c) => new TransferIdleFleetShips(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class)
     ));
 
     $container->set(DeleteIdleFleet::class, fn (Container $c) => new DeleteIdleFleet(
         $c->get(PlanetRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class)
     ));
 };

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\UseCase\Fleet;
 
 use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use RuntimeException;
 
@@ -12,6 +13,7 @@ final class DeleteIdleFleet
 {
     public function __construct(
         private readonly PlanetRepositoryInterface $planets,
+        private readonly HangarRepositoryInterface $hangars,
         private readonly FleetRepositoryInterface $fleets
     ) {
     }
@@ -77,7 +79,10 @@ final class DeleteIdleFleet
         }
 
         try {
-            $this->fleets->transferShipsBetweenFleets($fleetId, $garrisonSummary['id'], $ships, true);
+            $this->fleets->removeShipsFromFleet($fleetId, $ships, true);
+            foreach ($ships as $shipKey => $quantity) {
+                $this->hangars->addShips($planetId, $shipKey, $quantity);
+            }
         } catch (RuntimeException $exception) {
             return [
                 'success' => false,

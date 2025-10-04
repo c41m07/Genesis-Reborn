@@ -298,6 +298,33 @@ final class HangarFleetRepository implements FleetRepositoryInterface
         }
     }
 
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void
+    {
+        if (!isset($this->fleets[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->fleets[$fleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->fleets[$fleetId]['ships'][$key] = $available - $quantity;
+            if ($this->fleets[$fleetId]['ships'][$key] === 0) {
+                unset($this->fleets[$fleetId]['ships'][$key]);
+            }
+        }
+
+        if ($deleteFleetIfEmpty && empty($this->fleets[$fleetId]['ships']) && !$this->fleets[$fleetId]['is_garrison']) {
+            unset($this->fleets[$fleetId]);
+        }
+    }
+
     public function seedFleet(int $playerId, int $planetId, ?string $name, array $ships, bool $isGarrison): int
     {
         $id = $this->nextId++;

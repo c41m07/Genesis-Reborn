@@ -338,4 +338,31 @@ final class StubFleetRepository implements FleetRepositoryInterface
             unset($this->idleFleets[$sourceFleetId]);
         }
     }
+
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void
+    {
+        if (!isset($this->idleFleets[$fleetId])) {
+            throw new \RuntimeException('Flotte introuvable.');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->idleFleets[$fleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->idleFleets[$fleetId]['ships'][$key] = $available - $quantity;
+            if ($this->idleFleets[$fleetId]['ships'][$key] === 0) {
+                unset($this->idleFleets[$fleetId]['ships'][$key]);
+            }
+        }
+
+        if ($deleteFleetIfEmpty && empty($this->idleFleets[$fleetId]['ships'])) {
+            unset($this->idleFleets[$fleetId]);
+        }
+    }
 }

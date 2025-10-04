@@ -11,5 +11,5 @@ interface ResearchStateRepositoryInterface
      */
     public function getLevels(int $planetId): array;
 
-    public function setLevel(int $planetId, string $key, int $level): void;
+    public function setLevel(int $planetId, string $researchKey, int $level): void;
 }

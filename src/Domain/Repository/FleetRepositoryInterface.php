@@ -33,4 +33,9 @@ interface FleetRepositoryInterface
      * @param array<string, int> $shipQuantities
      */
     public function transferShipsBetweenFleets(int $sourceFleetId, int $targetFleetId, array $shipQuantities, bool $deleteSourceIfEmpty): void;
+
+    /**
+     * @param array<string, int> $shipQuantities
+     */
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void;
 }

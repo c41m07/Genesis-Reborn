@@ -74,7 +74,7 @@ class PdoFleetRepository implements FleetRepositoryInterface
               AND f.mission_type = :mission
               AND f.destination_planet_id IS NULL
               AND f.status IN ('idle','holding')
-            ORDER BY f.created_at ASC, s.`key` ASC
+            ORDER BY f.created_at , s.`key` 
         SQL);
         $stmt->execute([
             'planet' => $planetId,
@@ -255,6 +255,81 @@ class PdoFleetRepository implements FleetRepositoryInterface
                 if ($remainingShips === 0) {
                     $deleteFleet = $this->pdo->prepare('DELETE FROM fleets WHERE id = :fleet');
                     $deleteFleet->execute(['fleet' => $sourceFleetId]);
+                }
+            }
+
+            $this->pdo->commit();
+        } catch (Throwable $exception) {
+            $this->pdo->rollBack();
+            throw $exception;
+        }
+    }
+
+    public function removeShipsFromFleet(int $fleetId, array $shipQuantities, bool $deleteFleetIfEmpty): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $fleetInfo = $this->getFleetOwnerAndPlanet($fleetId);
+
+            if ($fleetInfo === null) {
+                throw new RuntimeException('Flotte introuvable.');
+            }
+
+            foreach ($shipQuantities as $shipKey => $quantity) {
+                if ($quantity <= 0) {
+                    continue;
+                }
+
+                $shipId = $this->getShipIdByKey($shipKey);
+                if ($shipId === null) {
+                    throw new RuntimeException(sprintf('Type de vaisseau "%s" inconnu.', $shipKey));
+                }
+
+                $select = $this->pdo->prepare('SELECT quantity FROM fleet_ships WHERE fleet_id = :fleet AND ship_id = :ship FOR UPDATE');
+                $select->execute([
+                    'fleet' => $fleetId,
+                    'ship' => $shipId,
+                ]);
+                $current = $select->fetchColumn();
+
+                if ($current === false) {
+                    throw new RuntimeException('Quantité insuffisante pour le transfert.');
+                }
+
+                $currentQuantity = (int)$current;
+                if ($currentQuantity < $quantity) {
+                    throw new RuntimeException('Quantité insuffisante pour le transfert.');
+                }
+
+                $remaining = $currentQuantity - $quantity;
+                if ($remaining > 0) {
+                    $update = $this->pdo->prepare('UPDATE fleet_ships SET quantity = :quantity, updated_at = NOW() WHERE fleet_id = :fleet AND ship_id = :ship');
+                    $update->execute([
+                        'quantity' => $remaining,
+                        'fleet' => $fleetId,
+                        'ship' => $shipId,
+                    ]);
+                } else {
+                    $delete = $this->pdo->prepare('DELETE FROM fleet_ships WHERE fleet_id = :fleet AND ship_id = :ship');
+                    $delete->execute([
+                        'fleet' => $fleetId,
+                        'ship' => $shipId,
+                    ]);
+                }
+            }
+
+            $touch = $this->pdo->prepare('UPDATE fleets SET updated_at = NOW() WHERE id = :id');
+            $touch->execute(['id' => $fleetId]);
+
+            if ($deleteFleetIfEmpty) {
+                $count = $this->pdo->prepare('SELECT COUNT(*) FROM fleet_ships WHERE fleet_id = :fleet');
+                $count->execute(['fleet' => $fleetId]);
+                $remainingShips = (int)$count->fetchColumn();
+
+                if ($remainingShips === 0) {
+                    $deleteFleet = $this->pdo->prepare('DELETE FROM fleets WHERE id = :fleet');
+                    $deleteFleet->execute(['fleet' => $fleetId]);
                 }
             }
 
