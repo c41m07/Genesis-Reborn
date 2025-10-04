@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Application\Service;
 
 use App\Application\Service\Queue\QueueFinalizer;
-use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 
 class ProcessShipBuildQueue
 {
     public function __construct(
         private readonly ShipBuildQueueRepositoryInterface $queue,
-        private readonly FleetRepositoryInterface          $fleets,
+        private readonly HangarRepositoryInterface         $hangars,
         private readonly QueueFinalizer                    $finalizer
     ) {
     }
@@ -25,7 +25,7 @@ class ProcessShipBuildQueue
             function (array $jobs) use ($planetId): void {
                 /** @var array<int, \App\Domain\Entity\ShipBuildJob> $jobs */
                 foreach ($jobs as $job) {
-                    $this->fleets->addShips($planetId, $job->getShipKey(), $job->getQuantity());
+                    $this->hangars->addShips($planetId, $job->getShipKey(), $job->getQuantity());
                 }
             }
         );

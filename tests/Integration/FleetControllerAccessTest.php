@@ -13,6 +13,7 @@ use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
 use App\Domain\Service\ShipCatalog;
@@ -62,8 +63,9 @@ final class FleetControllerAccessTest extends TestCase
             ],
         ]);
         $fleetRepository = new TestFleetRepository();
+        $hangarRepository = new TestHangarRepository();
         $shipQueueRepository = new TestShipBuildQueueRepository();
-        $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $fleetRepository, new QueueFinalizer());
+        $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $hangarRepository, new QueueFinalizer());
 
         $shipCatalog = new ShipCatalog([]);
         $movements = $this->createMock(FleetMovementRepositoryInterface::class);
@@ -239,6 +241,11 @@ final class TestFleetRepository implements FleetRepositoryInterface
 {
     /** @var array<int, array<string, int>> */
     private array $fleets = [];
+    /** @var array<int, array{id: int, player_id: int, origin_planet_id: int, name: string|null, ships: array<string, int>, is_garrison: bool}> */
+    private array $fleetMeta = [];
+    /** @var array<int, int> */
+    private array $garrisons = [];
+    private int $nextFleetId = 1;
 
     public function getFleet(int $planetId): array
     {
@@ -248,6 +255,173 @@ final class TestFleetRepository implements FleetRepositoryInterface
     public function addShips(int $planetId, string $key, int $quantity): void
     {
         $this->fleets[$planetId][$key] = ($this->fleets[$planetId][$key] ?? 0) + $quantity;
+        $fleetId = $this->ensureGarrison($planetId);
+        $this->fleetMeta[$fleetId]['ships'][$key] = ($this->fleetMeta[$fleetId]['ships'][$key] ?? 0) + $quantity;
+        $this->fleetMeta[$fleetId]['is_garrison'] = true;
+    }
+
+    public function listIdleFleets(int $planetId): array
+    {
+        $this->ensureGarrison($planetId);
+
+        $result = [];
+        foreach ($this->fleetMeta as $fleet) {
+            if ($fleet['origin_planet_id'] !== $planetId) {
+                continue;
+            }
+
+            $result[] = [
+                'id' => $fleet['id'],
+                'name' => $fleet['name'],
+                'total' => array_sum($fleet['ships']),
+                'ships' => $fleet['ships'],
+                'is_garrison' => $fleet['is_garrison'],
+            ];
+        }
+
+        return $result;
+    }
+
+    public function createFleet(int $playerId, int $planetId, string $name): int
+    {
+        $id = $this->nextFleetId++;
+        $this->fleetMeta[$id] = [
+            'id' => $id,
+            'player_id' => $playerId,
+            'origin_planet_id' => $planetId,
+            'name' => $name,
+            'ships' => [],
+            'is_garrison' => false,
+        ];
+
+        return $id;
+    }
+
+    public function addShipsToFleet(int $fleetId, string $key, int $quantity): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        $this->fleetMeta[$fleetId]['ships'][$key] = ($this->fleetMeta[$fleetId]['ships'][$key] ?? 0) + $quantity;
+    }
+
+    public function findIdleFleet(int $fleetId): ?array
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            return null;
+        }
+
+        $fleet = $this->fleetMeta[$fleetId];
+
+        return [
+            'id' => $fleet['id'],
+            'player_id' => $fleet['player_id'],
+            'origin_planet_id' => $fleet['origin_planet_id'],
+            'name' => $fleet['name'],
+        ];
+    }
+
+    public function renameFleet(int $fleetId, string $name): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        $this->fleetMeta[$fleetId]['name'] = $name;
+    }
+
+    public function transferShipsBetweenFleets(int $sourceFleetId, int $targetFleetId, array $shipQuantities, bool $deleteSourceIfEmpty): void
+    {
+        if (!isset($this->fleetMeta[$sourceFleetId], $this->fleetMeta[$targetFleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->fleetMeta[$sourceFleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->fleetMeta[$sourceFleetId]['ships'][$key] = $available - $quantity;
+            if ($this->fleetMeta[$sourceFleetId]['ships'][$key] === 0) {
+                unset($this->fleetMeta[$sourceFleetId]['ships'][$key]);
+            }
+
+            $this->fleetMeta[$targetFleetId]['ships'][$key] = ($this->fleetMeta[$targetFleetId]['ships'][$key] ?? 0) + $quantity;
+        }
+
+        if ($deleteSourceIfEmpty && empty($this->fleetMeta[$sourceFleetId]['ships']) && !$this->fleetMeta[$sourceFleetId]['is_garrison']) {
+            unset($this->fleetMeta[$sourceFleetId]);
+        }
+    }
+
+    private function ensureGarrison(int $planetId): int
+    {
+        if (isset($this->garrisons[$planetId])) {
+            return $this->garrisons[$planetId];
+        }
+
+        $id = $this->nextFleetId++;
+        $this->garrisons[$planetId] = $id;
+        $this->fleetMeta[$id] = [
+            'id' => $id,
+            'player_id' => 0,
+            'origin_planet_id' => $planetId,
+            'name' => null,
+            'ships' => $this->fleets[$planetId] ?? [],
+            'is_garrison' => true,
+        ];
+
+        return $id;
+    }
+}
+
+final class TestHangarRepository implements HangarRepositoryInterface
+{
+    /** @var array<int, array<string, int>> */
+    private array $stock = [];
+
+    public function getStock(int $planetId): array
+    {
+        return $this->stock[$planetId] ?? [];
+    }
+
+    public function getQuantity(int $planetId, string $shipKey): int
+    {
+        return $this->stock[$planetId][$shipKey] ?? 0;
+    }
+
+    public function addShips(int $planetId, string $shipKey, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $this->stock[$planetId][$shipKey] = ($this->stock[$planetId][$shipKey] ?? 0) + $quantity;
+    }
+
+    public function removeShips(int $planetId, string $shipKey, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $current = $this->stock[$planetId][$shipKey] ?? 0;
+        if ($current < $quantity) {
+            throw new \RuntimeException('Quantité insuffisante.');
+        }
+
+        $remaining = $current - $quantity;
+        if ($remaining > 0) {
+            $this->stock[$planetId][$shipKey] = $remaining;
+        } else {
+            unset($this->stock[$planetId][$shipKey]);
+        }
     }
 }
 

@@ -10,6 +10,7 @@ use App\Controller\FleetController;
 use App\Controller\FleetMissionController;
 use App\Controller\GalaxyController;
 use App\Controller\JournalController;
+use App\Controller\HangarController;
 use App\Controller\ProfileController;
 use App\Controller\ResearchController;
 use App\Controller\ResourceApiController;
@@ -37,6 +38,9 @@ return function (Router $router): void {
 
     $router->add('GET', '/shipyard', [ShipyardController::class, 'index']);
     $router->add('POST', '/shipyard', [ShipyardController::class, 'index']);
+
+    $router->add('GET', '/hangar', [HangarController::class, 'index']);
+    $router->add('POST', '/hangar', [HangarController::class, 'index']);
 
     $router->add('GET', '/fleet', [FleetController::class, 'index']);
     $router->add('POST', '/fleet', [FleetController::class, 'index']);

@@ -64,6 +64,7 @@ $menuCategories = [
         [
                 'label' => 'Gestion planétaire',
                 'items' => [
+                        'hangar' => ['label' => 'Hangar', 'path' => '/hangar', 'icon' => 'shipyard'],
                         'fleet' => ['label' => 'Flotte', 'path' => '/fleet', 'icon' => 'shipyard'],
                 ],
         ],
@@ -110,7 +111,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 if ($key === 'research' && array_key_exists('research_lab', $facilityStatuses)) {
                                     $isLocked = !($facilityStatuses['research_lab'] ?? false);
                                 }
-                                if (in_array($key, ['shipyard', 'fleet'], true) && array_key_exists('shipyard', $facilityStatuses)) {
+                                if (in_array($key, ['shipyard', 'fleet', 'hangar'], true) && array_key_exists('shipyard', $facilityStatuses)) {
                                     $isLocked = !($facilityStatuses['shipyard'] ?? false);
                                 }
                                 ?>

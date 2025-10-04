@@ -7,7 +7,7 @@ namespace App\Application\UseCase\Shipyard;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Domain\Entity\BuildingDefinition;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
-use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ResearchStateRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
@@ -25,7 +25,7 @@ class GetShipyardOverview
         private readonly BuildingStateRepositoryInterface  $buildingStates,
         private readonly ResearchStateRepositoryInterface  $researchStates,
         private readonly ShipBuildQueueRepositoryInterface $shipQueue,
-        private readonly FleetRepositoryInterface          $fleets,
+        private readonly HangarRepositoryInterface         $hangars,
         private readonly ShipCatalog                       $catalog,
         private readonly ProcessShipBuildQueue             $queueProcessor,
         BuildingCatalog                                    $buildingCatalog,
@@ -38,8 +38,8 @@ class GetShipyardOverview
      * @return array{
      *     planet: \App\Domain\Entity\Planet,
      *     shipyardLevel: int,
-     *     fleet: array<string, int>,
-     *     fleetSummary: array<int, array{key: string, label: string, quantity: int}>,
+     *     hangar: array<string, int>,
+     *     hangarSummary: array<int, array{key: string, label: string, quantity: int}>,
      *     queue: array{count: int, jobs: array<int, array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}>},
      *     categories: array<int, array{
      *         label: string,
@@ -75,17 +75,17 @@ class GetShipyardOverview
             $catalogMap[$definition->getKey()] = ['label' => $definition->getLabel()];
         }
 
-        $fleet = $this->fleets->getFleet($planetId);
-        $fleetView = [];
-        foreach ($fleet as $shipKey => $quantity) {
+        $hangar = $this->hangars->getStock($planetId);
+        $hangarView = [];
+        foreach ($hangar as $shipKey => $quantity) {
             $label = $catalogMap[$shipKey]['label'] ?? $shipKey;
-            $fleetView[] = [
+            $hangarView[] = [
                 'key' => $shipKey,
                 'label' => $label,
                 'quantity' => (int)$quantity,
             ];
         }
-        usort($fleetView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
+        usort($hangarView, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
 
         $queueJobs = $this->shipQueue->getActiveQueue($planetId);
         $queueView = [];
@@ -141,8 +141,8 @@ class GetShipyardOverview
             'planet' => $planet,
             'shipyardLevel' => $shipyardLevel,
             'buildingLevels' => $buildingLevels,
-            'fleet' => $fleet,
-            'fleetSummary' => $fleetView,
+            'hangar' => $hangar,
+            'hangarSummary' => $hangarView,
             'queue' => [
                 'count' => count($queueView),
                 'jobs' => $queueView,

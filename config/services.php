@@ -15,6 +15,9 @@ use App\Application\UseCase\Dashboard\GetDashboard;
 use App\Application\UseCase\Fleet\LaunchFleetMission;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\AssembleFleetFromHangar;
+use App\Application\UseCase\Fleet\MergeIdleFleets;
+use App\Application\UseCase\Fleet\RenameIdleFleet;
 use App\Application\UseCase\Galaxy\GetGalaxyOverview;
 use App\Application\UseCase\Journal\GetJournalOverview;
 use App\Application\UseCase\Profile\GetProfileOverview;
@@ -29,6 +32,7 @@ use App\Controller\ChangeLogController;
 use App\Controller\ColonyController;
 use App\Controller\DashboardController;
 use App\Controller\FleetController;
+use App\Controller\HangarController;
 use App\Controller\FleetMissionController;
 use App\Controller\GalaxyController;
 use App\Controller\JournalController;
@@ -42,6 +46,7 @@ use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
@@ -69,6 +74,7 @@ use App\Infrastructure\Persistence\PdoBuildingStateRepository;
 use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Persistence\PdoFleetMovementRepository;
 use App\Infrastructure\Persistence\PdoFleetRepository;
+use App\Infrastructure\Persistence\PdoHangarRepository;
 use App\Infrastructure\Persistence\PdoPlanetRepository;
 use App\Infrastructure\Persistence\PdoPlayerStatsRepository;
 use App\Infrastructure\Persistence\PdoResearchQueueRepository;
@@ -158,6 +164,7 @@ return function (Container $container): void {
     $container->set(ResearchQueueRepositoryInterface::class, fn (Container $c) => new PdoResearchQueueRepository($c->get(\PDO::class)));
     $container->set(ResearchStateRepositoryInterface::class, fn (Container $c) => new PdoResearchStateRepository($c->get(\PDO::class)));
     $container->set(FleetRepositoryInterface::class, fn (Container $c) => new PdoFleetRepository($c->get(\PDO::class)));
+    $container->set(HangarRepositoryInterface::class, fn (Container $c) => new PdoHangarRepository($c->get(\PDO::class)));
     $container->set(ProcessBuildQueue::class, fn (Container $c) => new ProcessBuildQueue(
         $c->get(BuildQueueRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
@@ -174,7 +181,7 @@ return function (Container $container): void {
     ));
     $container->set(ProcessShipBuildQueue::class, fn (Container $c) => new ProcessShipBuildQueue(
         $c->get(ShipBuildQueueRepositoryInterface::class),
-        $c->get(FleetRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
         $c->get(QueueFinalizer::class)
     ));
     $container->set(ShipBuildQueueRepositoryInterface::class, fn (Container $c) => new PdoShipBuildQueueRepository($c->get(\PDO::class)));
@@ -309,7 +316,7 @@ return function (Container $container): void {
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(ShipBuildQueueRepositoryInterface::class),
-        $c->get(FleetRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
         $c->get(ShipCatalog::class),
         $c->get(ProcessShipBuildQueue::class),
         $c->get(BuildingCatalog::class),
@@ -392,6 +399,23 @@ return function (Container $container): void {
         $c->getParameter('app.base_url')
     ));
 
+    $container->set(HangarController::class, fn (Container $c) => new HangarController(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(BuildingStateRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class),
+        $c->get(ShipCatalog::class),
+        $c->get(ProcessShipBuildQueue::class),
+        $c->get(AssembleFleetFromHangar::class),
+        $c->get(RenameIdleFleet::class),
+        $c->get(MergeIdleFleets::class),
+        $c->get(ViewRenderer::class),
+        $c->get(SessionInterface::class),
+        $c->get(FlashBag::class),
+        $c->get(CsrfTokenManager::class),
+        $c->getParameter('app.base_url')
+    ));
+
     $container->set(FleetController::class, fn (Container $c) => new FleetController(
         $c->get(PlanetRepositoryInterface::class),
         $c->get(BuildingStateRepositoryInterface::class),
@@ -467,4 +491,20 @@ return function (Container $container): void {
     ));
 
 
+    $container->set(AssembleFleetFromHangar::class, fn (Container $c) => new AssembleFleetFromHangar(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(HangarRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
+
+    $container->set(RenameIdleFleet::class, fn (Container $c) => new RenameIdleFleet(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
+
+    $container->set(MergeIdleFleets::class, fn (Container $c) => new MergeIdleFleets(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
 };
+

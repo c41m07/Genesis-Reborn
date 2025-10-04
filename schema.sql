@@ -5,6 +5,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS ship_build_queue;
 DROP TABLE IF EXISTS research_queue;
 DROP TABLE IF EXISTS build_queue;
+DROP TABLE IF EXISTS planet_hangar_ships;
 DROP TABLE IF EXISTS fleet_ships;
 DROP TABLE IF EXISTS fleets;
 DROP TABLE IF EXISTS ships;
@@ -158,6 +159,7 @@ CREATE TABLE fleets (
     player_id BIGINT UNSIGNED NOT NULL,
     origin_planet_id BIGINT UNSIGNED NOT NULL,
     destination_planet_id BIGINT UNSIGNED NULL,
+    name VARCHAR(100) NULL,
     mission_type ENUM('idle','transport','attack','harvest','expedition','pve','explore') NOT NULL DEFAULT 'idle',
     status ENUM('idle','outbound','returning','holding','completed','failed') NOT NULL DEFAULT 'idle',
     mission_payload JSON NULL,
@@ -188,6 +190,21 @@ CREATE TABLE fleet_ships (
     CONSTRAINT fk_fleet_ships_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
     CONSTRAINT fk_fleet_ships_fleet FOREIGN KEY (fleet_id) REFERENCES fleets(id) ON DELETE CASCADE,
     CONSTRAINT fk_fleet_ships_ship FOREIGN KEY (ship_id) REFERENCES ships(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE planet_hangar_ships (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    player_id BIGINT UNSIGNED NOT NULL,
+    planet_id BIGINT UNSIGNED NOT NULL,
+    ship_id BIGINT UNSIGNED NOT NULL,
+    quantity BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_planet_hangar_ship (planet_id, ship_id),
+    INDEX idx_planet_hangar_player (player_id),
+    CONSTRAINT fk_planet_hangar_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+    CONSTRAINT fk_planet_hangar_planet FOREIGN KEY (planet_id) REFERENCES planets(id) ON DELETE CASCADE,
+    CONSTRAINT fk_planet_hangar_ship FOREIGN KEY (ship_id) REFERENCES ships(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE build_queue (

@@ -14,17 +14,17 @@ require_once __DIR__ . '/../../components/helpers.php';
 
 $overview = $overview ?? null;
 $queue = $overview['queue'] ?? ['count' => 0, 'jobs' => []];
-$fleet = $overview['fleet'] ?? [];
-$fleetSummary = $overview['fleetSummary'] ?? [];
+$hangar = $overview['hangar'] ?? [];
+$hangarSummary = $overview['hangarSummary'] ?? [];
 $categories = $overview['categories'] ?? [];
 $shipyardBonus = (float)($overview['shipyardBonus'] ?? 0);
 $fleetCount = 0;
-if (!empty($fleetSummary)) {
-    foreach ($fleetSummary as $ship) {
+if (!empty($hangarSummary)) {
+    foreach ($hangarSummary as $ship) {
         $fleetCount += (int)($ship['quantity'] ?? 0);
     }
 } else {
-    $fleetCount = array_sum($fleet);
+    $fleetCount = array_sum($hangar);
 }
 
 $assetBase = rtrim($baseUrl, '/');
@@ -64,7 +64,7 @@ ob_start();
             'subtitle' => 'Suivi des constructions orbitales',
             'body' => static function () use ($queue, $shipyardBonus, $fleetCount): void {
                 $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
-                echo '<p class="metric-line"><span class="metric-line__label">Flotte stationnée</span><span class="metric-line__value">' . format_number((int)$fleetCount) . ' unité(s)</span></p>';
+                echo '<p class="metric-line"><span class="metric-line__label">Stock du hangar</span><span class="metric-line__value">' . format_number((int)$fleetCount) . ' unité(s)</span></p>';
                 if ($shipyardBonus > 0) {
                     $bonusPercent = $shipyardBonus * 100;
                     $bonusDisplay = rtrim(rtrim(number_format($bonusPercent, 1), '0'), '.');

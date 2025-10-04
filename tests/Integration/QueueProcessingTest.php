@@ -18,6 +18,7 @@ use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
 use App\Domain\Repository\ResearchQueueRepositoryInterface;
@@ -188,7 +189,7 @@ class QueueProcessingTest extends TestCase
             1 => [],
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
-        $fleetRepository = new InMemoryFleetRepository();
+        $hangarRepository = new InMemoryHangarRepository();
         $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
@@ -222,11 +223,11 @@ class QueueProcessingTest extends TestCase
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $useCase = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
-        $processor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
+        $processor = new ProcessShipBuildQueue($shipQueue, $hangarRepository, new QueueFinalizer());
 
         $result = $useCase->execute(1, 42, 'fighter', 3);
         self::assertTrue($result['success']);
-        self::assertSame([], $fleetRepository->getFleet(1));
+        self::assertSame([], $hangarRepository->getStock(1));
         self::assertSame(1, $shipQueue->countActive(1));
         $expectedPerUnit = max(1, (int)floor(4 / (1 + 0.1 * 2)));
         self::assertSame($expectedPerUnit * 3, $shipQueue->getLastDuration(1));
@@ -234,7 +235,7 @@ class QueueProcessingTest extends TestCase
         $shipQueue->forceComplete(1);
         $processor->process(1);
 
-        self::assertSame(['fighter' => 3], $fleetRepository->getFleet(1));
+        self::assertSame(['fighter' => 3], $hangarRepository->getStock(1));
         self::assertSame(0, $shipQueue->countActive(1));
         self::assertSame(600, $playerStats->getFleetSpending(42));
     }
@@ -266,7 +267,6 @@ class QueueProcessingTest extends TestCase
             1 => [],
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
-        $fleetRepository = new InMemoryFleetRepository();
         $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
@@ -319,7 +319,7 @@ class QueueProcessingTest extends TestCase
             1 => [],
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
-        $fleetRepository = new InMemoryFleetRepository();
+        $hangarRepository = new InMemoryHangarRepository();
         $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
@@ -350,14 +350,14 @@ class QueueProcessingTest extends TestCase
                 'image' => '',
             ],
         ]));
-        $queueProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
+        $queueProcessor = new ProcessShipBuildQueue($shipQueue, $hangarRepository, new QueueFinalizer());
 
         $overviewUseCase = new GetShipyardOverview(
             $planetRepository,
             $buildingStates,
             $researchStates,
             $shipQueue,
-            $fleetRepository,
+            $hangarRepository,
             $catalog,
             $queueProcessor,
             $buildingCatalog,
@@ -828,7 +828,7 @@ class QueueProcessingTest extends TestCase
             1 => [],
         ]);
         $shipQueue = new InMemoryShipBuildQueueRepository();
-        $fleetRepository = new InMemoryFleetRepository();
+        $hangarRepository = new InMemoryHangarRepository();
         $buildingCatalog = new BuildingCatalog($this->makeBuildingConfigs([
             'shipyard' => [
                 'label' => 'Chantier',
@@ -862,13 +862,13 @@ class QueueProcessingTest extends TestCase
 
         $playerStats = new InMemoryPlayerStatsRepository();
         $buildShips = new BuildShips($planetRepository, $buildingStates, $researchStates, $shipQueue, $playerStats, $buildingCatalog, $buildingCalculator, $catalog);
-        $shipProcessor = new ProcessShipBuildQueue($shipQueue, $fleetRepository, new QueueFinalizer());
+        $shipProcessor = new ProcessShipBuildQueue($shipQueue, $hangarRepository, new QueueFinalizer());
 
         $result = $buildShips->execute(1, 7, 'fighter', 4);
         self::assertTrue($result['success']);
         $shipQueue->forceComplete(1);
         $shipProcessor->process(1);
-        self::assertSame(['fighter' => 4], $fleetRepository->getFleet(1));
+        self::assertSame(['fighter' => 4], $hangarRepository->getStock(1));
 
         $navigation = new FleetNavigationService();
         $departure = new DateTimeImmutable('2025-09-21 09:00:00');
@@ -1325,6 +1325,11 @@ class InMemoryFleetRepository implements FleetRepositoryInterface
 {
     /** @var array<int, array<string, int>> */
     private array $fleets = [];
+    /** @var array<int, array{id: int, player_id: int, origin_planet_id: int, name: string|null, ships: array<string, int>, is_garrison: bool}> */
+    private array $fleetMeta = [];
+    /** @var array<int, int> */
+    private array $garrisons = [];
+    private int $nextFleetId = 1;
 
     public function getFleet(int $planetId): array
     {
@@ -1334,5 +1339,176 @@ class InMemoryFleetRepository implements FleetRepositoryInterface
     public function addShips(int $planetId, string $key, int $quantity): void
     {
         $this->fleets[$planetId][$key] = ($this->fleets[$planetId][$key] ?? 0) + $quantity;
+        $fleetId = $this->ensureGarrison($planetId);
+        $this->fleetMeta[$fleetId]['ships'][$key] = ($this->fleetMeta[$fleetId]['ships'][$key] ?? 0) + $quantity;
+        $this->fleetMeta[$fleetId]['is_garrison'] = true;
+    }
+
+    public function listIdleFleets(int $planetId): array
+    {
+        $this->ensureGarrison($planetId);
+
+        $result = [];
+        foreach ($this->fleetMeta as $fleet) {
+            if ($fleet['origin_planet_id'] !== $planetId) {
+                continue;
+            }
+
+            $total = array_sum($fleet['ships']);
+            $result[] = [
+                'id' => $fleet['id'],
+                'name' => $fleet['name'],
+                'total' => $total,
+                'ships' => $fleet['ships'],
+                'is_garrison' => $fleet['is_garrison'],
+            ];
+        }
+
+        return $result;
+    }
+
+    public function createFleet(int $playerId, int $planetId, string $name): int
+    {
+        $id = $this->nextFleetId++;
+        $this->fleetMeta[$id] = [
+            'id' => $id,
+            'player_id' => $playerId,
+            'origin_planet_id' => $planetId,
+            'name' => $name,
+            'ships' => [],
+            'is_garrison' => false,
+        ];
+
+        return $id;
+    }
+
+    public function addShipsToFleet(int $fleetId, string $key, int $quantity): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        $this->fleetMeta[$fleetId]['ships'][$key] = ($this->fleetMeta[$fleetId]['ships'][$key] ?? 0) + $quantity;
+    }
+
+    public function findIdleFleet(int $fleetId): ?array
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            return null;
+        }
+
+        $fleet = $this->fleetMeta[$fleetId];
+
+        return [
+            'id' => $fleet['id'],
+            'player_id' => $fleet['player_id'],
+            'origin_planet_id' => $fleet['origin_planet_id'],
+            'name' => $fleet['name'],
+        ];
+    }
+
+    public function renameFleet(int $fleetId, string $name): void
+    {
+        if (!isset($this->fleetMeta[$fleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        $this->fleetMeta[$fleetId]['name'] = $name;
+    }
+
+    public function transferShipsBetweenFleets(int $sourceFleetId, int $targetFleetId, array $shipQuantities, bool $deleteSourceIfEmpty): void
+    {
+        if (!isset($this->fleetMeta[$sourceFleetId], $this->fleetMeta[$targetFleetId])) {
+            throw new \RuntimeException('Fleet not found');
+        }
+
+        foreach ($shipQuantities as $key => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $available = $this->fleetMeta[$sourceFleetId]['ships'][$key] ?? 0;
+            if ($available < $quantity) {
+                throw new \RuntimeException('Quantité insuffisante pour le transfert.');
+            }
+
+            $this->fleetMeta[$sourceFleetId]['ships'][$key] = $available - $quantity;
+            if ($this->fleetMeta[$sourceFleetId]['ships'][$key] === 0) {
+                unset($this->fleetMeta[$sourceFleetId]['ships'][$key]);
+            }
+
+            $this->fleetMeta[$targetFleetId]['ships'][$key] = ($this->fleetMeta[$targetFleetId]['ships'][$key] ?? 0) + $quantity;
+        }
+
+        if ($deleteSourceIfEmpty && empty($this->fleetMeta[$sourceFleetId]['ships']) && !$this->fleetMeta[$sourceFleetId]['is_garrison']) {
+            unset($this->fleetMeta[$sourceFleetId]);
+        }
+    }
+
+    private function ensureGarrison(int $planetId): int
+    {
+        if (isset($this->garrisons[$planetId])) {
+            return $this->garrisons[$planetId];
+        }
+
+        $id = $this->nextFleetId++;
+        $this->garrisons[$planetId] = $id;
+        $this->fleetMeta[$id] = [
+            'id' => $id,
+            'player_id' => 0,
+            'origin_planet_id' => $planetId,
+            'name' => null,
+            'ships' => $this->fleets[$planetId] ?? [],
+            'is_garrison' => true,
+        ];
+
+        return $id;
+    }
+}
+
+/**
+ * @implements HangarRepositoryInterface
+ */
+class InMemoryHangarRepository implements HangarRepositoryInterface
+{
+    /** @var array<int, array<string, int>> */
+    private array $stock = [];
+
+    public function getStock(int $planetId): array
+    {
+        return $this->stock[$planetId] ?? [];
+    }
+
+    public function getQuantity(int $planetId, string $shipKey): int
+    {
+        return $this->stock[$planetId][$shipKey] ?? 0;
+    }
+
+    public function addShips(int $planetId, string $shipKey, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $this->stock[$planetId][$shipKey] = ($this->stock[$planetId][$shipKey] ?? 0) + $quantity;
+    }
+
+    public function removeShips(int $planetId, string $shipKey, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $current = $this->stock[$planetId][$shipKey] ?? 0;
+        if ($current < $quantity) {
+            throw new \RuntimeException('Quantité insuffisante dans le hangar.');
+        }
+
+        $remaining = $current - $quantity;
+        if ($remaining > 0) {
+            $this->stock[$planetId][$shipKey] = $remaining;
+        } else {
+            unset($this->stock[$planetId][$shipKey]);
+        }
     }
 }
