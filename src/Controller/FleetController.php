@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\CreateIdleFleet;
+use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\RenameIdleFleet;
+use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
@@ -32,6 +36,10 @@ class FleetController extends AbstractController
         private readonly ProcessShipBuildQueue            $shipQueueProcessor,
         private readonly PlanFleetMission                 $planFleetMission,
         private readonly ProcessFleetArrivals             $processFleetArrivals,
+        private readonly CreateIdleFleet                  $createFleet,
+        private readonly TransferIdleFleetShips           $transferFleetShips,
+        private readonly RenameIdleFleet                  $renameFleet,
+        private readonly DeleteIdleFleet                  $deleteFleet,
         ViewRenderer                                      $renderer,
         SessionInterface                                  $session,
         FlashBag                                          $flashBag,
@@ -265,8 +273,107 @@ class FleetController extends AbstractController
         $planErrors = [];
         $planResult = null;
 
+        $fleetActionUrl = $this->baseUrl . '/fleet?planet=' . $selectedId;
+        $buildFleetUrl = static function (string $baseUrl, ?int $fleetId = null): string {
+            if ($fleetId === null) {
+                return $baseUrl;
+            }
+
+            $separator = str_contains($baseUrl, '?') ? '&' : '?';
+
+            return $baseUrl . $separator . 'fleet=' . $fleetId;
+        };
+
         if ($request->getMethod() === 'POST') {
             $data = $request->getBodyParams();
+            $action = isset($data['action']) ? (string)$data['action'] : '';
+
+            if ($action === 'create_fleet') {
+                if (!$this->isCsrfTokenValid('fleet_create_' . $selectedId, $data['csrf_token'] ?? null)) {
+                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
+
+                    return $this->redirect($fleetActionUrl);
+                }
+
+                $name = (string)($data['fleet_name'] ?? '');
+                $result = $this->createFleet->execute($userId, $selectedId, $name);
+                $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+
+                if ($result['success'] && isset($result['fleetId'])) {
+                    return $this->redirect($buildFleetUrl($fleetActionUrl, (int)$result['fleetId']));
+                }
+
+                return $this->redirect($fleetActionUrl);
+            }
+
+            if ($action === 'transfer_from_fleet') {
+                if (!$this->isCsrfTokenValid('fleet_transfer_' . $selectedId, $data['csrf_token'] ?? null)) {
+                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
+
+                    return $this->redirect($buildFleetUrl($fleetActionUrl, $selectedFleetId));
+                }
+
+                $sourceFleetId = isset($data['source_fleet_id']) ? (int)$data['source_fleet_id'] : 0;
+                $targetRaw = $data['target_fleet_id'] ?? '';
+                $sendToHangar = $targetRaw === 'hangar';
+                $targetFleetId = !$sendToHangar ? (int)$targetRaw : null;
+                $shipsInput = is_array($data['ships'] ?? null) ? $data['ships'] : [];
+
+                $result = $this->transferFleetShips->execute(
+                    $userId,
+                    $selectedId,
+                    $sourceFleetId,
+                    $targetFleetId,
+                    array_map(static fn ($value): int => (int)$value, $shipsInput),
+                    $sendToHangar
+                );
+
+                $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+
+                return $this->redirect($buildFleetUrl($fleetActionUrl, $sourceFleetId));
+            }
+
+            if ($action === 'rename_fleet') {
+                if (!$this->isCsrfTokenValid('fleet_rename_' . $selectedId, $data['csrf_token'] ?? null)) {
+                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
+
+                    return $this->redirect($buildFleetUrl($fleetActionUrl, $selectedFleetId));
+                }
+
+                $fleetId = isset($data['fleet_id']) ? (int)$data['fleet_id'] : 0;
+                $newName = (string)($data['new_name'] ?? '');
+                $result = $this->renameFleet->execute($userId, $selectedId, $fleetId, $newName);
+                $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+
+                return $this->redirect($buildFleetUrl($fleetActionUrl, $fleetId));
+            }
+
+            if ($action === 'delete_fleet') {
+                if (!$this->isCsrfTokenValid('fleet_delete_' . $selectedId, $data['csrf_token'] ?? null)) {
+                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
+
+                    return $this->redirect($buildFleetUrl($fleetActionUrl, $selectedFleetId));
+                }
+
+                $fleetId = isset($data['fleet_id']) ? (int)$data['fleet_id'] : 0;
+                $result = $this->deleteFleet->execute($userId, $selectedId, $fleetId);
+                $this->addFlash($result['success'] ? 'success' : 'error', $result['message']);
+
+                return $this->redirect($fleetActionUrl);
+            }
+
+            if ($action === 'plan_fleet_mission') {
+                if (!$this->isCsrfTokenValid('fleet_mission_' . $selectedId, $data['csrf_token'] ?? null)) {
+                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
+                } else {
+                    $this->addFlash('info', 'La planification de missions dédiées sera disponible prochainement.');
+                }
+
+                $fleetId = isset($data['fleet_id']) ? (int)$data['fleet_id'] : 0;
+
+                return $this->redirect($buildFleetUrl($fleetActionUrl, $fleetId));
+            }
+
             if (!$this->isCsrfTokenValid('fleet_plan_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $planErrors[] = 'Session expirée, veuillez recharger la page.';
             } else {

@@ -12,12 +12,15 @@ use App\Application\UseCase\Auth\RegisterUser;
 use App\Application\UseCase\Building\GetBuildingsOverview;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Dashboard\GetDashboard;
+use App\Application\UseCase\Fleet\CreateIdleFleet;
+use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\LaunchFleetMission;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
 use App\Application\UseCase\Fleet\AssembleFleetFromHangar;
 use App\Application\UseCase\Fleet\MergeIdleFleets;
 use App\Application\UseCase\Fleet\RenameIdleFleet;
+use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Application\UseCase\Galaxy\GetGalaxyOverview;
 use App\Application\UseCase\Journal\GetJournalOverview;
 use App\Application\UseCase\Profile\GetProfileOverview;
@@ -425,6 +428,10 @@ return function (Container $container): void {
         $c->get(ProcessShipBuildQueue::class),
         $c->get(PlanFleetMission::class),
         $c->get(ProcessFleetArrivals::class),
+        $c->get(CreateIdleFleet::class),
+        $c->get(TransferIdleFleetShips::class),
+        $c->get(RenameIdleFleet::class),
+        $c->get(DeleteIdleFleet::class),
         $c->get(ViewRenderer::class),
         $c->get(SessionInterface::class),
         $c->get(FlashBag::class),
@@ -503,6 +510,21 @@ return function (Container $container): void {
     ));
 
     $container->set(MergeIdleFleets::class, fn (Container $c) => new MergeIdleFleets(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
+
+    $container->set(CreateIdleFleet::class, fn (Container $c) => new CreateIdleFleet(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
+
+    $container->set(TransferIdleFleetShips::class, fn (Container $c) => new TransferIdleFleetShips(
+        $c->get(PlanetRepositoryInterface::class),
+        $c->get(FleetRepositoryInterface::class)
+    ));
+
+    $container->set(DeleteIdleFleet::class, fn (Container $c) => new DeleteIdleFleet(
         $c->get(PlanetRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class)
     ));

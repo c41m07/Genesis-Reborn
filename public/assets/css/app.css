@@ -637,6 +637,248 @@ main.workspace__content {
   height: 18px;
 }
 
+.button--danger {
+  background: var(--danger);
+  color: var(--text-inverse);
+  border-color: var(--danger-border);
+}
+
+.button--danger:hover {
+  background: #ff6262;
+  border-color: rgba(255, 122, 122, 0.6);
+}
+
+.button--danger:disabled {
+  background: rgba(255, 122, 122, 0.35);
+  border-color: rgba(255, 122, 122, 0.4);
+  color: var(--text-inverse);
+}
+
+.button--small {
+  padding: calc(var(--space-2) + 1px) var(--space-3);
+  font-size: var(--font-size-xs);
+}
+
+/* Forms */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form--stack {
+  gap: var(--space-4);
+}
+
+.form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form__field label {
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.form__control {
+  width: 100%;
+  padding: calc(var(--space-2) + 2px) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
+}
+
+.form__control::placeholder {
+  color: var(--text-muted);
+}
+
+.form__control:focus,
+.form__control:focus-visible {
+  border-color: var(--color-primary);
+  background: rgba(77, 163, 255, 0.16);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.form__control:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.form__control--text {
+  max-width: 420px;
+}
+
+.form__control--number {
+  max-width: 120px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.form__select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.form__select::after {
+  content: '';
+  position: absolute;
+  right: var(--space-3);
+  width: 10px;
+  height: 6px;
+  border: 6px solid transparent;
+  border-top-color: var(--color-muted);
+  pointer-events: none;
+}
+
+.form__select:focus-within::after {
+  border-top-color: var(--color-primary);
+}
+
+.form__control--select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: calc(var(--space-4) + 16px);
+  cursor: pointer;
+}
+
+.form__control--select option {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+.form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.form__actions--end {
+  justify-content: flex-end;
+}
+
+.form__hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+/* Mission planner */
+.mission-form {
+  gap: var(--space-4);
+}
+
+.mission-form__grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.mission-form__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--surface-input);
+  transition:
+    border-color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
+  cursor: not-allowed;
+  color: var(--text-muted);
+}
+
+.mission-form__option:hover {
+  border-color: var(--color-border-strong);
+  background: rgba(108, 216, 255, 0.12);
+}
+
+.mission-form__option:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.mission-form__radio {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: transparent;
+  position: relative;
+  cursor: inherit;
+}
+
+.mission-form__radio::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.mission-form__radio:checked::after {
+  opacity: 1;
+}
+
+.mission-form__label {
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+}
+
+.mission-form__radio:checked ~ .mission-form__label {
+  color: var(--text-primary);
+}
+
+.mission-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* Fleet transfer */
+.fleet-transfer__table td:first-child {
+  font-weight: 600;
+}
+
+.fleet-transfer__available {
+  color: var(--text-muted);
+}
+
+.fleet-transfer__input-cell {
+  width: 160px;
+}
+
+.fleet-transfer__input {
+  text-align: right;
+}
+
+.fleet-transfer__destination {
+  max-width: 320px;
+}
+
+.fleet-transfer__actions {
+  margin-top: var(--space-4);
+}
+
 /* Badges */
 
 /* Panels and cards */

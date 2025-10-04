@@ -6,8 +6,12 @@ namespace App\Tests\Integration;
 
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\Service\Queue\QueueFinalizer;
+use App\Application\UseCase\Fleet\CreateIdleFleet;
+use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\RenameIdleFleet;
+use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Controller\FleetController;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
@@ -90,6 +94,11 @@ final class FleetControllerAccessTest extends TestCase
             }
         };
 
+        $createFleet = new CreateIdleFleet($planetRepository, $fleetRepository);
+        $transferFleetShips = new TransferIdleFleetShips($planetRepository, $fleetRepository);
+        $renameFleet = new RenameIdleFleet($planetRepository, $fleetRepository);
+        $deleteFleet = new DeleteIdleFleet($planetRepository, $fleetRepository);
+
         $controller = new FleetController(
             $planetRepository,
             $buildingStates,
@@ -99,6 +108,10 @@ final class FleetControllerAccessTest extends TestCase
             $shipQueueProcessor,
             $planFleetMission,
             $processArrivals,
+            $createFleet,
+            $transferFleetShips,
+            $renameFleet,
+            $deleteFleet,
             $renderer,
             $session,
             $flashBag,

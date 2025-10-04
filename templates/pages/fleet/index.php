@@ -42,7 +42,13 @@ $backToListUrl = $selectedPlanetId !== null
 
 $availableTargets = array_values(array_filter(
     $idleFleets,
-    static fn (array $fleet): bool => $selectedFleetId === null || $fleet['id'] !== $selectedFleetId
+    static function (array $fleet) use ($selectedFleetId, $garrisonFleetId): bool {
+        if ($selectedFleetId !== null && $fleet['id'] === $selectedFleetId) {
+            return false;
+        }
+
+        return $garrisonFleetId === null || $fleet['id'] !== $garrisonFleetId;
+    }
 ));
 
 ob_start();
@@ -82,7 +88,7 @@ ob_start();
             echo '<input type="hidden" name="action" value="create_fleet">';
             echo '<div class="form__field">';
             echo '<label for="fleet-name">Nom de la flotte</label>';
-            echo '<input id="fleet-name" type="text" name="fleet_name" placeholder="Flotte d’intervention" maxlength="50" required>';
+            echo '<input class="form__control form__control--text" id="fleet-name" type="text" name="fleet_name" placeholder="Flotte d’intervention" maxlength="50" required>';
             echo '</div>';
             echo '<div class="form__actions">';
             echo '<button class="button button--primary" type="submit">Créer la flotte</button>';
@@ -177,145 +183,10 @@ ob_start();
 
                 echo '<div class="fleet-manage">';
 
-                echo '<section class="fleet-manage__section">';
-                echo '<h3>Composition actuelle</h3>';
-                if (empty($selectedFleet['ships'])) {
-                    echo '<p class="empty-state">Cette flotte ne contient actuellement aucun vaisseau.</p>';
-                } else {
-                    echo '<div class="table-wrapper">';
-                    echo '<table class="data-table fleet-detail-table">';
-                    echo '<thead><tr>';
-                    echo '<th scope="col">Vaisseau</th>';
-                    echo '<th scope="col">Rôle</th>';
-                    echo '<th scope="col">Quantité</th>';
-                    echo '</tr></thead>';
-                    echo '<tbody>';
-                    foreach ($selectedFleet['ships'] as $ship) {
-                        $shipLabel = (string)($ship['label'] ?? $ship['key'] ?? 'Vaisseau');
-                        $shipRole = (string)($ship['role'] ?? '');
-                        $shipQuantity = (int)($ship['quantity'] ?? 0);
-                        echo '<tr>';
-                        echo '<td>' . htmlspecialchars($shipLabel) . '</td>';
-                        echo '<td>' . ($shipRole !== '' ? htmlspecialchars($shipRole) : '—') . '</td>';
-                        echo '<td class="fleet-detail-table__quantity">' . format_number($shipQuantity) . '</td>';
-                        echo '</tr>';
-                    }
-                    echo '</tbody>';
-                    echo '</table>';
-                    echo '</div>';
-                }
-                echo '</section>';
-
-                echo '<section class="fleet-manage__section">';
-                echo '<h3>Transférer des vaisseaux</h3>';
-                if (!$hasTransferOptions) {
-                    echo '<p class="empty-state">Aucune autre flotte ou hangar disponible pour recevoir des renforts.</p>';
-                } else {
-                    echo '<form class="fleet-transfer" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
-                    if ($csrf_transfer !== null) {
-                        echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_transfer, ENT_QUOTES) . '">';
-                    }
-                    echo '<input type="hidden" name="action" value="transfer_from_fleet">';
-                    echo '<input type="hidden" name="source_fleet_id" value="' . (int)$selectedFleet['id'] . '">';
-
-                    if (!empty($selectedFleet['ships'])) {
-                        echo '<div class="table-wrapper">';
-                        echo '<table class="data-table fleet-transfer__table">';
-                        echo '<thead><tr>';
-                        echo '<th scope="col">Vaisseau</th>';
-                        echo '<th scope="col">Disponible</th>';
-                        echo '<th scope="col">Transférer</th>';
-                        echo '</tr></thead>';
-                        echo '<tbody>';
-                        foreach ($selectedFleet['ships'] as $ship) {
-                            $shipKey = (string)($ship['key'] ?? '');
-                            $shipLabel = (string)($ship['label'] ?? $shipKey);
-                            $shipQuantity = (int)($ship['quantity'] ?? 0);
-                            $inputId = 'transfer-' . preg_replace('/[^a-z0-9_-]+/i', '-', $shipKey);
-
-                            echo '<tr>';
-                            echo '<td>' . htmlspecialchars($shipLabel) . '</td>';
-                            echo '<td class="fleet-transfer__available">' . format_number($shipQuantity) . '</td>';
-                            echo '<td>';
-                            $maxAttr = $shipQuantity > 0 ? ' max="' . $shipQuantity . '"' : '';
-                            $disabledAttr = $shipQuantity === 0 ? ' disabled' : '';
-                            echo '<label class="visually-hidden" for="' . htmlspecialchars($inputId, ENT_QUOTES) . '">Quantité à transférer</label>';
-                            echo '<input class="fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" step="1"' . $maxAttr . $disabledAttr . ' placeholder="0">';
-                            if ($shipQuantity > 0) {
-                                echo '<small class="fleet-transfer__hint">max ' . format_number($shipQuantity) . '</small>';
-                            }
-                            echo '</td>';
-                            echo '</tr>';
-                        }
-                        echo '</tbody>';
-                        echo '</table>';
-                        echo '</div>';
-                    } else {
-                        echo '<p class="fleet-transfer__empty">Ajoutez d’abord des vaisseaux à cette flotte depuis le hangar.</p>';
-                    }
-
-                    echo '<div class="fleet-transfer__destination">';
-                    echo '<label for="transfer-target">Destination</label>';
-                    echo '<select id="transfer-target" name="target_fleet_id" required>';
-                    echo '<option value="">Choisissez une destination</option>';
-                    if ($garrisonFleetId !== null && $garrisonFleetId !== $selectedFleetId) {
-                        echo '<option value="hangar">Hangar planétaire</option>';
-                    }
-                    foreach ($availableTargets as $targetFleet) {
-                        $targetId = (int)($targetFleet['id'] ?? 0);
-                        if ($targetId <= 0) {
-                            continue;
-                        }
-                        echo '<option value="' . $targetId . '">' . htmlspecialchars($targetFleet['label'], ENT_QUOTES) . '</option>';
-                    }
-                    echo '</select>';
-                    echo '</div>';
-
-                    echo '<div class="fleet-transfer__actions">';
-                    echo '<button class="button button--primary" type="submit">Transférer les vaisseaux sélectionnés</button>';
-                    echo '</div>';
-                    echo '</form>';
-                }
-                echo '</section>';
-
-                echo '<section class="fleet-manage__section">';
-                echo '<h3>Renommer la flotte</h3>';
-                echo '<form class="form" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
-                if ($csrf_rename !== null) {
-                    echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_rename, ENT_QUOTES) . '">';
-                }
-                echo '<input type="hidden" name="action" value="rename_fleet">';
-                echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
-                $currentName = $selectedFleet['name'] ?? '';
-                echo '<div class="form__field">';
-                echo '<label for="rename-fleet">Nouveau nom</label>';
-                echo '<input id="rename-fleet" type="text" name="new_name" value="' . htmlspecialchars((string)$currentName, ENT_QUOTES) . '" placeholder="Flotte d’élite" maxlength="50" required>';
-                echo '</div>';
-                echo '<div class="form__actions">';
-                echo '<button class="button" type="submit">Renommer</button>';
-                echo '</div>';
-                echo '</form>';
-                echo '</section>';
-
-                echo '<section class="fleet-manage__section">';
-                echo '<h3>Supprimer la flotte</h3>';
-                echo '<p class="form__hint">Les vaisseaux restants seront automatiquement renvoyés au hangar planétaire.</p>';
-                echo '<form class="form" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
-                if ($csrf_delete !== null) {
-                    echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_delete, ENT_QUOTES) . '">';
-                }
-                echo '<input type="hidden" name="action" value="delete_fleet">';
-                echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
-                echo '<div class="form__actions">';
-                echo '<button class="button button--danger" type="submit">Supprimer cette flotte</button>';
-                echo '</div>';
-                echo '</form>';
-                echo '</section>';
-
-                echo '<section class="fleet-manage__section">';
+                echo '<section class="fleet-manage__section fleet-manage__section--mission">';
                 echo '<h3>Envoyer en mission</h3>';
                 echo '<p class="form__hint">Les types de mission sont en cours de développement. Sélectionnez celui à préparer.</p>';
-                echo '<form class="mission-form" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                echo '<form class="mission-form form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
                 if ($csrf_manage_mission !== null) {
                     echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_manage_mission, ENT_QUOTES) . '">';
                 }
@@ -337,13 +208,130 @@ ob_start();
                     $index++;
                     $inputId = 'mission-' . $index;
                     echo '<label class="mission-form__option" for="' . htmlspecialchars($inputId, ENT_QUOTES) . '">';
-                    echo '<input type="radio" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="mission" value="' . htmlspecialchars($value, ENT_QUOTES) . '"' . ($index === 1 ? ' checked' : '') . ' disabled>';
-                    echo '<span>' . htmlspecialchars($label) . '</span>';
+                    echo '<input class="mission-form__radio" type="radio" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="mission" value="' . htmlspecialchars($value, ENT_QUOTES) . '"' . ($index === 1 ? ' checked' : '') . ' disabled>';
+                    echo '<span class="mission-form__label">' . htmlspecialchars($label) . '</span>';
                     echo '</label>';
                 }
                 echo '</div>';
                 echo '<div class="mission-form__actions">';
                 echo '<button class="button button--primary" type="submit" disabled>Planifier la mission (à venir)</button>';
+                echo '</div>';
+                echo '</form>';
+                echo '</section>';
+
+                echo '<section class="fleet-manage__section">';
+                echo '<h3>Composition & transferts</h3>';
+                if (empty($selectedFleet['ships'])) {
+                    echo '<p class="empty-state">Cette flotte ne contient actuellement aucun vaisseau.</p>';
+                } else {
+                    $formOpened = false;
+                    if ($hasTransferOptions) {
+                        echo '<form class="fleet-transfer" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                        if ($csrf_transfer !== null) {
+                            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_transfer, ENT_QUOTES) . '">';
+                        }
+                        echo '<input type="hidden" name="action" value="transfer_from_fleet">';
+                        echo '<input type="hidden" name="source_fleet_id" value="' . (int)$selectedFleet['id'] . '">';
+                        $formOpened = true;
+                    }
+
+                    echo '<div class="table-wrapper">';
+                    echo '<table class="data-table fleet-transfer__table">';
+                    echo '<thead><tr>';
+                    echo '<th scope="col">Vaisseau</th>';
+                    echo '<th scope="col">Rôle</th>';
+                    echo '<th scope="col">Disponible</th>';
+                    echo '<th scope="col">À transférer</th>';
+                    echo '</tr></thead>';
+                    echo '<tbody>';
+                    foreach ($selectedFleet['ships'] as $ship) {
+                        $shipKey = (string)($ship['key'] ?? '');
+                        $shipLabel = (string)($ship['label'] ?? $shipKey);
+                        $shipRole = (string)($ship['role'] ?? '');
+                        $shipQuantity = (int)($ship['quantity'] ?? 0);
+                        $inputId = 'transfer-' . preg_replace('/[^a-z0-9_-]+/i', '-', $shipKey);
+
+                        echo '<tr>';
+                        echo '<td>' . htmlspecialchars($shipLabel) . '</td>';
+                        echo '<td>' . ($shipRole !== '' ? htmlspecialchars($shipRole) : '—') . '</td>';
+                        echo '<td class="fleet-transfer__available">' . format_number($shipQuantity) . '</td>';
+                        echo '<td class="fleet-transfer__input-cell">';
+                        if ($formOpened && $shipQuantity > 0) {
+                            echo '<label class="visually-hidden" for="' . htmlspecialchars($inputId, ENT_QUOTES) . '">Quantité à transférer</label>';
+                            echo '<input class="form__control form__control--number fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" max="' . $shipQuantity . '" step="1" placeholder="0">';
+                        } elseif ($formOpened) {
+                            echo '<input class="form__control form__control--number fleet-transfer__input" type="number" id="' . htmlspecialchars($inputId, ENT_QUOTES) . '" name="ships[' . htmlspecialchars($shipKey, ENT_QUOTES) . ']" min="0" step="1" value="0" disabled>';
+                        } else {
+                            echo '—';
+                        }
+                        echo '</td>';
+                        echo '</tr>';
+                    }
+                    echo '</tbody>';
+                    echo '</table>';
+                    echo '</div>';
+
+                    if ($formOpened) {
+                        echo '<div class="fleet-transfer__destination form__field">';
+                        echo '<label for="transfer-target">Destination</label>';
+                        echo '<div class="form__select">';
+                        echo '<select class="form__control form__control--select" id="transfer-target" name="target_fleet_id" required>';
+                        echo '<option value="">Choisissez une destination</option>';
+                        if ($garrisonFleetId !== null && $garrisonFleetId !== $selectedFleetId) {
+                            echo '<option value="hangar">Hangar planétaire</option>';
+                        }
+                        foreach ($availableTargets as $targetFleet) {
+                            $targetId = (int)($targetFleet['id'] ?? 0);
+                            if ($targetId <= 0) {
+                                continue;
+                            }
+                            echo '<option value="' . $targetId . '">' . htmlspecialchars($targetFleet['label'], ENT_QUOTES) . '</option>';
+                        }
+                        echo '</select>';
+                        echo '</div>';
+                        echo '</div>';
+
+                        echo '<div class="fleet-transfer__actions form__actions form__actions--end">';
+                        echo '<button class="button button--primary" type="submit">Transférer les vaisseaux sélectionnés</button>';
+                        echo '</div>';
+                        echo '</form>';
+                    } else {
+                        echo '<p class="empty-state">Aucune autre flotte ou hangar disponible pour recevoir des renforts.</p>';
+                    }
+                }
+                echo '</section>';
+
+                echo '<section class="fleet-manage__section">';
+                echo '<h3>Renommer la flotte</h3>';
+                echo '<form class="form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                if ($csrf_rename !== null) {
+                    echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_rename, ENT_QUOTES) . '">';
+                }
+                echo '<input type="hidden" name="action" value="rename_fleet">';
+                echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
+                $currentName = $selectedFleet['name'] ?? '';
+                echo '<div class="form__field">';
+                echo '<label for="rename-fleet">Nouveau nom</label>';
+                echo '<input class="form__control form__control--text" id="rename-fleet" type="text" name="new_name" value="' . htmlspecialchars((string)$currentName, ENT_QUOTES) . '" placeholder="Flotte d’élite" maxlength="50" required>';
+                echo '</div>';
+                echo '<div class="form__actions form__actions--end">';
+                echo '<button class="button" type="submit">Renommer</button>';
+                echo '</div>';
+                echo '</form>';
+                echo '</section>';
+
+                echo '<section class="fleet-manage__section">';
+                echo '<h3>Supprimer la flotte</h3>';
+                echo '<p class="form__hint">Les vaisseaux restants seront automatiquement renvoyés au hangar planétaire.</p>';
+                echo '<form class="form form--stack" method="post" action="' . htmlspecialchars($fleetActionUrl, ENT_QUOTES) . '">';
+                if ($csrf_delete !== null) {
+                    echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_delete, ENT_QUOTES) . '">';
+                }
+                echo '<input type="hidden" name="action" value="delete_fleet">';
+                echo '<input type="hidden" name="fleet_id" value="' . (int)$selectedFleet['id'] . '">';
+                echo '<div class="form__actions form__actions--end">';
+                $confirmMessage = htmlspecialchars(sprintf('Êtes-vous certain de vouloir dissoudre définitivement la flotte "%s" ?', (string)($selectedFleet['label'] ?? 'Flotte')), ENT_QUOTES);
+                echo '<button class="button button--danger" type="submit" onclick="return confirm(\'' . $confirmMessage . '\');">Supprimer cette flotte</button>';
                 echo '</div>';
                 echo '</form>';
                 echo '</section>';
