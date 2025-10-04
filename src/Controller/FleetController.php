@@ -71,12 +71,21 @@ class FleetController extends AbstractController
                 'baseUrl' => $this->baseUrl,
                 'csrf_plan' => $this->generateCsrfToken('fleet_plan_0'),
                 'csrf_launch' => $this->generateCsrfToken('fleet_launch_0'),
+                'csrf_create' => $this->generateCsrfToken('fleet_create_0'),
+                'csrf_transfer' => $this->generateCsrfToken('fleet_transfer_0'),
+                'csrf_rename' => $this->generateCsrfToken('fleet_rename_0'),
+                'csrf_delete' => $this->generateCsrfToken('fleet_delete_0'),
+                'csrf_manage_mission' => $this->generateCsrfToken('fleet_mission_0'),
                 'csrf_logout' => $this->generateCsrfToken('logout'),
                 'currentUserId' => $userId,
                 'activeSection' => 'fleet',
                 'activePlanetSummary' => null,
                 'facilityStatuses' => [],
                 'activeMissions' => [],
+                'idleFleets' => [],
+                'selectedFleetId' => null,
+                'selectedFleet' => null,
+                'garrisonFleetId' => null,
             ]);
         }
 
@@ -175,6 +184,77 @@ class FleetController extends AbstractController
         usort($fleetShips, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
         usort($availableShips, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
 
+        $idleFleetSummaries = $this->fleets->listIdleFleets($selectedId);
+        $idleFleets = [];
+        $garrisonFleetId = null;
+        foreach ($idleFleetSummaries as $summary) {
+            $id = (int)($summary['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+
+            $isGarrison = (bool)($summary['is_garrison'] ?? false);
+            if ($isGarrison) {
+                $garrisonFleetId = $id;
+            }
+
+            $name = $summary['name'] ?? null;
+            $label = $name ?: ($isGarrison ? 'Garnison orbitale' : 'Flotte #' . $id);
+
+            $ships = [];
+            $rawShips = is_array($summary['ships'] ?? null) ? $summary['ships'] : [];
+            foreach ($rawShips as $shipKey => $quantity) {
+                $quantity = (int)$quantity;
+                if ($quantity <= 0) {
+                    continue;
+                }
+
+                $definition = null;
+                try {
+                    $definition = $this->shipCatalog->get((string)$shipKey);
+                } catch (InvalidArgumentException) {
+                    // On ignore l'exception : le vaisseau peut avoir été retiré du catalogue.
+                }
+
+                $ships[] = [
+                    'key' => (string)$shipKey,
+                    'label' => $definition ? $definition->getLabel() : (string)$shipKey,
+                    'quantity' => $quantity,
+                    'role' => $definition ? $definition->getRole() : '',
+                    'image' => $definition ? $definition->getImage() : null,
+                ];
+            }
+
+            usort($ships, static fn (array $a, array $b): int => $b['quantity'] <=> $a['quantity']);
+
+            $idleFleets[] = [
+                'id' => $id,
+                'name' => $name,
+                'label' => $label,
+                'total' => (int)($summary['total'] ?? 0),
+                'is_garrison' => $isGarrison,
+                'ships' => $ships,
+                'ships_raw' => array_map(static fn ($value): int => (int)$value, $rawShips),
+            ];
+        }
+
+        $selectedFleetId = isset($request->getQueryParams()['fleet'])
+            ? (int)$request->getQueryParams()['fleet']
+            : null;
+        if ($selectedFleetId !== null && $selectedFleetId <= 0) {
+            $selectedFleetId = null;
+        }
+
+        $selectedFleet = null;
+        if ($selectedFleetId !== null) {
+            foreach ($idleFleets as $fleetSummary) {
+                if ($fleetSummary['id'] === $selectedFleetId) {
+                    $selectedFleet = $fleetSummary;
+                    break;
+                }
+            }
+        }
+
         $origin = $selectedPlanet->getCoordinates();
         $submittedDestination = [
             'galaxy' => $origin['galaxy'],
@@ -271,12 +351,21 @@ class FleetController extends AbstractController
             'baseUrl' => $this->baseUrl,
             'csrf_plan' => $this->generateCsrfToken('fleet_plan_' . $selectedId),
             'csrf_launch' => $this->generateCsrfToken('fleet_launch_' . $selectedId),
+            'csrf_create' => $this->generateCsrfToken('fleet_create_' . $selectedId),
+            'csrf_transfer' => $this->generateCsrfToken('fleet_transfer_' . $selectedId),
+            'csrf_rename' => $this->generateCsrfToken('fleet_rename_' . $selectedId),
+            'csrf_delete' => $this->generateCsrfToken('fleet_delete_' . $selectedId),
+            'csrf_manage_mission' => $this->generateCsrfToken('fleet_mission_' . $selectedId),
             'csrf_logout' => $this->generateCsrfToken('logout'),
             'currentUserId' => $userId,
             'activeSection' => 'fleet',
             'activePlanetSummary' => $activePlanetSummary,
             'facilityStatuses' => $facilityStatuses,
             'activeMissions' => $activeMissions,
+            'idleFleets' => $idleFleets,
+            'selectedFleetId' => $selectedFleetId,
+            'selectedFleet' => $selectedFleet,
+            'garrisonFleetId' => $garrisonFleetId,
         ]);
     }
 }
