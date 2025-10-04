@@ -438,15 +438,14 @@ main.workspace__content {
   cursor: text;
   width: 100%;
   box-sizing: border-box;
+
+  /* UI quick win: normaliser l'apparence des champs numériques */
+  appearance: textfield;
 }
 
 .hangar-table__quantity-input::-webkit-outer-spin-button,
 .hangar-table__quantity-input::-webkit-inner-spin-button {
   margin: 0;
-}
-
-.hangar-table__quantity-input {
-  -moz-appearance: textfield;
 }
 
 .topbar__label {
@@ -742,6 +741,52 @@ body.is-bootstrapized .btn-sm {
   font-size: var(--font-size-xs);
 }
 
+/* UI quick win: décliner les autres variantes Bootstrap avec les tokens */
+body.is-bootstrapized .btn-secondary,
+body.is-bootstrapized .btn-info {
+  color: #041021;
+  background: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+body.is-bootstrapized .btn-secondary:hover,
+body.is-bootstrapized .btn-secondary:focus-visible,
+body.is-bootstrapized .btn-info:hover,
+body.is-bootstrapized .btn-info:focus-visible {
+  color: #041021;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+body.is-bootstrapized .btn-secondary:disabled,
+body.is-bootstrapized .btn-info:disabled {
+  background: var(--disabled-surface);
+  border-color: var(--disabled-surface);
+  color: var(--color-muted);
+  transform: none;
+}
+
+body.is-bootstrapized .btn-warning {
+  color: var(--text-inverse);
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+body.is-bootstrapized .btn-warning:hover,
+body.is-bootstrapized .btn-warning:focus-visible {
+  background: #ff6262;
+  border-color: rgba(255, 122, 122, 0.6);
+  transform: translateY(-1px);
+}
+
+body.is-bootstrapized .btn-warning:disabled {
+  background: rgba(255, 122, 122, 0.35);
+  border-color: rgba(255, 122, 122, 0.4);
+  color: var(--text-inverse);
+  transform: none;
+}
+
 /* Forms */
 .form {
   display: flex;
@@ -831,9 +876,12 @@ body.is-bootstrapized .btn-sm {
 }
 
 .form__control--select {
+  /* UI quick win: apparence unifiée des selects */
   appearance: none;
+
+  /* Safari nécessite encore le préfixe -webkit-appearance */
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-appearance: none;
-  -moz-appearance: none;
   padding-right: calc(var(--space-4) + 16px);
   cursor: pointer;
 }
@@ -896,9 +944,12 @@ body.is-bootstrapized .btn-sm {
 }
 
 .mission-form__radio {
+  /* UI quick win: apparence unifiée des radios personnalisées */
   appearance: none;
+
+  /* Safari nécessite encore le préfixe -webkit-appearance */
+  /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-appearance: none;
-  -moz-appearance: none;
   width: 18px;
   height: 18px;
   border-radius: 50%;
@@ -1082,8 +1133,7 @@ body.is-bootstrapized .dashboard-banner.card.card-highlight {
 }
 
 body.is-bootstrapized .dashboard-banner .card-body {
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
   justify-content: space-between;
   align-items: flex-start;
 }

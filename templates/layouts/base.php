@@ -130,7 +130,6 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                 }
                                 ?>
                                 <?php
-                                $tag = $isLocked ? 'span' : 'a';
                                 $linkClass = 'sidebar__link' . ($isLocked ? ' sidebar__link--disabled' : '');
                                 $linkAttributes = ' class="' . htmlspecialchars($linkClass, ENT_QUOTES) . '"';
                                 if ($isLocked) {
@@ -142,17 +141,33 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                                     }
                                 }
                                 ?>
-                            <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
-                                <<?= $tag . $linkAttributes ?>>
-                                <svg class="icon icon-sm" aria-hidden="true">
-                                    <use href="<?= htmlspecialchars($spriteIcon($item['icon']), ENT_QUOTES) ?>"></use>
-                                </svg>
-                                <span><?= htmlspecialchars($item['label']) ?></span>
-                                <?php if ($isLocked): ?>
-                                    <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
-                                    <span class="visually-hidden"> (installation indisponible)</span>
-                                <?php endif; ?>
-                                </<?= $tag ?>>
+                                <li class="sidebar__item <?= $isCurrent ? 'is-active' : '' ?>">
+                                    <?php
+                                    // UI quick win: factorise le contenu pour garantir des paires de balises cohérentes.
+                                    $renderSidebarLink = static function () use ($item, $spriteIcon, $isLocked) {
+                                        ob_start();
+                                        ?>
+                                        <svg class="icon icon-sm" aria-hidden="true">
+                                            <use href="<?= htmlspecialchars($spriteIcon($item['icon']), ENT_QUOTES) ?>"></use>
+                                        </svg>
+                                        <span><?= htmlspecialchars($item['label']) ?></span>
+                                        <?php if ($isLocked): ?>
+                                            <span class="sidebar__status sidebar__status--locked" aria-hidden="true"></span>
+                                            <span class="visually-hidden"> (installation indisponible)</span>
+                                        <?php endif; ?>
+                                        <?php
+                                        return ob_get_clean();
+                                    };
+                                    ?>
+                                    <?php if ($isLocked): ?>
+                                        <span<?= $linkAttributes ?>>
+                                            <?= $renderSidebarLink(); ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <a<?= $linkAttributes ?>>
+                                            <?= $renderSidebarLink(); ?>
+                                        </a>
+                                    <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
                         </ul>

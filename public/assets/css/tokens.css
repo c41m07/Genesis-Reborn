@@ -18,6 +18,12 @@
   --color-success: #4dd6b2;
   --color-danger: #ff7a7a;
 
+  /* Bridge exports for Bootstrap mappings */
+  --color-fg: var(--color-text);
+  --color-secondary: var(--color-accent);
+  --color-info: var(--color-accent);
+  --color-warning: var(--color-danger);
+
   /* Geometry */
   --radius-sm: 10px;
   --radius: 16px;
