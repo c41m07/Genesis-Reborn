@@ -52,8 +52,8 @@ ob_start();
 </section>
 
 <?= $card([
-    'title' => 'Garnison planétaire',
-    'subtitle' => 'Gestion des vaisseaux disponibles',
+    'title' => 'Gestion des vaisseaux disponibles',
+    'subtitle' => '',
     'body' => static function () use (
         $hangarEntries,
         $idleFleets,

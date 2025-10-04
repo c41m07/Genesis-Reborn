@@ -79,18 +79,7 @@ final class HangarController extends AbstractController
         }
 
         $selectedId = (int)($request->getQueryParams()['planet'] ?? $planets[0]->getId());
-        $selectedPlanet = null;
-        foreach ($planets as $planet) {
-            if ($planet->getId() === $selectedId) {
-                $selectedPlanet = $planet;
-                break;
-            }
-        }
-
-        if ($selectedPlanet === null) {
-            $selectedPlanet = $planets[0];
-            $selectedId = $selectedPlanet->getId();
-        }
+        $selectedPlanet = current(array_filter($planets, fn($planet) => $planet->getId() === $selectedId)) ?: $planets[0];
 
         $this->shipQueueProcessor->process($selectedId);
 
@@ -100,9 +89,9 @@ final class HangarController extends AbstractController
         $availableShipKeys = [];
         $defaultFleetId = null;
         foreach ($fleetSummaries as $summary) {
-            $label = $summary['name'] ?? 'Garnison orbitale';
+            $label = $summary['name'] ?? 'Platforme orbitale';
             if ($summary['is_garrison']) {
-                $label = 'Garnison orbitale';
+                $label = 'Platforme orbitale';
                 $defaultFleetId = $summary['id'];
             }
 

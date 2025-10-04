@@ -151,7 +151,7 @@ ob_start();
 
                                 $stats = $definition->getStats();
                                 if (!empty($stats)) {
-                                    echo '<div class="ship-card__stats">';
+                                    echo '<div class="ship-card__stats row row-cols-4">';
                                     foreach ($stats as $label => $value) {
                                         echo '<div class="mini-stat">';
                                         echo '<span class="mini-stat__label">' . htmlspecialchars(ucfirst((string)$label)) . '</span>';

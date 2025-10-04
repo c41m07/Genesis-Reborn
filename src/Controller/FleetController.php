@@ -207,7 +207,7 @@ class FleetController extends AbstractController
             }
 
             $name = $summary['name'] ?? null;
-            $label = $name ?: ($isGarrison ? 'Garnison orbitale' : 'Flotte #' . $id);
+            $label = $name ?: ($isGarrison ? 'Platforme orbitale' : 'Flotte #' . $id);
 
             $ships = [];
             $rawShips = is_array($summary['ships'] ?? null) ? $summary['ships'] : [];

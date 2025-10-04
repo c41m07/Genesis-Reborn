@@ -84,7 +84,7 @@ final class AssembleFleetFromHangar
             ];
         }
 
-        $fleetLabel = 'garnison orbitale';
+        $fleetLabel = 'Platforme orbitale';
         $targetFleetId = $targetFleetId !== null && $targetFleetId > 0 ? $targetFleetId : null;
 
         if ($newFleetName !== null) {
@@ -116,8 +116,8 @@ final class AssembleFleetFromHangar
             ];
         }
 
-        if ($fleetLabel === 'garnison orbitale') {
-            $message = 'Garnison renforcée avec succès.';
+        if ($fleetLabel === 'Platforme orbitale') {
+            $message = 'Platforme orbitale renforcée avec succès.';
         } else {
             $message = sprintf('Flotte "%s" renforcée avec succès.', $fleetLabel);
         }

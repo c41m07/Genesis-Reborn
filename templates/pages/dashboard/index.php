@@ -75,20 +75,17 @@ ob_start();
                 </div>
                 <div class="card-body">
                     <div class="metrics metrics--compact">
-                        <div class="metric">
+                        <div class="metric mb-3">
                             <span class="metric__label">Points d’infrastructure</span>
                             <strong class="metric__value"><?= format_number($empire['buildingPoints'] ?? 0) ?></strong>
-                            <span class="metric__hint">Total des ressources investies dans les bâtiments / 1000 (<?= format_number($empire['buildingSpent'] ?? 0) ?>).</span>
                         </div>
-                        <div class="metric">
+                        <div class="metric mb-3">
                             <span class="metric__label">Points scientifiques</span>
                             <strong class="metric__value"><?= format_number($empire['sciencePoints'] ?? 0) ?></strong>
-                            <span class="metric__hint">Total des ressources investies en recherche / 1000 (<?= format_number($empire['scienceSpent'] ?? 0) ?>).</span>
                         </div>
-                        <div class="metric">
+                        <div class="metric mb-3">
                             <span class="metric__label">Points militaires</span>
                             <strong class="metric__value"><?= format_number($empire['militaryPoints'] ?? 0) ?></strong>
-                            <span class="metric__hint">Total des ressources investies dans la flotte / 1000 (<?= format_number($empire['fleetSpent'] ?? 0) ?>). Puissance brute : <?= format_number($empire['militaryPower'] ?? 0) ?>.</span>
                         </div>
                     </div>
                 </div>
@@ -100,9 +97,9 @@ ob_start();
                         <p class="card-subtitle">Bâtiments, recherches et chantiers spatiaux alignés.</p>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row g-4">
-                        <div class="col-12 col-xl-4">
+                <div class="card-body mb-3">
+                    <div class="row row-gap-3">
+                        <div class="col-12">
                             <div class="card production-card h-100">
                                 <div class="card-header">
                                     <h3 class="card-title">Bâtiments</h3>
@@ -138,7 +135,7 @@ if ($buildJob) {
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-xl-4">
+                        <div class="col-12 ">
                             <div class="card production-card h-100">
                                 <div class="card-header">
                                     <h3 class="card-title">Recherches</h3>
@@ -174,7 +171,7 @@ if ($researchJob) {
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-xl-4">
+                        <div class="col-12">
                             <div class="card production-card h-100">
                                 <div class="card-header">
                                     <h3 class="card-title">Chantier spatial</h3>
@@ -252,11 +249,7 @@ if ($shipJob) {
                                 </div>
                             </li>
                         </ul>
-                        <p class="planet-summary__update">Mise à jour : <?= $now->format('d/m/Y H:i') ?></p>
-                        <div class="planet-summary__actions">
-                            <a class="btn btn-primary" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">Gérer la colonie</a>
-                            <a class="btn btn-outline-primary" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Programme scientifique</a>
-                        </div>
+                        <p class="planet-summary__update mb-2">Mise à jour : <?= $now->format('d/m/Y H:i') ?></p>
                     <?php else: ?>
                         <p>Aucune planète active.</p>
                     <?php endif; ?>

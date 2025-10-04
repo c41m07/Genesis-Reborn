@@ -159,7 +159,7 @@ final class MergeIdleFleets
     private function formatFleetLabel(?string $name, bool $isGarrison): string
     {
         if ($isGarrison) {
-            return 'Garnison orbitale';
+            return 'Platforme orbitale';
         }
 
         return $name ?? 'Flotte sans nom';

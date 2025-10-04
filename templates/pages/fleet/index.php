@@ -110,7 +110,7 @@ ob_start();
             echo '<div class="table-wrapper">';
             echo '<table class="data-table fleet-table">';
             echo '<thead><tr>';
-            echo '<th scope="col">Nom</th>';
+            echo '<th scope="col">Nom de la flotte</th>';
             echo '<th scope="col">Effectif</th>';
             echo '<th scope="col">Statut</th>';
             echo '<th scope="col" class="fleet-table__actions">Actions</th>';
@@ -124,7 +124,7 @@ ob_start();
 
                 $label = (string)($fleet['label'] ?? ('Flotte #' . $fleetId));
                 $isGarrison = (bool)($fleet['is_garrison'] ?? false);
-                $statusLabel = $isGarrison ? 'Garnison orbitale' : 'Flotte opérationnelle';
+                $statusLabel = $isGarrison ? 'Platforme orbitale' : 'Flotte opérationnelle';
                 $totalShips = (int)($fleet['total'] ?? 0);
                 $manageQuery = ['fleet' => $fleetId];
                 if ($selectedPlanetId !== null) {
@@ -135,21 +135,6 @@ ob_start();
                 echo '<tr>';
                 echo '<td>';
                 echo '<strong>' . htmlspecialchars($label) . '</strong>';
-                if (!empty($fleet['ships'])) {
-                    echo '<ul class="fleet-table__composition">';
-                    $preview = array_slice($fleet['ships'], 0, 3);
-                    foreach ($preview as $ship) {
-                        $shipLabel = (string)($ship['label'] ?? $ship['key'] ?? 'Vaisseau');
-                        $shipQuantity = (int)($ship['quantity'] ?? 0);
-                        echo '<li>' . htmlspecialchars($shipLabel) . ' × ' . format_number($shipQuantity) . '</li>';
-                    }
-                    if (count($fleet['ships']) > 3) {
-                        echo '<li>…</li>';
-                    }
-                    echo '</ul>';
-                } else {
-                    echo '<p class="fleet-table__empty">Aucun vaisseau assigné.</p>';
-                }
                 echo '</td>';
                 echo '<td class="fleet-table__metric">' . format_number($totalShips) . '</td>';
                 echo '<td>' . htmlspecialchars($statusLabel) . '</td>';
