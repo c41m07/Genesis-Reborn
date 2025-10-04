@@ -83,7 +83,6 @@ ob_start();
             echo '<div class="form__field">';
             echo '<label for="fleet-name">Nom de la flotte</label>';
             echo '<input id="fleet-name" type="text" name="fleet_name" placeholder="Flotte d’intervention" maxlength="50" required>';
-            echo '<small class="form__hint">Un nom clair facilite le suivi de vos forces.</small>';
             echo '</div>';
             echo '<div class="form__actions">';
             echo '<button class="button button--primary" type="submit">Créer la flotte</button>';
