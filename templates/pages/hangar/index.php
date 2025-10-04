@@ -65,144 +65,9 @@ ob_start();
             foreach ($idleFleetSummaries as $summary) {
                 $fleetShipMap[$summary['id']] = $summary['ships'];
             }
-            echo '<div class="fleet-summary">';
-            echo '<h2 class="fleet-summary__title">Flottes disponibles</h2>';
-            echo '<ul class="fleet-summary__list">';
-            foreach ($idleFleets as $fleet) {
-                $label = $fleet['label'];
-                if ($fleet['is_garrison']) {
-                    $label .= ' (garnison)';
-                }
-                echo '<li class="fleet-summary__item">';
-                echo '<span class="fleet-summary__name">' . htmlspecialchars($label) . '</span>';
-                echo '<span class="fleet-summary__count">' . format_number((int)$fleet['total']) . ' unité(s)</span>';
-                $ships = $fleetShipMap[$fleet['id']] ?? [];
-                if (!empty($ships)) {
-                    echo '<ul class="fleet-summary__ships">';
-                    foreach ($ships as $shipKey => $shipCount) {
-                        echo '<li>' . htmlspecialchars($shipKey) . ' : ' . format_number((int)$shipCount) . '</li>';
-                    }
-                    echo '</ul>';
-                }
-                echo '</li>';
-            }
-            echo '</ul>';
-            echo '</div>';
         }
     },
 ]) ?>
-
-<div class="card-grid card-grid--double">
-    <?= $card([
-        'title' => 'Renommer une flotte',
-        'body' => static function () use ($renameErrors, $renameableFleets, $submittedRename, $baseUrl, $selectedPlanetId, $csrf_transfer): void {
-            if (!empty($renameErrors)) {
-                echo '<div class="form-errors" role="alert"><ul>';
-                foreach ($renameErrors as $error) {
-                    echo '<li>' . htmlspecialchars($error) . '</li>';
-                }
-                echo '</ul></div>';
-            }
-
-            if (empty($renameableFleets)) {
-                echo '<p class="empty-state">Aucune flotte nommable n’est actuellement disponible.</p>';
-
-                return;
-            }
-
-            echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/hangar?planet=' . (int)$selectedPlanetId . '">';
-            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_transfer) . '">';
-            echo '<input type="hidden" name="action" value="rename">';
-            echo '<label class="form-field">';
-            echo '<span>Flotte à renommer</span>';
-            echo '<select name="fleet_id">';
-            echo '<option value="">Sélectionner une flotte</option>';
-            foreach ($renameableFleets as $fleet) {
-                $selected = $submittedRename['fleet_id'] === (string)$fleet['id'] ? ' selected' : '';
-                echo '<option value="' . (int)$fleet['id'] . '"' . $selected . '>' . htmlspecialchars($fleet['label']) . '</option>';
-            }
-            echo '</select>';
-            echo '</label>';
-            echo '<label class="form-field">';
-            echo '<span>Nouveau nom</span>';
-            echo '<input type="text" name="new_name" maxlength="100" value="' . htmlspecialchars($submittedRename['new_name']) . '">';
-            echo '</label>';
-            echo '<button class="button" type="submit">Renommer</button>';
-            echo '</form>';
-        },
-    ]) ?>
-
-    <?= $card([
-        'title' => 'Fusionner des flottes',
-        'body' => static function () use ($mergeErrors, $idleFleets, $submittedMerge, $baseUrl, $selectedPlanetId, $csrf_transfer, $availableFleetShipKeys): void {
-            if (!empty($mergeErrors)) {
-                echo '<div class="form-errors" role="alert"><ul>';
-                foreach ($mergeErrors as $error) {
-                    echo '<li>' . htmlspecialchars($error) . '</li>';
-                }
-                echo '</ul></div>';
-            }
-
-            if (count($idleFleets) < 2) {
-                echo '<p class="empty-state">Créez au moins deux flottes pour les fusionner.</p>';
-
-                return;
-            }
-
-            echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/hangar?planet=' . (int)$selectedPlanetId . '">';
-            echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_transfer) . '">';
-            echo '<input type="hidden" name="action" value="merge">';
-            echo '<label class="form-field">';
-            echo '<span>Flotte source</span>';
-            echo '<select name="source_id">';
-            echo '<option value="">Sélectionner</option>';
-            foreach ($idleFleets as $fleet) {
-                echo '<option value="' . (int)$fleet['id'] . '"' . ($submittedMerge['source_id'] === (string)$fleet['id'] ? ' selected' : '') . '>' . htmlspecialchars($fleet['label']) . '</option>';
-            }
-            echo '</select>';
-            echo '</label>';
-            echo '<label class="form-field">';
-            echo '<span>Flotte cible</span>';
-            echo '<select name="target_id">';
-            echo '<option value="">Sélectionner</option>';
-            foreach ($idleFleets as $fleet) {
-                echo '<option value="' . (int)$fleet['id'] . '"' . ($submittedMerge['target_id'] === (string)$fleet['id'] ? ' selected' : '') . '>' . htmlspecialchars($fleet['label']) . '</option>';
-            }
-            echo '</select>';
-            echo '</label>';
-            $mode = $submittedMerge['mode'] === 'all' ? 'all' : 'partial';
-            echo '<fieldset class="form-fieldset">';
-            echo '<legend>Type de fusion</legend>';
-            echo '<label class="form-field form-field--inline">';
-            echo '<input type="radio" name="merge_mode" value="partial"' . ($mode === 'partial' ? ' checked' : '') . '>'; echo '<span>Transférer un type de vaisseau</span>';
-            echo '</label>';
-            echo '<label class="form-field form-field--inline">';
-            echo '<input type="radio" name="merge_mode" value="all"' . ($mode === 'all' ? ' checked' : '') . '>'; echo '<span>Fusionner toute la flotte source</span>';
-            echo '</label>';
-            echo '</fieldset>';
-            echo '<label class="form-field">';
-            echo '<span>Type de vaisseau à transférer</span>';
-            $listAttr = !empty($availableFleetShipKeys) ? ' list="merge-ship-types"' : '';
-            echo '<input type="text" name="ship_key"' . $listAttr . ' value="' . htmlspecialchars($submittedMerge['ship_key']) . '">';
-            echo '</label>';
-            echo '<label class="form-field">';
-            echo '<span>Quantité</span>';
-            echo '<input type="number" name="quantity" min="1" value="' . max(1, (int)$submittedMerge['quantity']) . '">';
-            echo '<small class="form-field__help">Ignorez ces champs si vous fusionnez la flotte entière.</small>';
-            echo '</label>';
-            echo '<button class="button" type="submit">Fusionner</button>';
-            echo '</form>';
-
-            if (!empty($availableFleetShipKeys)) {
-                echo '<datalist id="merge-ship-types">';
-                foreach ($availableFleetShipKeys as $shipKey) {
-                    echo '<option value="' . htmlspecialchars($shipKey) . '"></option>';
-                }
-                echo '</datalist>';
-            }
-        },
-    ]) ?>
-</div>
 
 <?php if (!empty($transferErrors)): ?>
     <div class="form-errors" role="alert">
@@ -289,12 +154,12 @@ ob_start();
                         echo '<option value="' . htmlspecialchars($optionValue) . '"' . $selected . '>' . htmlspecialchars($label) . '</option>';
                     }
                     echo '</select>';
-                    echo '<label class="hangar-transfer__choice">';
-                    echo '<input type="radio" name="target_mode" value="new"' . (!$isExisting ? ' checked' : '') . '>';
-                    echo '<span>Créer une nouvelle flotte nommée</span>';
-                    echo '</label>';
-                    echo '<input type="text" name="new_fleet_name" class="hangar-transfer__input" maxlength="100" placeholder="Nom de la flotte" value="' . htmlspecialchars($newFleetName) . '">';
-                    echo '</fieldset>';
+//                    echo '<label class="hangar-transfer__choice">';
+//                    echo '<input type="radio" name="target_mode" value="new"' . (!$isExisting ? ' checked' : '') . '>';
+//                    echo '<span>Créer une nouvelle flotte nommée</span>';
+//                    echo '</label>';
+//                    echo '<input type="text" name="new_fleet_name" class="hangar-transfer__input" maxlength="100" placeholder="Nom de la flotte" value="' . htmlspecialchars($newFleetName) . '">';
+//                    echo '</fieldset>';
                     echo '<button class="button" type="submit"' . ($currentQuantity === 0 ? ' disabled' : '') . '>Vers la flotte</button>';
                     echo '</form>';
                 },
