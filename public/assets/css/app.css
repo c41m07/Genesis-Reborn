@@ -1127,6 +1127,12 @@ body.is-bootstrapized .btn-warning:disabled {
   display: block;
 }
 
+.ship-card .ui-card__media {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
 .building-card .ui-card__badge,
 .colony-queue .ui-card__badge,
 .research-queue .ui-card__badge,
