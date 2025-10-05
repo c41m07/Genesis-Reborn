@@ -36,14 +36,14 @@ class ChangeLogController extends AbstractController
         }
 
         // Lecture du fichier JSON
-        $filePath = dirname(__DIR__, 3) . '/public/data/changelog.json';
+        $filePath = dirname(__DIR__, 2) . '/public/data/changelog.json';
         $changelogData = [];
         if (is_readable($filePath)) {
             try {
                 $json = file_get_contents($filePath);
                 $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
                 if (is_array($decoded)) {
-                    $changelogData = $decoded;
+                    $changelogData = $this->sortChangelogData($decoded);
                 }
             } catch (\Throwable) {
                 // En cas d’erreur JSON, on garde un tableau vide
@@ -96,4 +96,58 @@ class ChangeLogController extends AbstractController
         ]);
     }
 
+    public function api(): Response
+    {
+        // Lecture identique du JSON pour l’API
+        $filePath = dirname(__DIR__, 2) . '/public/data/changelog.json';
+        $data = [];
+        if (is_readable($filePath)) {
+            try {
+                $json = file_get_contents($filePath);
+                $decoded = json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+                if (is_array($decoded)) {
+                    $data = $this->sortChangelogData($decoded);
+                }
+            } catch (\Throwable) {
+                // On ignore l’erreur et renvoie un tableau vide
+            }
+        }
+
+        return $this->json($data);
+    }
+
+    /**
+     * Trie les entrées du changelog de la plus récente à la plus ancienne.
+     *
+     * @param array<int, array<string, mixed>> $entries
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function sortChangelogData(array $entries): array
+    {
+        usort($entries, function (array $first, array $second): int {
+            return $this->convertDateToTimestamp($second['date'] ?? null) <=> $this->convertDateToTimestamp($first['date'] ?? null);
+        });
+
+        return $entries;
+    }
+
+    private function convertDateToTimestamp(mixed $value): int
+    {
+        if (!is_string($value) || $value === '') {
+            return 0;
+        }
+
+        $dateTime = \DateTimeImmutable::createFromFormat('d-m-Y', $value);
+        if ($dateTime instanceof \DateTimeImmutable) {
+            return (int) $dateTime->format('U');
+        }
+
+        $fallback = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        if ($fallback instanceof \DateTimeImmutable) {
+            return (int) $fallback->format('U');
+        }
+
+        return 0;
+    }
 }

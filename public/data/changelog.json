@@ -60,5 +60,21 @@
       "[fix] : #73 Correction du calcule des point joueurs dans la vue de la colonie",
       "[Fix] : #76 Revue et amélioration de la logic pour le calcule de l'energie et des déficite planétaire"
     ]
+  },
+  {
+    "version": "Va0.0.6-alpha",
+    "date": "05-10-2025",
+    "changes": [
+      "[feat] : implémente les instantanés de ressources et refond le contrôleur de profil autour du nouveau use case",
+      "[feat] : déploie la planification et le lancement de missions de flotte avec intégration dépôt / use cases",
+      "[feat] : enrichit la gestion des hangars et des flottes (création/suppression, transferts multiples, retrait de vaisseaux)",
+      "[feat] : uniformise l’interface utilisateur (thème global, boutons, inputs, entêtes de cartes, mise en page des productions et médias)",
+      "[feat] : améliore la présentation des cartes (en-têtes média, état des boutons, alignements, suppression des progress bars inutiles)",
+      "[fix] : harmonise l’instanciation des classes anonymes et les namespaces des tests avec la nouvelle arborescence",
+      "[fix] : renforce le formatage des réponses et la gestion d’erreurs dans les formulaires asynchrones",
+      "[fix] : corrige des typos et aligne les clés du catalogue sur l’encodage utf8mb4",
+      "[chore] : ajoute un script de seed pour un compte démo et une sauvegarde initiale de la base",
+      "[chore] : sécurise les migrations SQL avec `IF NOT EXISTS` et introduit le service `QueueFinalizer`"
+    ]
   }
 ]
