@@ -11,6 +11,38 @@ import { initRequirementsPanels } from './requirements.js';
 
 let requirementsPanelSequence = 0;
 
+const UI_BUTTON_VARIANTS = ['ui-button--primary', 'ui-button--warning', 'ui-button--neutral'];
+
+const applyButtonState = (button, label, variant, disabled) => {
+  if (!(button instanceof HTMLElement)) {
+    return;
+  }
+
+  button.disabled = Boolean(disabled);
+
+  const labelElement = button.querySelector('.ui-button__label');
+  if (labelElement) {
+    labelElement.textContent = label;
+  } else {
+    button.textContent = label;
+  }
+
+  button.classList.remove('button--resource-warning', 'button--primary');
+  UI_BUTTON_VARIANTS.forEach((className) => {
+    button.classList.remove(className);
+  });
+
+  if (variant && UI_BUTTON_VARIANTS.includes(variant)) {
+    button.classList.add(variant);
+  }
+};
+
+const queryCardSubtitle = (card) =>
+  card.querySelector('.ui-card__subtitle') ?? card.querySelector('.panel__subtitle');
+
+const queryCardBadge = (card) =>
+  card.querySelector('.ui-card__badge') ?? card.querySelector('.panel__badge');
+
 const renderCostList = (cost = {}, time = 0, baseTime = null, missingResources = {}) => {
   const items = [];
   const normalizedMissing = {};
@@ -387,7 +419,7 @@ export const updateBuildingCard = (building) => {
 
   updateBuildingLevelDisplays(building);
 
-  const subtitle = card.querySelector('.panel__subtitle');
+  const subtitle = queryCardSubtitle(card);
   const level = Number.isFinite(building.level)
     ? Number(building.level)
     : Number(building.level ?? 0);
@@ -410,16 +442,12 @@ export const updateBuildingCard = (building) => {
   const requirements = building.requirements ?? { ok: true };
 
   if (button) {
-    button.disabled = !canUpgrade;
     if (canUpgrade) {
-      button.textContent = 'Améliorer';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Améliorer', 'ui-button--primary', false);
     } else if (requirements.ok && !affordable) {
-      button.textContent = 'Ressources insuffisantes';
-      button.classList.add('button--resource-warning');
+      applyButtonState(button, 'Ressources insuffisantes', 'ui-button--warning', true);
     } else {
-      button.textContent = 'Conditions non remplies';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Conditions non remplies', 'ui-button--neutral', true);
     }
   }
 
@@ -445,7 +473,7 @@ export const updateResearchCard = (research) => {
     return;
   }
 
-  const subtitle = card.querySelector('.panel__subtitle');
+  const subtitle = queryCardSubtitle(card);
   const rawLevel = Number(research.level ?? 0);
   const normalizedLevel = Number.isFinite(rawLevel) ? Math.max(0, Math.floor(rawLevel)) : 0;
   const maxLevelValue =
@@ -462,7 +490,7 @@ export const updateResearchCard = (research) => {
       normalizedLevel > 0 ? `Niveau actuel ${formattedLevel}${maxLabel}` : 'Non recherché';
   }
 
-  const badge = card.querySelector('.panel__badge');
+  const badge = queryCardBadge(card);
   if (badge) {
     badge.textContent = `Niveau ${formattedLevel}${badgeLabel}`;
   }
@@ -508,16 +536,12 @@ export const updateResearchCard = (research) => {
   const requirements = research.requirements ?? { ok: true };
 
   if (button) {
-    button.disabled = !canResearch;
     if (canResearch) {
-      button.textContent = 'Lancer la recherche';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Lancer la recherche', 'ui-button--primary', false);
     } else if (requirements.ok && !affordable) {
-      button.textContent = 'Ressources insuffisantes';
-      button.classList.add('button--resource-warning');
+      applyButtonState(button, 'Ressources insuffisantes', 'ui-button--warning', true);
     } else {
-      button.textContent = 'Pré-requis manquants';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Pré-requis manquants', 'ui-button--neutral', true);
     }
   }
 
@@ -554,16 +578,12 @@ export const updateShipCard = (ship) => {
   }
 
   if (button) {
-    button.disabled = !canBuild;
     if (canBuild) {
-      button.textContent = 'Construire';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Construire', 'ui-button--primary', false);
     } else if (requirements.ok && !affordable) {
-      button.textContent = 'Ressources insuffisantes';
-      button.classList.add('button--resource-warning');
+      applyButtonState(button, 'Ressources insuffisantes', 'ui-button--warning', true);
     } else {
-      button.textContent = 'Pré-requis manquants';
-      button.classList.remove('button--resource-warning');
+      applyButtonState(button, 'Pré-requis manquants', 'ui-button--neutral', true);
     }
   }
 

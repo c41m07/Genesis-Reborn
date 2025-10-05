@@ -42,33 +42,40 @@ $robotFactoryBonus = max(0.0, (float)($robotFactorySummary['bonus'] ?? 0.0));
 
 ob_start();
 ?>
-    <section class="page-header">
-        <div>
-            <h1>Gestion des bâtiments</h1>
-            <?php if ($planet): ?>
-                <p class="page-header__subtitle">Optimisez les installations de <?= htmlspecialchars($planet->getName()) ?> pour soutenir l’expansion de votre empire.</p>
-            <?php else: ?>
-                <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour gérer ses bâtiments et sa production.</p>
-            <?php endif; ?>
-        </div>
-        <div class="page-header__actions">
-            <?php if ($planet): ?>
-                <a class="button button--ghost" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $planet->getId() ?>">Accéder à la recherche</a>
-            <?php endif; ?>
-        </div>
-    </section>
+<header class="ui-page-header">
+    <div class="ui-page-header__titles">
+        <h1 class="ui-page-header__title">Gestion des bâtiments</h1>
+        <?php if ($planet): ?>
+            <p class="ui-page-header__subtitle">Optimisez les installations de <?= htmlspecialchars($planet->getName()) ?> pour soutenir l’expansion de votre empire.</p>
+        <?php else: ?>
+            <p class="ui-page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour gérer ses bâtiments et sa production.</p>
+        <?php endif; ?>
+    </div>
+    <div class="ui-page-header__actions">
+        <?php if ($planet): ?>
+            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $planet->getId() ?>">
+                <span class="ui-button__label">Accéder à la recherche</span>
+            </a>
+        <?php endif; ?>
+    </div>
+</header>
 
 <?php if ($overview === null): ?>
     <?= $card([
+            'baseClass' => 'ui-card',
             'title' => 'Aucune colonie active',
+            'bodyClass' => 'ui-card__body',
             'body' => static function (): void {
                 echo '<p>Choisissez une planète via le sélecteur supérieur pour afficher ses infrastructures.</p>';
             },
     ]) ?>
 <?php else: ?>
     <?= $card([
+            'baseClass' => 'ui-card',
+            'class' => 'colony-queue',
             'title' => 'File de construction',
             'subtitle' => 'Suivi des améliorations en cours',
+            'bodyClass' => 'ui-card__body colony-queue__body',
             'body' => static function () use (
                 $queue,
                 $queueCount,
@@ -127,11 +134,11 @@ ob_start();
         <?php if (empty($category['items'])) {
             continue;
         } ?>
-        <section class="content-section">
-            <header class="content-section__header">
+        <section class="ui-section colony-section">
+            <header class="ui-section__header">
                 <h2><?= htmlspecialchars($category['label']) ?></h2>
             </header>
-            <div class="card-grid card-grid--quad">
+            <div class="ui-card-grid ui-card-grid--quad">
                 <?php foreach ($category['items'] as $building): ?>
                     <?php $definition = $building['definition']; ?>
                     <?php
@@ -150,14 +157,15 @@ ob_start();
                     $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
+                            'baseClass' => 'ui-card',
                             'title' => $definition->getLabel(),
                             'subtitle' => 'Niveau actuel ' . format_number((int)$building['level']),
                             'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                             'status' => $status,
                             'class' => 'building-card',
-                            'headerClass' => 'panel__header building-card__header',
-                            'bodyClass' => 'panel__body building-card__body',
-                            'footerClass' => 'panel__footer building-card__footer',
+                            'headerClass' => 'ui-card__header building-card__header',
+                            'bodyClass' => 'ui-card__body building-card__body',
+                            'footerClass' => 'ui-card__footer building-card__footer',
                             'attributes' => [
                                     'id' => 'building-' . $definition->getKey(),
                                     'data-building-card' => $definition->getKey(),
@@ -393,11 +401,15 @@ ob_start();
                                     $label = 'Conditions non remplies';
                                 }
                                 $disabled = $canUpgrade ? '' : ' disabled';
-                                $buttonClasses = 'button button--primary';
+                                $buttonClasses = 'ui-button ui-button--primary ui-button--sm';
                                 if ($requirementsOk && !$affordable) {
-                                    $buttonClasses .= ' button--resource-warning';
+                                    $buttonClasses = 'ui-button ui-button--warning ui-button--sm';
+                                } elseif (!$requirementsOk) {
+                                    $buttonClasses = 'ui-button ui-button--neutral ui-button--sm';
                                 }
-                                echo '<button class="' . $buttonClasses . '" type="submit"' . $disabled . '>' . htmlspecialchars($label) . '</button>';
+                                echo '<button class="' . $buttonClasses . '" type="submit"' . $disabled . '>';
+                                echo '<span class="ui-button__label">' . htmlspecialchars($label) . '</span>';
+                                echo '</button>';
                                 echo '</form>';
                             },
                     ]) ?>

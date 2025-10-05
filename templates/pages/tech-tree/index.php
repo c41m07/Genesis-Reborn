@@ -4,6 +4,7 @@
 /** @var string $baseUrl URL de base pour les liens. */
 /** @var int|null $selectedPlanetId Identifiant de la planète choisie. */
 $title = $title ?? 'Arbre technologique';
+$card = require __DIR__ . '/../../components/_card.php';
 $groups = $tree['groups'] ?? [];
 if (!is_array($groups)) {
     $groups = [];
@@ -112,102 +113,122 @@ $nodesJson = $nodesJson !== false ? $nodesJson : '{}';
 $hasNodes = !empty($nodes);
 ob_start();
 ?>
-    <section class="page-header">
-        <div>
-            <h1>Arbre technologique</h1>
-            <p class="page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs
-                prérequis.</p>
-        </div>
-        <div class="page-header__actions">
-            <?php if ($selectedPlanetId): ?>
-                <a class="button button--ghost"
-                   href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">Retour au
-                    laboratoire</a>
-            <?php endif; ?>
-        </div>
-    </section>
+<header class="ui-page-header">
+    <div class="ui-page-header__titles">
+        <h1 class="ui-page-header__title">Arbre technologique</h1>
+        <p class="ui-page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs prérequis.</p>
+    </div>
+    <div class="ui-page-header__actions">
+        <?php if ($selectedPlanetId): ?>
+            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">
+                <span class="ui-button__label">Retour au laboratoire</span>
+            </a>
+        <?php endif; ?>
+    </div>
+</header>
 
 <?php if (!$hasNodes): ?>
-    <article class="panel">
-        <div class="panel__body">
-            <p>Aucune donnée technologique disponible pour cette planète.</p>
-        </div>
-    </article>
+    <?= $card([
+        'baseClass' => 'ui-card',
+        'title' => 'Données indisponibles',
+        'bodyClass' => 'ui-card__body',
+        'body' => static function (): void {
+            echo '<p>Aucune donnée technologique disponible pour cette planète.</p>';
+        },
+    ]) ?>
 <?php else: ?>
     <section class="tech-tree" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
         <div class="tech-tree__layout">
             <aside class="tech-tree__sidebar">
-                <?php foreach ($groups as $group): ?>
-                    <?php $groupKey = (string)($group['key'] ?? ''); ?>
-                    <?php $groupLabel = (string)($group['label'] ?? ''); ?>
-                    <?php $categories = $group['categories'] ?? []; ?>
-                    <?php if (empty($categories)) {
-                        continue;
-                    } ?>
-                    <details class="tech-section tech-section--group"
-                             data-tech-group="<?= htmlspecialchars($groupKey) ?>">
-                        <summary class="tech-section__summary">
-                            <span class="tech-section__title" role="heading"
-                                  aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
-                            <span class="tech-section__icon" aria-hidden="true"></span>
-                        </summary>
-                        <div class="tech-section__groups ">
-                            <?php foreach ($categories as $category): ?>
-                                <?php $categoryKey = (string)($category['key'] ?? ''); ?>
-                                <?php $categoryLabel = (string)($category['label'] ?? ''); ?>
-                                <?php $items = $category['items'] ?? []; ?>
-                                <?php if (empty($items)) {
-                                    continue;
-                                } ?>
-                                <details class="tech-subsection"
-                                         data-tech-category="<?= htmlspecialchars($categoryKey) ?>">
-                                    <summary class="tech-subsection__summary">
-                                        <span class="tech-subsection__title" role="heading"
-                                              aria-level="3"><?= htmlspecialchars($categoryLabel) ?></span>
-                                        <span class="tech-subsection__icon" aria-hidden="true"></span>
-                                    </summary>
-                                    <ul class="tech-section__list tech-section__list--nested">
-                                        <?php foreach ($items as $item): ?>
-                                            <?php $itemKey = (string)($item['key'] ?? ''); ?>
-                                            <?php if ($itemKey === '') {
-                                                continue;
-                                            } ?>
-                                            <?php $nodeId = $categoryKey . ':' . $itemKey; ?>
-                                            <?php $node = $nodes[$nodeId] ?? null; ?>
-                                            <?php $state = $node['state'] ?? getTechState($item['requires'] ?? []); ?>
-                                            <li>
-                                                <button
-                                                        class="tech-node-link<?= !empty($state['allMet']) ? ' tech-node-link--ready' : '' ?>"
-                                                        type="button"
-                                                        data-tech-target="<?= htmlspecialchars($nodeId) ?>"
-                                                        data-tech-ready="<?= !empty($state['allMet']) ? '1' : '0' ?>"
-                                                        data-tech-group="<?= htmlspecialchars($groupKey) ?>"
-                                                        data-tech-category="<?= htmlspecialchars($categoryKey) ?>"
-                                                >
-                                                    <span class="tech-node-link__label"><?= htmlspecialchars($item['label'] ?? $itemKey) ?></span>
-                                                    <?php if (isset($item['level'])): ?>
-                                                        <span class="tech-node-link__level">Niveau <?= number_format((int)$item['level']) ?></span>
-                                                    <?php endif; ?>
-                                                </button>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                </details>
-                            <?php endforeach; ?>
+                <article class="ui-card tech-tree__navigator">
+                    <header class="ui-card__header">
+                        <div class="ui-card__meta">
+                            <h2 class="ui-card__title">Navigation technologique</h2>
+                            <p class="ui-card__subtitle">Parcourez les domaines et débloquez leurs prérequis.</p>
                         </div>
-                    </details>
-                <?php endforeach; ?>
+                    </header>
+                    <div class="ui-card__body tech-tree__navigator-body">
+                        <?php foreach ($groups as $group): ?>
+                            <?php $groupKey = (string)($group['key'] ?? ''); ?>
+                            <?php $groupLabel = (string)($group['label'] ?? ''); ?>
+                            <?php $categories = $group['categories'] ?? []; ?>
+                            <?php if (empty($categories)) {
+                                continue;
+                            } ?>
+                            <details class="tech-section tech-section--group"
+                                     data-tech-group="<?= htmlspecialchars($groupKey) ?>">
+                                <summary class="tech-section__summary">
+                                    <span class="tech-section__title" role="heading"
+                                          aria-level="2"><?= htmlspecialchars($groupLabel) ?></span>
+                                    <span class="tech-section__icon" aria-hidden="true"></span>
+                                </summary>
+                                <div class="tech-section__groups">
+                                    <?php foreach ($categories as $category): ?>
+                                        <?php $categoryKey = (string)($category['key'] ?? ''); ?>
+                                        <?php $categoryLabel = (string)($category['label'] ?? ''); ?>
+                                        <?php $items = $category['items'] ?? []; ?>
+                                        <?php if (empty($items)) {
+                                            continue;
+                                        } ?>
+                                        <details class="tech-subsection"
+                                                 data-tech-category="<?= htmlspecialchars($categoryKey) ?>">
+                                            <summary class="tech-subsection__summary">
+                                                <span class="tech-subsection__title" role="heading"
+                                                      aria-level="3"><?= htmlspecialchars($categoryLabel) ?></span>
+                                                <span class="tech-subsection__icon" aria-hidden="true"></span>
+                                            </summary>
+                                            <ul class="tech-section__list tech-section__list--nested">
+                                                <?php foreach ($items as $item): ?>
+                                                    <?php $itemKey = (string)($item['key'] ?? ''); ?>
+                                                    <?php if ($itemKey === '') {
+                                                        continue;
+                                                    } ?>
+                                                    <?php $nodeId = $categoryKey . ':' . $itemKey; ?>
+                                                    <?php $node = $nodes[$nodeId] ?? null; ?>
+                                                    <?php $state = $node['state'] ?? getTechState($item['requires'] ?? []); ?>
+                                                    <li>
+                                                        <button
+                                                                class="tech-node-link<?= !empty($state['allMet']) ? ' tech-node-link--ready' : '' ?>"
+                                                                type="button"
+                                                                data-tech-target="<?= htmlspecialchars($nodeId) ?>"
+                                                                data-tech-ready="<?= !empty($state['allMet']) ? '1' : '0' ?>"
+                                                                data-tech-group="<?= htmlspecialchars($groupKey) ?>"
+                                                                data-tech-category="<?= htmlspecialchars($categoryKey) ?>"
+                                                        >
+                                                            <span class="tech-node-link__label"><?= htmlspecialchars($item['label'] ?? $itemKey) ?></span>
+                                                            <?php if (isset($item['level'])): ?>
+                                                                <span class="tech-node-link__level">Niveau <?= number_format((int)$item['level']) ?></span>
+                                                            <?php endif; ?>
+                                                        </button>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </details>
+                                    <?php endforeach; ?>
+                                </div>
+                            </details>
+                        <?php endforeach; ?>
+                    </div>
+                </article>
             </aside>
             <div class="tech-tree__details-column">
-                <section
-                        class="tech-tree__details tech-tree__details--sticky"
-                        id="tech-tree-detail"
-                        data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>"
-                        data-base-url="<?= htmlspecialchars($baseUrl) ?>"
-                        data-planet-id="<?= $selectedPlanetId !== null ? (int)$selectedPlanetId : '' ?>"
-                >
-                    <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
-                </section>
+                <article class="ui-card tech-tree__details tech-tree__details--sticky">
+                    <header class="ui-card__header">
+                        <div class="ui-card__meta">
+                            <h2 class="ui-card__title">Détails de la technologie</h2>
+                            <p class="ui-card__subtitle">Recherchez les informations et prérequis d’un élément.</p>
+                        </div>
+                    </header>
+                    <div
+                            class="ui-card__body tech-tree__details-body"
+                            id="tech-tree-detail"
+                            data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>"
+                            data-base-url="<?= htmlspecialchars($baseUrl) ?>"
+                            data-planet-id="<?= $selectedPlanetId !== null ? (int)$selectedPlanetId : '' ?>"
+                    >
+                        <p class="tech-detail__placeholder">Sélectionnez un élément pour afficher ses prérequis.</p>
+                    </div>
+                </article>
             </div>
         </div>
     </section>
