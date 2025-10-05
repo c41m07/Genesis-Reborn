@@ -301,39 +301,78 @@ main.workspace__content {
   gap: var(--space-1);
 }
 
-.topbar__selector select,
-.hangar-table__quantity-input {
+.topbar__selector {
+  position: relative;
+  display: inline-flex;
+}
+
+.topbar__select {
   appearance: none;
+  background: var(--bg-surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-2) calc(var(--space-3) + 1.5rem) var(--space-2) var(--space-3);
+  cursor: pointer;
+  min-width: 180px;
+  width: auto;
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    background-color var(--transition-base);
+}
+
+.topbar__select:hover {
+  border-color: var(--color-border-strong);
+  background: var(--bg-surface);
+}
+
+.topbar__select:focus-visible {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+  outline: none;
+  background: var(--bg-surface);
+}
+
+.topbar__selector::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  top: 50%;
+  right: var(--space-3);
+  transform: translateY(-50%);
+  width: 0.75rem;
+  height: 0.45rem;
+  background: var(--color-muted);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  transition: background-color var(--transition-base);
+}
+
+.topbar__selector:focus-within::after {
+  background: var(--color-primary);
+}
+
+.hangar-table__quantity-input {
   background: var(--surface-tint-medium);
   border: 1px solid var(--surface-tint-medium);
   border-radius: var(--radius-sm);
   color: var(--color-text);
-  padding: 0.35rem 2.5rem 0.35rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   font-weight: 600;
-  cursor: pointer;
-  min-width: 160px;
-  background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"%3E%3Cpath d="M3.2 5.2 8 10l4.8-4.8 1.4 1.4-6.2 6.2L1.8 6.6Z"/%3E%3C/svg%3E');
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 0.9rem;
-}
-
-.topbar__selector select:focus,
-.hangar-table__quantity-input:focus {
-  outline: 2px solid color-mix(in srgb, var(--color-primary) 60%, transparent);
-  outline-offset: 2px;
-}
-
-.hangar-table__quantity-input {
-  min-width: 0;
-  padding-right: 0.75rem;
-  background-image: none;
   cursor: text;
+  min-width: 0;
   width: 100%;
   box-sizing: border-box;
+  background-image: none;
 
   /* UI quick win: normaliser l'apparence des champs numériques */
   appearance: textfield;
+}
+
+.hangar-table__quantity-input:focus {
+  outline: 2px solid color-mix(in srgb, var(--color-primary) 60%, transparent);
+  outline-offset: 2px;
 }
 
 .hangar-table__quantity-input::-webkit-outer-spin-button,

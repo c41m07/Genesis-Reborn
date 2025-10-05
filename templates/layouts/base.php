@@ -195,7 +195,7 @@ $currentSectionPath = $menuLookup[$activeSection]['path'] ?? '/dashboard';
                         <form class="topbar__selector" method="get"
                               action="<?= htmlspecialchars($assetBase . $currentSectionPath) ?>">
                             <label class="visually-hidden" for="topbar-planet-select">Changer de planète</label>
-                            <select id="topbar-planet-select" name="planet" data-auto-submit>
+                            <select id="topbar-planet-select" name="planet" class="ui-select topbar__select" data-auto-submit>
                                 <?php foreach ($planets as $planetOption): ?>
                                     <option value="<?= $planetOption->getId() ?>"<?= ($planetOption->getId() === $currentPlanetId) ? ' selected' : '' ?>><?= htmlspecialchars($planetOption->getName()) ?></option>
                                 <?php endforeach; ?>
