@@ -25,7 +25,7 @@ final class AssembleFleetFromHangarTest extends TestCase
         $result = $useCase->execute(99, 1, 'fighter', 3);
 
         self::assertTrue($result['success']);
-        self::assertSame('Garnison renforcée avec succès.', $result['message']);
+        self::assertSame('Platforme orbital renforcée avec succès.', $result['message']);
         self::assertSame(2, $hangar->getQuantity(1, 'fighter'));
         self::assertSame(['planet' => 1, 'ship' => 'fighter', 'quantity' => 3], $fleets->lastAddition);
     }
