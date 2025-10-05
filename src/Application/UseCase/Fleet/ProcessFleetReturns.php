@@ -13,7 +13,7 @@ final class ProcessFleetReturns
     {
     }
 
-    public function execute(int $playerId, DateTimeImmutable $now): int
+    public function execute(?int $playerId, DateTimeImmutable $now): int
     {
         $returns = $this->movements->findReturningMissions($now, $playerId);
         $count = 0;

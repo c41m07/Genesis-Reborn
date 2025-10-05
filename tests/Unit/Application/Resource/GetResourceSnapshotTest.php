@@ -7,11 +7,19 @@ namespace App\Tests\Unit\Application\Resource;
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Resource\GetResourceSnapshot;
 use App\Domain\Entity\Planet;
+use App\Domain\Entity\FleetMovement;
+use App\Domain\Enum\FleetMission;
+use App\Domain\Enum\FleetStatus;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
+use App\Domain\ValueObject\Coordinates;
 use App\Domain\Service\ResourceTickService;
+use BadMethodCallException;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -19,11 +27,15 @@ final class GetResourceSnapshotTest extends TestCase
 {
     public function testRejectsInvalidPlanetId(): void
     {
+        [$processArrivals, $processReturns, $movementRepository] = $this->createFleetProcessors();
+
         $useCase = new GetResourceSnapshot(
             $this->createPlanetRepository(null),
             $this->createBuildProcessorStub(),
             $this->createResearchProcessorStub(),
             $this->createShipProcessorStub(),
+            $processArrivals,
+            $processReturns,
             $this->createBuildingStateRepository(),
             $this->createTickServiceStub([])
         );
@@ -33,12 +45,15 @@ final class GetResourceSnapshotTest extends TestCase
         self::assertSame(400, $result->getStatusCode());
         self::assertFalse($result->getPayload()['success']);
         self::assertNull($result->getPlanet());
+        self::assertSame(0, $movementRepository->arrivalsCalls);
+        self::assertSame(0, $movementRepository->returnsCalls);
     }
 
     public function testReturnsSnapshotForOwnedPlanet(): void
     {
         $planet = $this->createPlanet();
         $planetRepository = $this->createPlanetRepository($planet);
+        [$processArrivals, $processReturns, $movementRepository] = $this->createFleetProcessors();
         $tickResult = [
             $planet->getId() => [
                 'elapsed_seconds' => 60,
@@ -68,6 +83,8 @@ final class GetResourceSnapshotTest extends TestCase
             $this->createBuildProcessorStub(),
             $this->createResearchProcessorStub(),
             $this->createShipProcessorStub(),
+            $processArrivals,
+            $processReturns,
             $this->createBuildingStateRepository(['mine' => 1]),
             $this->createTickServiceStub($tickResult)
         );
@@ -83,6 +100,8 @@ final class GetResourceSnapshotTest extends TestCase
         self::assertSame($planet->getId(), $result->getPayload()['planetId']);
         self::assertCount(1, $planetRepository->updates);
         self::assertSame($planet->getId(), $planetRepository->updates[0]->getId());
+        self::assertSame(1, $movementRepository->arrivalsCalls);
+        self::assertSame(1, $movementRepository->returnsCalls);
     }
 
     /**
@@ -204,6 +223,73 @@ final class GetResourceSnapshotTest extends TestCase
                 return $this->result;
             }
         };
+    }
+
+    /**
+     * @return array{0: ProcessFleetArrivals, 1: ProcessFleetReturns, 2: object{arrivalsCalls:int, returnsCalls:int}}
+     */
+    private function createFleetProcessors(): array
+    {
+        $repository = new class () implements FleetMovementRepositoryInterface {
+            public int $arrivalsCalls = 0;
+            public int $returnsCalls = 0;
+
+            public function launchMission(
+                int $playerId,
+                int $originPlanetId,
+                ?int $fleetId,
+                ?int $destinationPlanetId,
+                Coordinates $destinationCoordinates,
+                FleetMission $mission,
+                FleetStatus $status,
+                array $composition,
+                int $fuelConsumed,
+                DateTimeImmutable $departureAt,
+                DateTimeImmutable $arrivalAt,
+                int $travelTimeSeconds,
+                array $payload = []
+            ): FleetMovement {
+                throw new BadMethodCallException('Not implemented.');
+            }
+
+            public function findActiveByOriginPlanet(int $planetId): array
+            {
+                return [];
+            }
+
+            public function findActiveByPlayer(int $playerId): array
+            {
+                return [];
+            }
+
+            public function findArrivedMissions(DateTimeImmutable $now, ?int $playerId = null): array
+            {
+                $this->arrivalsCalls++;
+
+                return [];
+            }
+
+            public function completeArrival(FleetMovement $movement, DateTimeImmutable $processedAt): void
+            {
+            }
+
+            public function findReturningMissions(DateTimeImmutable $now, ?int $playerId = null): array
+            {
+                $this->returnsCalls++;
+
+                return [];
+            }
+
+            public function completeReturn(FleetMovement $movement, DateTimeImmutable $processedAt): void
+            {
+            }
+        };
+
+        return [
+            new ProcessFleetArrivals($repository),
+            new ProcessFleetReturns($repository),
+            $repository,
+        ];
     }
 
     private function createPlanet(): Planet

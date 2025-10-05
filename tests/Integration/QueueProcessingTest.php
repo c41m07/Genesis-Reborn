@@ -8,6 +8,8 @@ use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\Queue\QueueFinalizer;
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Building\UpgradeBuilding;
 use App\Application\UseCase\Research\StartResearch;
 use App\Application\UseCase\Resource\GetResourceSnapshot;
@@ -18,6 +20,7 @@ use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
@@ -41,6 +44,10 @@ use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Persistence\PdoBuildQueueRepository;
 use App\Infrastructure\Security\CsrfTokenManager;
+use App\Domain\Entity\FleetMovement;
+use App\Domain\Enum\FleetMission;
+use App\Domain\Enum\FleetStatus;
+use App\Domain\ValueObject\Coordinates;
 use DateTimeImmutable;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -699,11 +706,17 @@ class QueueProcessingTest extends TestCase
         $csrf = new CsrfTokenManager($session);
         $renderer = new ViewRenderer(__DIR__ . '/../../templates');
 
+        $fleetMovements = new NullFleetMovementRepository();
+        $processArrivals = new ProcessFleetArrivals($fleetMovements);
+        $processReturns = new ProcessFleetReturns($fleetMovements);
+
         $getResourceSnapshot = new GetResourceSnapshot(
             $planetRepository,
             $buildQueue,
             $researchQueue,
             $shipQueue,
+            $processArrivals,
+            $processReturns,
             $buildingStates,
             $resourceTick
         );
@@ -777,11 +790,17 @@ class QueueProcessingTest extends TestCase
         $csrf = new CsrfTokenManager($session);
         $renderer = new ViewRenderer(__DIR__ . '/../../templates');
 
+        $fleetMovements = new NullFleetMovementRepository();
+        $processArrivals = new ProcessFleetArrivals($fleetMovements);
+        $processReturns = new ProcessFleetReturns($fleetMovements);
+
         $getResourceSnapshot = new GetResourceSnapshot(
             $planetRepository,
             $buildQueue,
             $researchQueue,
             $shipQueue,
+            $processArrivals,
+            $processReturns,
             $buildingStates,
             $resourceTick
         );
@@ -1548,5 +1567,61 @@ class InMemoryHangarRepository implements HangarRepositoryInterface
         } else {
             unset($this->stock[$planetId][$shipKey]);
         }
+    }
+}
+
+class NullFleetMovementRepository implements FleetMovementRepositoryInterface
+{
+    public int $arrivalsCalls = 0;
+    public int $returnsCalls = 0;
+
+    public function launchMission(
+        int $playerId,
+        int $originPlanetId,
+        ?int $fleetId,
+        ?int $destinationPlanetId,
+        Coordinates $destinationCoordinates,
+        FleetMission $mission,
+        FleetStatus $status,
+        array $composition,
+        int $fuelConsumed,
+        DateTimeImmutable $departureAt,
+        DateTimeImmutable $arrivalAt,
+        int $travelTimeSeconds,
+        array $payload = []
+    ): FleetMovement {
+        throw new \RuntimeException('Not implemented.');
+    }
+
+    public function findActiveByOriginPlanet(int $planetId): array
+    {
+        return [];
+    }
+
+    public function findActiveByPlayer(int $playerId): array
+    {
+        return [];
+    }
+
+    public function findArrivedMissions(DateTimeImmutable $now, ?int $playerId = null): array
+    {
+        $this->arrivalsCalls++;
+
+        return [];
+    }
+
+    public function completeArrival(FleetMovement $movement, DateTimeImmutable $processedAt): void
+    {
+    }
+
+    public function findReturningMissions(DateTimeImmutable $now, ?int $playerId = null): array
+    {
+        $this->returnsCalls++;
+
+        return [];
+    }
+
+    public function completeReturn(FleetMovement $movement, DateTimeImmutable $processedAt): void
+    {
     }
 }

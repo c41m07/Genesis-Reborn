@@ -14,13 +14,17 @@ use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Fleet\RenameIdleFleet;
 use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Controller\FleetController;
+use App\Domain\Entity\FleetMovement;
 use App\Domain\Entity\Planet;
+use App\Domain\Enum\FleetMission;
+use App\Domain\Enum\FleetStatus;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\HangarRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\ShipBuildQueueRepositoryInterface;
+use App\Domain\ValueObject\Coordinates;
 use App\Domain\Service\ShipCatalog;
 use App\Infrastructure\Http\Request;
 use App\Infrastructure\Http\Response;
@@ -28,6 +32,7 @@ use App\Infrastructure\Http\Session\FlashBag;
 use App\Infrastructure\Http\Session\Session;
 use App\Infrastructure\Http\ViewRenderer;
 use App\Infrastructure\Security\CsrfTokenManager;
+use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 
@@ -35,7 +40,7 @@ final class FleetControllerAccessTest extends TestCase
 {
     public function testIndexRedirectsWhenShipyardUnavailable(): void
     {
-        [$controller, $session] = $this->createController(false);
+        [$controller, $session, $movements] = $this->createController(false);
 
         $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, []);
         $response = $controller->index($request);
@@ -47,10 +52,12 @@ final class FleetControllerAccessTest extends TestCase
         self::assertNotEmpty($flashes);
         self::assertSame('warning', $flashes[0]['type'] ?? null);
         self::assertSame('Pour gérer votre flotte, vous devez construire un chantier spatial.', $flashes[0]['message'] ?? null);
+        self::assertSame(0, $movements->arrivalsCalls);
+        self::assertSame(0, $movements->returnsCalls);
     }
 
     /**
-     * @return array{0: FleetController, 1: Session}
+     * @return array{0: FleetController, 1: Session, 2: TestFleetMovementRepository}
      */
     private function createController(bool $hasShipyard): array
     {
@@ -73,18 +80,10 @@ final class FleetControllerAccessTest extends TestCase
         $shipQueueProcessor = new ProcessShipBuildQueue($shipQueueRepository, $hangarRepository, new QueueFinalizer());
 
         $shipCatalog = new ShipCatalog([]);
-        $movements = $this->createMock(FleetMovementRepositoryInterface::class);
+        $movements = new TestFleetMovementRepository();
         $planFleetMission = $this->createMock(PlanFleetMission::class);
-        $processArrivals = $this->createMock(ProcessFleetArrivals::class);
-        $processArrivals->expects($hasShipyard ? self::once() : self::never())
-            ->method('execute')
-            ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
-            ->willReturn(0);
-        $processReturns = $this->createMock(ProcessFleetReturns::class);
-        $processReturns->expects($hasShipyard ? self::once() : self::never())
-            ->method('execute')
-            ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
-            ->willReturn(0);
+        $processArrivals = new ProcessFleetArrivals($movements);
+        $processReturns = new ProcessFleetReturns($movements);
         $renderer = new class () extends ViewRenderer {
             public function __construct()
             {
@@ -126,7 +125,7 @@ final class FleetControllerAccessTest extends TestCase
             'https://example.com'
         );
 
-        return [$controller, $session];
+        return [$controller, $session, $movements];
     }
 
     private function getResponseStatus(Response $response): int
@@ -143,7 +142,7 @@ final class FleetControllerAccessTest extends TestCase
 
     public function testIndexReturnsJsonErrorWhenShipyardUnavailable(): void
     {
-        [$controller, $session] = $this->createController(false);
+        [$controller, $session, $movements] = $this->createController(false);
 
         $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, ['Accept' => 'application/json']);
         $response = $controller->index($request);
@@ -158,6 +157,8 @@ final class FleetControllerAccessTest extends TestCase
             'message' => 'Pour gérer votre flotte, vous devez construire un chantier spatial.',
             'planetId' => 1,
         ], $payload);
+        self::assertSame(0, $movements->arrivalsCalls);
+        self::assertSame(0, $movements->returnsCalls);
     }
 
     private function getResponseContent(Response $response): string
@@ -167,13 +168,15 @@ final class FleetControllerAccessTest extends TestCase
 
     public function testIndexRendersWhenShipyardAvailable(): void
     {
-        [$controller, $session] = $this->createController(true);
+        [$controller, $session, $movements] = $this->createController(true);
 
         $request = new Request('GET', '/fleet', ['planet' => 1], [], $session, []);
         $response = $controller->index($request);
 
         self::assertSame(200, $this->getResponseStatus($response));
         self::assertSame('rendered', $this->getResponseContent($response));
+        self::assertSame(1, $movements->arrivalsCalls);
+        self::assertSame(1, $movements->returnsCalls);
     }
 }
 
@@ -500,5 +503,61 @@ final class TestShipBuildQueueRepository implements ShipBuildQueueRepositoryInte
     public function finalizeDueJobs(int $planetId): array
     {
         return [];
+    }
+}
+
+final class TestFleetMovementRepository implements FleetMovementRepositoryInterface
+{
+    public int $arrivalsCalls = 0;
+    public int $returnsCalls = 0;
+
+    public function launchMission(
+        int $playerId,
+        int $originPlanetId,
+        ?int $fleetId,
+        ?int $destinationPlanetId,
+        Coordinates $destinationCoordinates,
+        FleetMission $mission,
+        FleetStatus $status,
+        array $composition,
+        int $fuelConsumed,
+        DateTimeImmutable $departureAt,
+        DateTimeImmutable $arrivalAt,
+        int $travelTimeSeconds,
+        array $payload = []
+    ): FleetMovement {
+        throw new \RuntimeException('Not implemented.');
+    }
+
+    public function findActiveByOriginPlanet(int $planetId): array
+    {
+        return [];
+    }
+
+    public function findActiveByPlayer(int $playerId): array
+    {
+        return [];
+    }
+
+    public function findArrivedMissions(DateTimeImmutable $now, ?int $playerId = null): array
+    {
+        $this->arrivalsCalls++;
+
+        return [];
+    }
+
+    public function completeArrival(FleetMovement $movement, DateTimeImmutable $processedAt): void
+    {
+    }
+
+    public function findReturningMissions(DateTimeImmutable $now, ?int $playerId = null): array
+    {
+        $this->returnsCalls++;
+
+        return [];
+    }
+
+    public function completeReturn(FleetMovement $movement, DateTimeImmutable $processedAt): void
+    {
     }
 }

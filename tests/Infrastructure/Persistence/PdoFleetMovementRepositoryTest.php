@@ -63,6 +63,9 @@ final class PdoFleetMovementRepositoryTest extends TestCase
             ]
         );
 
+        self::assertNotNull($movement->getReturnAt());
+        self::assertSame($return->format('Y-m-d H:i:s'), $movement->getReturnAt()?->format('Y-m-d H:i:s'));
+
         $this->repository->completeArrival($movement, $arrival);
 
         $destination = $this->pdo->query('SELECT metal, crystal FROM planets WHERE id = ' . $this->destinationPlanetId)
@@ -74,7 +77,7 @@ final class PdoFleetMovementRepositoryTest extends TestCase
             ->fetch(PDO::FETCH_ASSOC);
 
         self::assertSame('returning', $fleetRow['status']);
-        self::assertNotNull($fleetRow['return_at']);
+        self::assertSame($return->format('Y-m-d H:i:s'), $fleetRow['return_at']);
 
         $payload = json_decode((string)$fleetRow['mission_payload'], true, 512, JSON_THROW_ON_ERROR);
         self::assertSame(['metal' => 200, 'crystal' => 150], $payload['cargo']['resources']);
@@ -100,6 +103,10 @@ final class PdoFleetMovementRepositoryTest extends TestCase
         $finalFleet = $this->pdo->query('SELECT status, mission_type FROM fleets WHERE id = ' . $movement->getId())
             ->fetch(PDO::FETCH_ASSOC);
         self::assertSame(['status' => 'completed', 'mission_type' => 'idle'], $finalFleet);
+
+        $finalReturnAt = $this->pdo->query('SELECT return_at FROM fleets WHERE id = ' . $movement->getId())
+            ->fetchColumn();
+        self::assertSame($return->format('Y-m-d H:i:s'), $finalReturnAt);
 
         $finalPayload = json_decode((string)$this->pdo->query('SELECT mission_payload FROM fleets WHERE id = ' . $movement->getId())->fetchColumn(), true, 512, JSON_THROW_ON_ERROR);
         self::assertTrue($finalPayload['cargo']['return_complete']);

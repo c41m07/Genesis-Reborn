@@ -271,7 +271,18 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             }
 
             $travelSeconds = max(0, $movement->getTravelTimeSeconds());
-            $returnAt = $processedAt->add(new DateInterval('PT' . $travelSeconds . 'S'));
+            $existingReturnAt = $movement->getReturnAt();
+            $scheduledArrival = $movement->getArrivalAt();
+            $shouldRecalculateReturnAt = $existingReturnAt === null;
+
+            if ($scheduledArrival !== null && $processedAt > $scheduledArrival) {
+                $shouldRecalculateReturnAt = true;
+            }
+
+            $returnDateTime = $shouldRecalculateReturnAt
+                ? $this->calculateReturnAt($processedAt, $travelSeconds)
+                : $existingReturnAt;
+            $returnAt = $returnDateTime?->format('Y-m-d H:i:s');
 
             $payloadJson = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
@@ -280,7 +291,7 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
                 'status' => FleetStatus::Returning->value,
                 'payload' => $payloadJson,
                 'arrivalAt' => $processedAt->format('Y-m-d H:i:s'),
-                'returnAt' => $returnAt->format('Y-m-d H:i:s'),
+                'returnAt' => $returnAt,
                 'id' => $movement->getId(),
             ]);
 
@@ -352,14 +363,15 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
 
             $isReusedFleet = $reuseFleet;
             $status = $isReusedFleet ? FleetStatus::Idle : FleetStatus::Completed;
-            $returnAt = $isReusedFleet ? null : $processedAt->format('Y-m-d H:i:s');
+            $returnAt = $isReusedFleet ? null : $movement->getReturnAt();
+            $returnAtValue = $returnAt?->format('Y-m-d H:i:s');
 
             $update = $this->pdo->prepare('UPDATE fleets SET status = :status, mission_type = :mission, destination_planet_id = NULL, mission_payload = :payload, return_at = :returnAt, arrival_at = :arrivalAt, updated_at = NOW() WHERE id = :id');
             $update->execute([
                 'status' => $status->value,
                 'mission' => FleetMission::Idle->value,
                 'payload' => $payloadJson,
-                'returnAt' => $returnAt,
+                'returnAt' => $returnAtValue,
                 'arrivalAt' => $processedAt->format('Y-m-d H:i:s'),
                 'id' => $movement->getId(),
             ]);
@@ -369,6 +381,16 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             $this->pdo->rollBack();
             throw $exception;
         }
+    }
+
+    /**
+     * @param array<string, int> $composition
+     */
+    private function calculateReturnAt(DateTimeImmutable $arrivalAt, int $travelTimeSeconds): DateTimeImmutable
+    {
+        $seconds = max(0, $travelTimeSeconds);
+
+        return $arrivalAt->add(new DateInterval('PT' . $seconds . 'S'));
     }
 
     /**
@@ -400,7 +422,9 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
 
-        $stmt = $this->pdo->prepare('INSERT INTO fleets (player_id, origin_planet_id, destination_planet_id, mission_type, status, mission_payload, departure_at, arrival_at, return_at, travel_time_seconds, fuel_consumed, created_at, updated_at) VALUES (:player, :origin, :destination, :mission, :status, :payload, :departure, :arrival, NULL, :travel, :fuel, NOW(), NOW())');
+        $returnAt = $this->calculateReturnAt($arrivalAt, $travelTimeSeconds);
+
+        $stmt = $this->pdo->prepare('INSERT INTO fleets (player_id, origin_planet_id, destination_planet_id, mission_type, status, mission_payload, departure_at, arrival_at, return_at, travel_time_seconds, fuel_consumed, created_at, updated_at) VALUES (:player, :origin, :destination, :mission, :status, :payload, :departure, :arrival, :return, :travel, :fuel, NOW(), NOW())');
         $stmt->execute([
             'player' => $playerId,
             'origin' => $originPlanetId,
@@ -410,6 +434,7 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             'payload' => $payloadJson,
             'departure' => $departureAt->format('Y-m-d H:i:s'),
             'arrival' => $arrivalAt->format('Y-m-d H:i:s'),
+            'return' => $returnAt->format('Y-m-d H:i:s'),
             'travel' => $travelTimeSeconds,
             'fuel' => $fuelConsumed,
         ]);
@@ -465,8 +490,10 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
         );
 
+        $returnAt = $this->calculateReturnAt($arrivalAt, $travelTimeSeconds);
+
         $update = $this->pdo->prepare('UPDATE fleets SET mission_type = :mission, status = :status, destination_planet_id = :destination,'
-            . ' mission_payload = :payload, departure_at = :departure, arrival_at = :arrival, return_at = NULL,'
+            . ' mission_payload = :payload, departure_at = :departure, arrival_at = :arrival, return_at = :return,'
             . ' travel_time_seconds = :travel, fuel_consumed = :fuel, updated_at = NOW() WHERE id = :id');
         $update->execute([
             'mission' => $mission->value,
@@ -475,6 +502,7 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
             'payload' => $payloadJson,
             'departure' => $departureAt->format('Y-m-d H:i:s'),
             'arrival' => $arrivalAt->format('Y-m-d H:i:s'),
+            'return' => $returnAt->format('Y-m-d H:i:s'),
             'travel' => $travelTimeSeconds,
             'fuel' => $fuelConsumed,
             'id' => $fleetId,

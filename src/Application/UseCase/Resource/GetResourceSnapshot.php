@@ -7,6 +7,8 @@ namespace App\Application\UseCase\Resource;
 use App\Application\Service\ProcessBuildQueue;
 use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
+use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Domain\Entity\Planet;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
@@ -20,6 +22,8 @@ final class GetResourceSnapshot
         private readonly ProcessBuildQueue $buildQueue,
         private readonly ProcessResearchQueue $researchQueue,
         private readonly ProcessShipBuildQueue $shipQueue,
+        private readonly ProcessFleetArrivals $processFleetArrivals,
+        private readonly ProcessFleetReturns $processFleetReturns,
         private readonly BuildingStateRepositoryInterface $buildingStates,
         private readonly ResourceTickService $resourceTickService
     ) {
@@ -52,6 +56,9 @@ final class GetResourceSnapshot
 
         $buildingLevels = $this->buildingStates->getLevels($planetId);
         $now = new DateTimeImmutable();
+
+        $this->processFleetArrivals->execute(null, $now);
+        $this->processFleetReturns->execute(null, $now);
 
         $correctedFutureTick = false;
         $lastTick = $planet->getLastResourceTick();

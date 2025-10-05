@@ -266,6 +266,8 @@ return function (Container $container): void {
         $c->get(ProcessBuildQueue::class),
         $c->get(ProcessResearchQueue::class),
         $c->get(ProcessShipBuildQueue::class),
+        $c->get(ProcessFleetArrivals::class),
+        $c->get(ProcessFleetReturns::class),
         $c->get(BuildingStateRepositoryInterface::class),
         $c->get(ResourceTickService::class)
     ));

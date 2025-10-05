@@ -13,7 +13,7 @@ class ProcessFleetArrivals
     {
     }
 
-    public function execute(int $playerId, DateTimeImmutable $now): int
+    public function execute(?int $playerId, DateTimeImmutable $now): int
     {
         $arrivals = $this->movements->findArrivedMissions($now, $playerId);
         $count = 0;
