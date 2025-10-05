@@ -952,7 +952,7 @@ body.is-bootstrapized .btn-warning:disabled {
   font-size: 1.25rem;
 }
 
-.building-card__header .ui-card__title {
+.building-card__header .panel__title {
   margin: 0;
   font-size: var(--font-size-400);
 }
@@ -992,12 +992,12 @@ body.is-bootstrapized .btn-warning:disabled {
   /* Valeur a changé car elle prend toute les carte et doit prendre seulement la carte ciblé */
 }
 
-.building-card .ui-card__body {
+.building-card .panel__body {
   flex: 1;
   gap: var(--space-4);
 }
 
-.building-card .ui-card__footer {
+.building-card .panel__footer {
   margin-top: auto;
 }
 
