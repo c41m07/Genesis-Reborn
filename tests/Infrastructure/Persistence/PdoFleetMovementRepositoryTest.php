@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Infrastructure\Persistence;
 
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Domain\Entity\FleetMovement;
 use App\Domain\Enum\FleetMission;
 use App\Domain\Enum\FleetStatus;
@@ -29,6 +30,7 @@ final class PdoFleetMovementRepositoryTest extends TestCase
 
         $this->pdo = new PDO('sqlite::memory:');
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->pdo->sqliteCreateFunction('NOW', static fn (): string => (new DateTimeImmutable())->format('Y-m-d H:i:s'));
 
         $this->createSchema();
         $this->seedBaseData();
@@ -174,6 +176,56 @@ final class PdoFleetMovementRepositoryTest extends TestCase
         self::assertTrue($finalPayload['cargo']['return_complete']);
         self::assertSame(300, $finalPayload['cargo']['returned_total']);
         self::assertSame(0, $finalPayload['cargo']['remaining_total']);
+    }
+
+    public function testLateArrivalKeepsScheduledReturnAndCompletesImmediately(): void
+    {
+        $departure = new DateTimeImmutable('2023-01-01T00:00:00Z');
+        $arrival = new DateTimeImmutable('2023-01-01T01:00:00Z');
+        $lateProcessing = new DateTimeImmutable('2023-01-01T03:00:00Z');
+
+        $movement = $this->repository->launchMission(
+            $this->playerId,
+            $this->originPlanetId,
+            null,
+            $this->destinationPlanetId,
+            Coordinates::fromInts(2, 4, 7),
+            FleetMission::Transport,
+            FleetStatus::Outbound,
+            ['fighter' => 5],
+            100,
+            $departure,
+            $arrival,
+            3600,
+            [
+                'cargo' => [
+                    'fuel' => 100,
+                    'resources' => ['metal' => 50, 'crystal' => 75],
+                ],
+            ]
+        );
+
+        $scheduledReturn = $movement->getReturnAt();
+        self::assertNotNull($scheduledReturn);
+
+        $this->repository->completeArrival($movement, $lateProcessing);
+
+        $returnAt = $this->pdo->query('SELECT return_at FROM fleets WHERE id = ' . $movement->getId())
+            ->fetchColumn();
+        self::assertSame($scheduledReturn?->format('Y-m-d H:i:s'), $returnAt);
+
+        $processReturns = new ProcessFleetReturns($this->repository);
+        $completed = $processReturns->execute($this->playerId, $lateProcessing);
+        self::assertSame(1, $completed);
+
+        $fleetRow = $this->pdo->query('SELECT status, mission_type, return_at FROM fleets WHERE id = ' . $movement->getId())
+            ->fetch(PDO::FETCH_ASSOC);
+
+        self::assertSame([
+            'status' => 'completed',
+            'mission_type' => 'idle',
+            'return_at' => $scheduledReturn?->format('Y-m-d H:i:s'),
+        ], $fleetRow);
     }
 
     public function testFindActiveByPlayerReturnsOutboundAndReturningMissions(): void

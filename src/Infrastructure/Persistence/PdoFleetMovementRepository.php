@@ -272,16 +272,7 @@ final class PdoFleetMovementRepository implements FleetMovementRepositoryInterfa
 
             $travelSeconds = max(0, $movement->getTravelTimeSeconds());
             $existingReturnAt = $movement->getReturnAt();
-            $scheduledArrival = $movement->getArrivalAt();
-            $shouldRecalculateReturnAt = $existingReturnAt === null;
-
-            if ($scheduledArrival !== null && $processedAt > $scheduledArrival) {
-                $shouldRecalculateReturnAt = true;
-            }
-
-            $returnDateTime = $shouldRecalculateReturnAt
-                ? $this->calculateReturnAt($processedAt, $travelSeconds)
-                : $existingReturnAt;
+            $returnDateTime = $existingReturnAt ?? $this->calculateReturnAt($processedAt, $travelSeconds);
             $returnAt = $returnDateTime?->format('Y-m-d H:i:s');
 
             $payloadJson = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
