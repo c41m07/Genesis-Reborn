@@ -1963,12 +1963,7 @@ body.is-bootstrapized .btn-warning:disabled {
 .production-groups {
   display: grid;
   gap: var(--space-4);
-}
-
-@media (min-width: 992px) {
-  .production-groups {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
+  grid-template-columns: 1fr;
 }
 
 .production-card {
