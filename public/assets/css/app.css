@@ -2220,6 +2220,7 @@ body.is-bootstrapized .btn-warning:disabled {
 .tech-tree__details-column {
   display: flex;
   min-height: 0;
+    align-self: stretch;
 }
 
 .tech-section {
