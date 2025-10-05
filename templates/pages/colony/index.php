@@ -159,7 +159,7 @@ ob_start();
                     <?= $card([
                             'baseClass' => 'ui-card',
                             'title' => $definition->getLabel(),
-                            'subtitle' => 'Niveau actuel ' . format_number((int)$building['level']),
+                            'badge' => 'Niveau actuel ' . format_number((int)$building['level']),
                             'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
                             'status' => $status,
                             'class' => 'building-card',

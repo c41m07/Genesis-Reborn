@@ -33,8 +33,8 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
             <header class="ui-card__header building-card__header">
                 <div class="ui-card__meta">
                     <h2 class="ui-card__title">Mine de métal</h2>
-                    <p class="ui-card__subtitle">Niveau actuel 1</p>
                 </div>
+                <span class="ui-card__badge">Niveau actuel 1</span>
             </header>
             <div class="ui-card__body building-card__body">
                 <div class="building-card__sections">
@@ -84,8 +84,8 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
   const card = document.querySelector('[data-building-card="metal_mine"]');
   assert(card?.classList.contains('is-locked'));
 
-  const subtitle = card?.querySelector('.ui-card__subtitle');
-  assert.equal(subtitle?.textContent, 'Niveau actuel 3');
+  const badge = card?.querySelector('.ui-card__badge');
+  assert.equal(badge?.textContent, 'Niveau actuel 3');
 
   let costList = card?.querySelector('.building-card__sections .resource-list');
   assert.ok(costList?.textContent?.includes('150'));

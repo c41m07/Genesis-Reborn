@@ -420,13 +420,18 @@ export const updateBuildingCard = (building) => {
   updateBuildingLevelDisplays(building);
 
   const subtitle = queryCardSubtitle(card);
+  const badge = queryCardBadge(card);
   const level = Number.isFinite(building.level)
     ? Number(building.level)
     : Number(building.level ?? 0);
   const normalizedLevel = Number.isFinite(level) ? Math.max(0, Math.floor(level)) : 0;
-  if (subtitle) {
-    subtitle.textContent =
-      normalizedLevel > 0 ? `Niveau actuel ${formatNumber(normalizedLevel)}` : 'Non construit';
+  const levelLabel =
+    normalizedLevel > 0 ? `Niveau actuel ${formatNumber(normalizedLevel)}` : 'Non construit';
+
+  if (badge) {
+    badge.textContent = levelLabel;
+  } else if (subtitle) {
+    subtitle.textContent = levelLabel;
   }
 
   const sectionContainer = card.querySelector('.building-card__sections');

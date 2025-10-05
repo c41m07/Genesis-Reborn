@@ -1088,6 +1088,57 @@ body.is-bootstrapized .btn-warning:disabled {
   gap: var(--space-4);
 }
 
+.building-card .ui-card__header,
+.colony-queue .ui-card__header,
+.research-queue .ui-card__header,
+.shipyard-queue .ui-card__header {
+  align-items: center;
+  flex-direction: column;
+  gap: var(--space-3);
+  justify-content: center;
+  text-align: center;
+}
+
+.building-card .ui-card__meta,
+.colony-queue .ui-card__meta,
+.research-queue .ui-card__meta,
+.shipyard-queue .ui-card__meta,
+.tech-card .ui-card__meta,
+.ship-card .ui-card__meta {
+  align-items: center;
+  text-align: center;
+}
+
+.building-card .ui-card__title,
+.colony-queue .ui-card__title,
+.research-queue .ui-card__title,
+.shipyard-queue .ui-card__title,
+.tech-card .ui-card__title,
+.ship-card .ui-card__title {
+  text-align: center;
+  width: 100%;
+}
+
+.building-card .ui-card__media,
+.tech-card .ui-card__media,
+.ship-card .ui-card__media {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.building-card .ui-card__badge,
+.colony-queue .ui-card__badge,
+.research-queue .ui-card__badge,
+.shipyard-queue .ui-card__badge,
+.tech-card .ui-card__badge,
+.ship-card .ui-card__badge {
+  align-self: center;
+  color: var(--text-primary);
+  margin-left: 0;
+  text-align: center;
+}
+
 .building-card .panel__footer,
 .building-card .ui-card__footer {
   margin-top: auto;
@@ -1720,8 +1771,11 @@ body.is-bootstrapized .btn-warning:disabled {
 
 .tech-card .panel__header,
 .tech-card .ui-card__header {
-  align-items: flex-start;
+  align-items: center;
+  flex-direction: column;
   gap: var(--space-3);
+  justify-content: center;
+  text-align: center;
 }
 
 .tech-card .panel__body,
@@ -2461,6 +2515,13 @@ body.is-bootstrapized .btn-warning:disabled {
   color: color-mix(in srgb, var(--text-primary) 85%, transparent);
 }
 
+.tech-tree__details--sticky {
+  align-self: flex-start;
+  overflow: hidden auto;
+  position: sticky;
+  top: calc(var(--space-4) * 2 + 115px);
+}
+
 .tech-detail__requirements h3 {
   margin-top: 0;
   text-transform: uppercase;
@@ -2538,11 +2599,7 @@ body.is-bootstrapized .btn-warning:disabled {
 
 @media (min-width: 992px) {
   .tech-tree__details--sticky {
-    position: sticky;
-    top: calc(var(--space-4) * 2 + 115px);
     max-height: calc(100vh - var(--space-4) * 2 - 100px - var(--space-5));
-    overflow: hidden auto;
-    align-self: flex-start;
   }
 }
 
@@ -2610,8 +2667,11 @@ body.is-bootstrapized .btn-warning:disabled {
 
 .ship-card .panel__header,
 .ship-card .ui-card__header {
-  align-items: flex-start;
+  align-items: center;
+  flex-direction: column;
   gap: var(--space-3);
+  justify-content: center;
+  text-align: center;
 }
 
 .ship-card .panel__body,
