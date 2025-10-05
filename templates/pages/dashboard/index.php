@@ -1,5 +1,18 @@
 <?php
-/** @var array $dashboard Résumé des données du joueur. */
+/**
+ * @var array{
+ *     movements?: list<array{
+ *         id: int,
+ *         mission: string,
+ *         status: string,
+ *         origin: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+ *         destination: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+ *         eta: ?\DateTimeImmutable
+ *     }>,
+ *     planets: array,
+ *     empire: array
+ * } $dashboard Résumé des données du joueur.
+ */
 /** @var string $baseUrl URL de base pour les liens. */
 /** @var array $flashes Messages flash affichés. */
 /** @var int|null $currentUserId Identifiant de l’utilisateur connecté. */
@@ -42,6 +55,7 @@ $queues = $activeSummary['queues'] ?? [
 $activePlanet = $activeSummary['planet'] ?? null;
 $now = new DateTimeImmutable();
 $serverNow = time();
+$movingFleets = $dashboard['movements'] ?? [];
 $layoutBodyClasses = 'is-bootstrapized';
 ob_start();
 ?>
@@ -65,6 +79,61 @@ ob_start();
                     <dd class="dashboard-hero__value"><?= format_number($empire['points'] ?? 0) ?></dd>
                 </div>
             </dl>
+            <section class="dashboard-hero__fleets" aria-labelledby="dashboard-fleet-heading">
+                <div class="dashboard-hero__fleets-header">
+                    <h2 id="dashboard-fleet-heading" class="dashboard-hero__fleets-title">Flottes en mouvement</h2>
+                    <span class="dashboard-hero__fleets-count"><?= format_number(count($movingFleets)) ?></span>
+                </div>
+                <?php if ($movingFleets === []): ?>
+                    <p class="dashboard-hero__fleets-empty">Aucune flotte n’est actuellement en déplacement.</p>
+                <?php else: ?>
+                    <ul class="dashboard-hero__fleet-list">
+                        <?php foreach ($movingFleets as $movement): ?>
+                            <?php
+                                $origin = $movement['origin'];
+                                $destination = $movement['destination'];
+                                $missionLabel = match ($movement['mission']) {
+                                    'transport' => 'Transport',
+                                    default => ucfirst((string)$movement['mission']),
+                                };
+                                $statusLabel = match ($movement['status']) {
+                                    'returning' => 'Retour',
+                                    'holding' => 'En attente',
+                                    default => 'Aller',
+                                };
+                                $eta = $movement['eta'] ?? null;
+                                $etaTimestamp = $eta instanceof \DateTimeImmutable ? $eta->getTimestamp() : null;
+                                $etaLabel = $etaTimestamp !== null
+                                    ? format_duration(max(0, $etaTimestamp - $serverNow))
+                                    : '—';
+                            ?>
+                            <li class="dashboard-hero__fleet-item">
+                                <div class="dashboard-hero__fleet-path">
+                                    <div class="dashboard-hero__fleet-planet">
+                                        <strong><?= htmlspecialchars((string)$origin['name'], ENT_QUOTES) ?></strong>
+                                        <small><?= htmlspecialchars(sprintf('(%d:%d:%d)', $origin['coordinates']['galaxy'], $origin['coordinates']['system'], $origin['coordinates']['position']), ENT_QUOTES) ?></small>
+                                    </div>
+                                    <span class="dashboard-hero__fleet-arrow" aria-hidden="true">→</span>
+                                    <div class="dashboard-hero__fleet-planet">
+                                        <strong><?= htmlspecialchars((string)$destination['name'], ENT_QUOTES) ?></strong>
+                                        <small><?= htmlspecialchars(sprintf('(%d:%d:%d)', $destination['coordinates']['galaxy'], $destination['coordinates']['system'], $destination['coordinates']['position']), ENT_QUOTES) ?></small>
+                                    </div>
+                                </div>
+                                <div class="dashboard-hero__fleet-meta">
+                                    <span class="dashboard-hero__fleet-mission"><?= htmlspecialchars($missionLabel . ' • ' . $statusLabel, ENT_QUOTES) ?></span>
+                                    <?php if ($etaTimestamp !== null): ?>
+                                        <p class="dashboard-hero__fleet-countdown" data-countdown-container data-server-now="<?= $serverNow ?>" data-endtime="<?= $etaTimestamp ?>">
+                                            Arrivée dans <span class="countdown"><?= htmlspecialchars($etaLabel, ENT_QUOTES) ?></span>
+                                        </p>
+                                    <?php else: ?>
+                                        <p class="dashboard-hero__fleet-countdown">Arrivée inconnue</p>
+                                    <?php endif; ?>
+                                </div>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </section>
         </div>
     </article>
     <div class="row g-4 g-xl-5 align-items-start">

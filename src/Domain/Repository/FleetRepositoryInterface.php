@@ -23,7 +23,7 @@ interface FleetRepositoryInterface
     public function addShipsToFleet(int $fleetId, string $key, int $quantity): void;
 
     /**
-     * @return array{id: int, player_id: int, origin_planet_id: int, name: string|null}|null
+     * @return array{id: int, player_id: int, origin_planet_id: int, name: string|null, ships: array<string, int>}|null
      */
     public function findIdleFleet(int $fleetId): ?array;
 

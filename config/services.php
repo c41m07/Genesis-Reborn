@@ -17,6 +17,7 @@ use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\LaunchFleetMission;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Fleet\AssembleFleetFromHangar;
 use App\Application\UseCase\Fleet\MergeIdleFleets;
 use App\Application\UseCase\Fleet\RenameIdleFleet;
@@ -205,6 +206,9 @@ return function (Container $container): void {
     $container->set(ProcessFleetArrivals::class, fn (Container $c) => new ProcessFleetArrivals(
         $c->get(FleetMovementRepositoryInterface::class)
     ));
+    $container->set(ProcessFleetReturns::class, fn (Container $c) => new ProcessFleetReturns(
+        $c->get(FleetMovementRepositoryInterface::class)
+    ));
 
     $container->set(RegisterUser::class, fn (Container $c) => new RegisterUser(
         $c->get(UserRepositoryInterface::class),
@@ -226,6 +230,7 @@ return function (Container $container): void {
         $c->get(PlayerStatsRepositoryInterface::class),
         $c->get(ResearchStateRepositoryInterface::class),
         $c->get(FleetRepositoryInterface::class),
+        $c->get(FleetMovementRepositoryInterface::class),
         $c->get(BuildingCatalog::class),
         $c->get(ResearchCatalog::class),
         $c->get(ShipCatalog::class),
@@ -428,6 +433,7 @@ return function (Container $container): void {
         $c->get(ProcessShipBuildQueue::class),
         $c->get(PlanFleetMission::class),
         $c->get(ProcessFleetArrivals::class),
+        $c->get(ProcessFleetReturns::class),
         $c->get(CreateIdleFleet::class),
         $c->get(TransferIdleFleetShips::class),
         $c->get(RenameIdleFleet::class),

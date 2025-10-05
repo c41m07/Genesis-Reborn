@@ -9,6 +9,7 @@ use App\Application\UseCase\Fleet\CreateIdleFleet;
 use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Fleet\RenameIdleFleet;
 use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
@@ -36,6 +37,7 @@ class FleetController extends AbstractController
         private readonly ProcessShipBuildQueue            $shipQueueProcessor,
         private readonly PlanFleetMission                 $planFleetMission,
         private readonly ProcessFleetArrivals             $processFleetArrivals,
+        private readonly ProcessFleetReturns              $processFleetReturns,
         private readonly CreateIdleFleet                  $createFleet,
         private readonly TransferIdleFleetShips           $transferFleetShips,
         private readonly RenameIdleFleet                  $renameFleet,
@@ -133,7 +135,9 @@ class FleetController extends AbstractController
             return $this->redirect($this->baseUrl . '/colony?planet=' . $selectedId);
         }
 
-        $this->processFleetArrivals->execute($userId, new DateTimeImmutable());
+        $now = new DateTimeImmutable();
+        $this->processFleetArrivals->execute($userId, $now);
+        $this->processFleetReturns->execute($userId, $now);
 
         $fleet = $this->fleets->getFleet($selectedId);
         $fleetShips = [];
@@ -262,6 +266,45 @@ class FleetController extends AbstractController
             }
         }
 
+        if ($selectedFleet !== null) {
+            $missionShips = [];
+            $rawShips = is_array($selectedFleet['ships_raw'] ?? null) ? $selectedFleet['ships_raw'] : [];
+            foreach ($rawShips as $shipKey => $quantity) {
+                $quantity = (int)$quantity;
+                if ($quantity <= 0) {
+                    continue;
+                }
+
+                $definition = null;
+                try {
+                    $definition = $this->shipCatalog->get((string)$shipKey);
+                } catch (InvalidArgumentException) {
+                    // Ignorer : le vaisseau peut avoir été retiré du catalogue.
+                }
+
+                $stats = $definition ? $definition->getStats() : [];
+                $speedUnits = $definition ? $definition->getBaseSpeedUPerHour() : (float)($stats['vitesse'] ?? 0);
+                $speedUa = $speedUnits > 0 ? $speedUnits / 16.0 : 0.0;
+
+                $missionShips[] = [
+                    'key' => (string)$shipKey,
+                    'label' => $definition ? $definition->getLabel() : (string)$shipKey,
+                    'quantity' => $quantity,
+                    'attack' => (int)($stats['attaque'] ?? 0),
+                    'defense' => (int)($stats['défense'] ?? 0),
+                    'speedUa' => round($speedUa, 2),
+                    'category' => $definition ? $definition->getCategory() : 'Divers',
+                    'role' => $definition ? $definition->getRole() : '',
+                    'image' => $definition ? $definition->getImage() : null,
+                    'fuelRate' => $definition ? $definition->getFuelConsumptionPerHour() : 0.0,
+                    'cargo' => $definition ? $definition->getCargoCapacity() : 0,
+                ];
+            }
+
+            usort($missionShips, static fn (array $a, array $b): int => strcmp($a['label'], $b['label']));
+            $availableShips = $missionShips;
+        }
+
         $origin = $selectedPlanet->getCoordinates();
         $submittedDestination = [
             'galaxy' => $origin['galaxy'],
@@ -269,8 +312,15 @@ class FleetController extends AbstractController
             'position' => $origin['position'],
         ];
         $submittedComposition = [];
+        $submittedResources = [
+            'metal' => 0,
+            'crystal' => 0,
+            'hydrogen' => 0,
+        ];
+        $submittedMission = 'transport';
         $planErrors = [];
         $planResult = null;
+        $submittedSpeedFactor = 1.0;
 
         $fleetActionUrl = $this->baseUrl . '/fleet?planet=' . $selectedId;
         $buildFleetUrl = static function (string $baseUrl, ?int $fleetId = null): string {
@@ -361,18 +411,6 @@ class FleetController extends AbstractController
                 return $this->redirect($fleetActionUrl);
             }
 
-            if ($action === 'plan_fleet_mission') {
-                if (!$this->isCsrfTokenValid('fleet_mission_' . $selectedId, $data['csrf_token'] ?? null)) {
-                    $this->addFlash('error', 'Session expirée, veuillez réessayer.');
-                } else {
-                    $this->addFlash('info', 'La planification de missions dédiées sera disponible prochainement.');
-                }
-
-                $fleetId = isset($data['fleet_id']) ? (int)$data['fleet_id'] : 0;
-
-                return $this->redirect($buildFleetUrl($fleetActionUrl, $fleetId));
-            }
-
             if (!$this->isCsrfTokenValid('fleet_plan_' . $selectedId, $data['csrf_token'] ?? null)) {
                 $planErrors[] = 'Session expirée, veuillez recharger la page.';
             } else {
@@ -386,11 +424,24 @@ class FleetController extends AbstractController
                 if ($speedFactor > 1) {
                     $speedFactor /= 100;
                 }
+                $speedFactor = max(0.1, min(1.0, $speedFactor));
+                $submittedSpeedFactor = $speedFactor;
 
                 $compositionInput = [];
                 foreach ($availableShips as $ship) {
                     $compositionInput[$ship['key']] = (int)($data['composition'][$ship['key']] ?? 0);
                 }
+
+                $resourcesInput = [];
+                if (isset($data['resources']) && is_array($data['resources'])) {
+                    foreach ($data['resources'] as $resourceKey => $amount) {
+                        $resourcesInput[(string)$resourceKey] = (int)$amount;
+                    }
+                }
+
+                $submittedResources = array_merge($submittedResources, $resourcesInput);
+
+                $missionInput = (string)($data['mission'] ?? 'transport');
 
                 $planResponse = $this->planFleetMission->execute(
                     $userId,
@@ -398,11 +449,15 @@ class FleetController extends AbstractController
                     $compositionInput,
                     $destinationInput,
                     $speedFactor,
-                    (string)($data['mission'] ?? 'transport')
+                    $missionInput,
+                    $resourcesInput,
+                    $selectedFleet['id'] ?? null
                 );
 
                 $submittedComposition = $planResponse['composition'];
                 $submittedDestination = $planResponse['destination'];
+                $submittedMission = $planResponse['mission'] ?? $missionInput;
+                $submittedResources = array_merge($submittedResources, $planResponse['resources'] ?? []);
 
                 if ($planResponse['success']) {
                     $planResult = $planResponse['plan'];
@@ -414,6 +469,10 @@ class FleetController extends AbstractController
 
         foreach ($availableShips as $ship) {
             $submittedComposition[$ship['key']] = $submittedComposition[$ship['key']] ?? 0;
+        }
+
+        foreach (array_keys($submittedResources) as $resourceKey) {
+            $submittedResources[$resourceKey] = max(0, (int)$submittedResources[$resourceKey]);
         }
 
         $activeMissions = array_map(
@@ -451,6 +510,9 @@ class FleetController extends AbstractController
             'catalogCategories' => $this->shipCatalog->groupedByCategory(),
             'submittedComposition' => $submittedComposition,
             'submittedDestination' => $submittedDestination,
+            'submittedResources' => $submittedResources,
+            'submittedMission' => $submittedMission,
+            'submittedSpeedFactor' => $submittedSpeedFactor,
             'planResult' => $planResult,
             'planErrors' => $planErrors,
             'flashes' => $this->flashBag->consume(),

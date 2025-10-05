@@ -751,28 +751,27 @@ body.is-bootstrapized .btn-warning:disabled {
 .mission-form__grid {
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .mission-form__option {
+  position: relative;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-3);
-  border-radius: var(--radius-sm);
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  padding-left: calc(var(--space-4) + 30px);
+  min-height: 156px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--surface-input);
   transition:
     border-color var(--transition),
     background var(--transition),
-    box-shadow var(--transition);
+    box-shadow var(--transition),
+    transform var(--transition);
   cursor: not-allowed;
   color: var(--text-muted);
-}
-
-.mission-form__option:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-secondary-soft);
 }
 
 .mission-form__option:focus-within {
@@ -780,11 +779,34 @@ body.is-bootstrapized .btn-warning:disabled {
   box-shadow: var(--focus-ring);
 }
 
-.mission-form__radio {
-  /* UI quick win: apparence unifiée des radios personnalisées */
-  appearance: none;
+.mission-form__option--available {
+  cursor: pointer;
+  color: var(--text-primary);
+}
 
-  /* Safari nécessite encore le préfixe -webkit-appearance */
+.mission-form__option--available:hover {
+  border-color: var(--color-border-strong);
+  background: var(--surface-card);
+  transform: translateY(-2px);
+}
+
+.mission-form__option:has(.mission-form__radio:checked) {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--surface-tint-soft) 0%, var(--surface-card) 100%);
+  box-shadow: 0 16px 32px -24px rgba(0, 0, 0, 0.25);
+  color: var(--text-primary);
+}
+
+.mission-form__option:has(.mission-form__radio:checked) .mission-form__option-title {
+  color: var(--text-primary);
+}
+
+.mission-form__option:has(.mission-form__radio:checked) .mission-form__option-hint {
+  color: var(--text-secondary);
+}
+
+.mission-form__radio {
+  appearance: none;
   /* stylelint-disable-next-line property-no-vendor-prefix */
   -webkit-appearance: none;
   width: 18px;
@@ -792,8 +814,11 @@ body.is-bootstrapized .btn-warning:disabled {
   border-radius: 50%;
   border: 2px solid var(--color-border);
   background: transparent;
-  position: relative;
   cursor: inherit;
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  margin: 0;
 }
 
 .mission-form__radio::after {
@@ -810,19 +835,339 @@ body.is-bootstrapized .btn-warning:disabled {
   opacity: 1;
 }
 
-.mission-form__label {
-  font-weight: 600;
-  font-size: var(--font-size-sm);
+.mission-form__option-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 100%;
 }
 
-.mission-form__radio:checked ~ .mission-form__label {
+.mission-form__option-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.mission-form__option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
   color: var(--text-primary);
+  font-size: 1.75rem;
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.mission-form__option-icon--cargo {
+  background: linear-gradient(135deg, rgba(89, 142, 249, 0.15), rgba(89, 142, 249, 0.35));
+  color: #3a6ff3;
+}
+
+.mission-form__option-icon--garrison {
+  background: linear-gradient(135deg, rgba(176, 118, 255, 0.15), rgba(176, 118, 255, 0.35));
+  color: #7f3df3;
+}
+
+.mission-form__option-icon--attack {
+  background: linear-gradient(135deg, rgba(255, 112, 112, 0.15), rgba(255, 112, 112, 0.35));
+  color: #d13c3c;
+}
+
+.mission-form__option-icon--defense {
+  background: linear-gradient(135deg, rgba(102, 201, 151, 0.15), rgba(102, 201, 151, 0.35));
+  color: #1f9b5c;
+}
+
+.mission-form__option-icon--recycle {
+  background: linear-gradient(135deg, rgba(125, 211, 182, 0.15), rgba(125, 211, 182, 0.35));
+  color: #2f7f58;
+}
+
+.mission-form__option-icon--intel {
+  background: linear-gradient(135deg, rgba(130, 150, 255, 0.15), rgba(130, 150, 255, 0.35));
+  color: #4a5be0;
+}
+
+.mission-form__option-icon--explore {
+  background: linear-gradient(135deg, rgba(255, 196, 87, 0.15), rgba(255, 196, 87, 0.35));
+  color: #d27b00;
+}
+
+.mission-form__option-icon--pve {
+  background: linear-gradient(135deg, rgba(255, 164, 213, 0.15), rgba(255, 164, 213, 0.35));
+  color: #d53d8c;
+}
+
+.mission-form__option-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mission-form__option-title {
+  font-size: var(--font-size-400);
+  font-weight: var(--font-weight-semibold);
+  color: currentColor;
+}
+
+.mission-form__option-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
 }
 
 .mission-form__actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
+}
+
+.mission-form__legend {
+  margin: 0;
+  font-size: var(--font-size-200);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.mission-form__description {
+  margin: 0 0 var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.mission-form__tag {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-tint-soft);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metric-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.metric-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-tint-faint);
+}
+
+.metric-list span {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.metric-list strong {
+  font-weight: var(--font-weight-semibold);
+}
+
+.form-errors {
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-danger-on);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form-errors strong {
+  font-size: var(--font-size-sm);
+}
+
+.form-errors ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.fleet-mission__layout {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.fleet-table [data-fleet-action="manage"][data-disabled="true"],
+.fleet-table .ui-button--disabled[data-fleet-action="manage"] {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+@media (min-width: 992px) {
+  .fleet-mission__layout {
+    grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
+    align-items: start;
+  }
+}
+
+.fleet-mission__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fleet-mission__section h4 {
+  margin: 0;
+  font-size: var(--font-size-300);
+}
+
+.fleet-mission__coordinates {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.fleet-mission__resources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fleet-mission__resources h5 {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.fleet-mission__resources-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.fleet-mission__speed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fleet-mission__speed-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fleet-mission__speed-range {
+  flex: 1;
+}
+
+.fleet-mission__speed-value {
+  min-width: 3rem;
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+}
+
+.fleet-mission__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fleet-mission__errors {
+  min-height: 0;
+}
+
+.fleet-mission__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.fleet-mission__result-card {
+  background: var(--surface-tint-faint);
+  border: 1px solid var(--surface-tint-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fleet-mission__result-title {
+  margin: 0;
+  font-size: var(--font-size-400);
+  font-weight: var(--font-weight-semibold);
+}
+
+.fleet-mission__placeholder {
+  margin: 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.mission-composition__ship-name {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+}
+
+.mission-composition__ship-role {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.mission-composition__readonly {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mission-composition__readonly-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border-subtle);
+  background: var(--surface-muted);
+}
+
+.mission-composition__readonly-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mission-composition__ship-quantity {
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.mission-composition__summary {
+  margin-top: var(--space-2);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  text-align: right;
+}
+
+.mission-composition__summary-total {
+  margin-left: var(--space-2);
+  color: var(--text-secondary);
 }
 
 /* Fleet transfer */
@@ -1931,6 +2276,112 @@ body.is-bootstrapized .btn-warning:disabled {
   font-size: var(--font-size-500);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
+}
+
+.dashboard-hero__fleets {
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-surface-alt);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dashboard-hero__fleets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dashboard-hero__fleets-title {
+  margin: 0;
+  font-size: var(--font-size-300);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dashboard-hero__fleets-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--brand-surface);
+  color: var(--brand-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dashboard-hero__fleets-empty {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.dashboard-hero__fleet-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-hero__fleet-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-xs);
+}
+
+.dashboard-hero__fleet-path {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dashboard-hero__fleet-planet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dashboard-hero__fleet-planet strong {
+  font-size: var(--font-size-200);
+}
+
+.dashboard-hero__fleet-planet small {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+.dashboard-hero__fleet-arrow {
+  font-size: var(--font-size-200);
+  color: var(--text-muted);
+}
+
+.dashboard-hero__fleet-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.dashboard-hero__fleet-mission {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.dashboard-hero__fleet-countdown {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
 }
 
 .metric-grid {

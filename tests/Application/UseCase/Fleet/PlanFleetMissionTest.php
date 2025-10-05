@@ -26,6 +26,10 @@ final class PlanFleetMissionTest extends TestCase
             ->method('find')
             ->with(7)
             ->willReturn($planet);
+        $planetRepository->expects(self::once())
+            ->method('findByCoordinates')
+            ->with(2, 5)
+            ->willReturn([]);
 
         $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
         $buildingStates->expects(self::once())
@@ -35,9 +39,16 @@ final class PlanFleetMissionTest extends TestCase
 
         $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
         $fleetRepository->expects(self::once())
-            ->method('getFleet')
-            ->with(7)
-            ->willReturn(['fighter' => 10]);
+            ->method('findIdleFleet')
+            ->with(15)
+            ->willReturn([
+                'id' => 15,
+                'player_id' => 42,
+                'origin_planet_id' => 7,
+                'name' => 'Flotte Alpha',
+                'ships' => ['fighter' => 10],
+            ]);
+        $fleetRepository->expects(self::never())->method('getFleet');
 
         $definition = new ShipDefinition(
             'fighter',
@@ -73,15 +84,167 @@ final class PlanFleetMissionTest extends TestCase
             ['fighter' => 25, 'unknown' => 5],
             ['galaxy' => 2, 'system' => 5, 'position' => 9],
             1.0,
-            'transport'
+            'transport',
+            ['metal' => 120, 'hydrogen' => 40, 'invalid' => 999],
+            15
         );
 
         self::assertTrue($result['success']);
         self::assertSame(['fighter' => 10], $result['composition']);
         self::assertSame(['galaxy' => 2, 'system' => 5, 'position' => 9], $result['destination']);
         self::assertSame('transport', $result['mission']);
+        self::assertSame(['metal' => 120, 'hydrogen' => 40], $result['resources']);
         self::assertNotNull($result['plan']);
         self::assertInstanceOf(DateTimeImmutable::class, $result['plan']['arrival_time']);
+        self::assertArrayHasKey('remaining_cargo', $result['plan']);
+        self::assertSame(
+            $result['plan']['cargo_capacity'],
+            $result['plan']['cargo_used'] + $result['plan']['remaining_cargo']
+        );
+        self::assertGreaterThanOrEqual(0, $result['plan']['remaining_cargo']);
+    }
+
+    public function testPlanIgnoresRequestedSubsetAndUsesAllAvailableShips(): void
+    {
+        $planet = new Planet(5, 7, 1, 5, 9, 'Ares', 8000, -10, 25, 4000, 4000, 4000, 0, 0, 0, 0, 0, 60000, 60000, 60000, 800);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->expects(self::once())
+            ->method('find')
+            ->with(5)
+            ->willReturn($planet);
+        $planetRepository->expects(self::once())
+            ->method('findByCoordinates')
+            ->with(5, 9)
+            ->willReturn([]);
+
+        $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
+        $buildingStates->expects(self::once())
+            ->method('getLevels')
+            ->with(5)
+            ->willReturn(['shipyard' => 4]);
+
+        $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetRepository->expects(self::once())
+            ->method('findIdleFleet')
+            ->with(99)
+            ->willReturn([
+                'id' => 99,
+                'player_id' => 7,
+                'origin_planet_id' => 5,
+                'name' => 'Flotte',
+                'ships' => ['fighter' => 8],
+            ]);
+
+        $definition = new ShipDefinition(
+            'fighter',
+            'Chasseur',
+            'light',
+            'Interception',
+            'Unité polyvalente',
+            ['metal' => 100, 'hydrogen' => 50],
+            60,
+            ['vitesse' => 360],
+            [],
+            'fighter.png',
+            ['speed' => 360, 'consumption' => 9, 'cargo' => 80]
+        );
+
+        $shipCatalog = $this->createMock(ShipCatalog::class);
+        $shipCatalog->expects(self::once())
+            ->method('get')
+            ->with('fighter')
+            ->willReturn($definition);
+
+        $useCase = new PlanFleetMission(
+            $planetRepository,
+            $buildingStates,
+            $fleetRepository,
+            $shipCatalog,
+            new FleetNavigationService()
+        );
+
+        $result = $useCase->execute(
+            7,
+            5,
+            ['fighter' => 2],
+            ['galaxy' => 5, 'system' => 9, 'position' => 3],
+            1.0,
+            'transport',
+            [],
+            99
+        );
+
+        self::assertTrue($result['success']);
+        self::assertSame(['fighter' => 8], $result['composition']);
+    }
+
+    public function testPlanFailsWhenCargoInsufficient(): void
+    {
+        $planet = new Planet(7, 42, 1, 2, 3, 'Gaia', 12000, -20, 30, 5000, 5000, 5000, 0, 0, 0, 0, 0, 100000, 100000, 100000, 1000);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->method('find')->willReturn($planet);
+        $planetRepository->expects(self::once())
+            ->method('findByCoordinates')
+            ->with(2, 5)
+            ->willReturn([]);
+
+        $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
+        $buildingStates->method('getLevels')->willReturn(['shipyard' => 2]);
+
+        $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetRepository->method('findIdleFleet')->willReturn([
+            'id' => 12,
+            'player_id' => 42,
+            'origin_planet_id' => 7,
+            'name' => 'Flotte',
+            'ships' => ['fighter' => 5],
+        ]);
+
+        $definition = new ShipDefinition(
+            'fighter',
+            'Chasseur',
+            'light',
+            'Interception',
+            'Unité polyvalente',
+            ['metal' => 100, 'hydrogen' => 50],
+            60,
+            ['vitesse' => 360],
+            [],
+            'fighter.png',
+            ['speed' => 360, 'consumption' => 9, 'cargo' => 30]
+        );
+
+        $shipCatalog = $this->createMock(ShipCatalog::class);
+        $shipCatalog->expects(self::once())
+            ->method('get')
+            ->with('fighter')
+            ->willReturn($definition);
+
+        $useCase = new PlanFleetMission(
+            $planetRepository,
+            $buildingStates,
+            $fleetRepository,
+            $shipCatalog,
+            new FleetNavigationService()
+        );
+
+        $result = $useCase->execute(
+            42,
+            7,
+            ['fighter' => 5],
+            ['galaxy' => 2, 'system' => 5, 'position' => 9],
+            1.0,
+            'transport',
+            ['metal' => 5000, 'crystal' => 2000],
+            12
+        );
+
+        self::assertFalse($result['success']);
+        self::assertNotEmpty($result['errors']);
+        self::assertSame('transport', $result['mission']);
+        self::assertNull($result['plan']);
     }
 
     public function testPlanFailsWhenShipyardMissing(): void
@@ -90,6 +253,7 @@ final class PlanFleetMissionTest extends TestCase
 
         $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
         $planetRepository->method('find')->willReturn($planet);
+        $planetRepository->expects(self::never())->method('findByCoordinates');
 
         $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
         $buildingStates->method('getLevels')->willReturn(['shipyard' => 0]);

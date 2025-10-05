@@ -17,6 +17,9 @@ final class GetProfileOverviewTest extends TestCase
 {
     public function testThrowsWhenUserMissing(): void
     {
+        $dashboard = $this->createMock(GetDashboard::class);
+        $dashboard->method('execute')->willReturn([]);
+
         $useCase = new GetProfileOverview(
             new class () implements UserRepositoryInterface {
                 public function findByEmail(string $email): ?User
@@ -34,16 +37,7 @@ final class GetProfileOverviewTest extends TestCase
                     throw new RuntimeException('Not implemented.');
                 }
             },
-            new class () extends GetDashboard {
-                public function __construct()
-                {
-                }
-
-                public function execute(int $userId): array
-                {
-                    return [];
-                }
-            }
+            $dashboard
         );
 
         $this->expectException(RuntimeException::class);
@@ -69,6 +63,9 @@ final class GetProfileOverviewTest extends TestCase
             ]],
         ];
 
+        $dashboardUseCase = $this->createMock(GetDashboard::class);
+        $dashboardUseCase->method('execute')->willReturn($dashboard);
+
         $useCase = new GetProfileOverview(
             new class () implements UserRepositoryInterface {
                 public function findByEmail(string $email): ?User
@@ -86,16 +83,7 @@ final class GetProfileOverviewTest extends TestCase
                     throw new RuntimeException('Not implemented.');
                 }
             },
-            new class ($dashboard) extends GetDashboard {
-                public function __construct(private array $dashboard)
-                {
-                }
-
-                public function execute(int $userId): array
-                {
-                    return $this->dashboard;
-                }
-            }
+            $dashboardUseCase
         );
 
         $result = $useCase->execute(5);

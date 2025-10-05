@@ -10,6 +10,7 @@ use App\Application\Service\ProcessShipBuildQueue;
 use App\Application\UseCase\Dashboard\GetDashboard;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
@@ -38,6 +39,11 @@ class GetDashboardTest extends TestCase
         $shipQueue = $this->createMock(ShipBuildQueueRepositoryInterface::class);
         $researchStates = $this->createMock(ResearchStateRepositoryInterface::class);
         $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetMovements = $this->createMock(FleetMovementRepositoryInterface::class);
+        $fleetMovements->expects(self::once())
+            ->method('findActiveByPlayer')
+            ->with(123)
+            ->willReturn([]);
 
         $playerStats = $this->createMock(PlayerStatsRepositoryInterface::class);
         $playerStats->expects(self::once())
@@ -71,6 +77,7 @@ class GetDashboardTest extends TestCase
             $playerStats,
             $researchStates,
             $fleetRepository,
+            $fleetMovements,
             new BuildingCatalog([]),
             new ResearchCatalog([]),
             new ShipCatalog([]),

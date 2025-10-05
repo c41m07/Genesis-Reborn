@@ -37,6 +37,7 @@ class FleetMissionController extends AbstractController
 
         $data = $this->getPayload($request);
         $originPlanetId = (int)($data['originPlanetId'] ?? $data['planetId'] ?? 0);
+        $fleetId = $this->extractFleetId($data);
 
         if (!$this->isCsrfTokenValid('fleet_plan_' . $originPlanetId, $data['csrf_token'] ?? null)) {
             return $this->json(['success' => false, 'errors' => ['Jeton CSRF invalide.']], 419);
@@ -46,6 +47,7 @@ class FleetMissionController extends AbstractController
         $destination = $this->extractDestination($data);
         $speedFactor = $this->extractSpeedFactor($data);
         $mission = (string)($data['mission'] ?? 'transport');
+        $resources = $this->extractResources($data['resources'] ?? []);
 
         $result = $this->planFleetMission->execute(
             $userId,
@@ -53,7 +55,9 @@ class FleetMissionController extends AbstractController
             $composition,
             $destination,
             $speedFactor,
-            $mission
+            $mission,
+            $resources,
+            $fleetId
         );
 
         $plan = $result['plan'];
@@ -69,6 +73,7 @@ class FleetMissionController extends AbstractController
             'mission' => $result['mission'],
             'composition' => $result['composition'],
             'destination' => $result['destination'],
+            'resources' => $result['resources'] ?? [],
             'plan' => $plan,
         ], $status);
     }
@@ -82,6 +87,7 @@ class FleetMissionController extends AbstractController
 
         $data = $this->getPayload($request);
         $originPlanetId = (int)($data['originPlanetId'] ?? $data['planetId'] ?? 0);
+        $fleetId = $this->extractFleetId($data);
 
         if (!$this->isCsrfTokenValid('fleet_launch_' . $originPlanetId, $data['csrf_token'] ?? null)) {
             return $this->json(['success' => false, 'errors' => ['Jeton CSRF invalide.']], 419);
@@ -91,6 +97,7 @@ class FleetMissionController extends AbstractController
         $destination = $this->extractDestination($data);
         $speedFactor = $this->extractSpeedFactor($data);
         $mission = (string)($data['mission'] ?? 'transport');
+        $resources = $this->extractResources($data['resources'] ?? []);
 
         $result = $this->launchFleetMission->execute(
             $userId,
@@ -98,7 +105,9 @@ class FleetMissionController extends AbstractController
             $composition,
             $destination,
             $speedFactor,
-            $mission
+            $mission,
+            $resources,
+            $fleetId
         );
 
         $status = $result['success'] ? 200 : 422;
@@ -107,6 +116,7 @@ class FleetMissionController extends AbstractController
             'success' => $result['success'],
             'errors' => $result['errors'],
             'mission' => $result['mission'] ?? null,
+            'resources' => $result['resources'] ?? null,
         ], $status);
     }
 
@@ -170,6 +180,28 @@ class FleetMissionController extends AbstractController
         }
 
         return $sanitized;
+    }
+
+    /**
+     * @param array<string, int|numeric|string> $resources
+     *
+     * @return array<string, int>
+     */
+    private function extractResources(array $resources): array
+    {
+        $sanitized = [];
+        foreach ($resources as $key => $value) {
+            $sanitized[(string)$key] = max(0, (int)$value);
+        }
+
+        return $sanitized;
+    }
+
+    private function extractFleetId(array $data): ?int
+    {
+        $fleetId = (int)($data['fleetId'] ?? $data['fleet_id'] ?? 0);
+
+        return $fleetId > 0 ? $fleetId : null;
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Application\UseCase\Fleet\CreateIdleFleet;
 use App\Application\UseCase\Fleet\DeleteIdleFleet;
 use App\Application\UseCase\Fleet\PlanFleetMission;
 use App\Application\UseCase\Fleet\ProcessFleetArrivals;
+use App\Application\UseCase\Fleet\ProcessFleetReturns;
 use App\Application\UseCase\Fleet\RenameIdleFleet;
 use App\Application\UseCase\Fleet\TransferIdleFleetShips;
 use App\Controller\FleetController;
@@ -79,6 +80,11 @@ final class FleetControllerAccessTest extends TestCase
             ->method('execute')
             ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
             ->willReturn(0);
+        $processReturns = $this->createMock(ProcessFleetReturns::class);
+        $processReturns->expects($hasShipyard ? self::once() : self::never())
+            ->method('execute')
+            ->with(42, self::isInstanceOf(\DateTimeImmutable::class))
+            ->willReturn(0);
         $renderer = new class () extends ViewRenderer {
             public function __construct()
             {
@@ -108,6 +114,7 @@ final class FleetControllerAccessTest extends TestCase
             $shipQueueProcessor,
             $planFleetMission,
             $processArrivals,
+            $processReturns,
             $createFleet,
             $transferFleetShips,
             $renameFleet,

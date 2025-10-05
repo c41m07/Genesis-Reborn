@@ -161,11 +161,23 @@ class PdoFleetRepository implements FleetRepositoryInterface
             return null;
         }
 
+        $shipsStmt = $this->pdo->prepare('SELECT s.`key`, fs.quantity
+            FROM fleet_ships fs
+            JOIN ships s ON s.id = fs.ship_id
+            WHERE fs.fleet_id = :fleet');
+        $shipsStmt->execute(['fleet' => $fleetId]);
+
+        $ships = [];
+        while ($shipRow = $shipsStmt->fetch(PDO::FETCH_ASSOC)) {
+            $ships[$shipRow['key']] = (int)$shipRow['quantity'];
+        }
+
         return [
             'id' => (int)$row['id'],
             'player_id' => (int)$row['player_id'],
             'origin_planet_id' => (int)$row['origin_planet_id'],
             'name' => $row['name'] !== null ? (string)$row['name'] : null,
+            'ships' => $ships,
         ];
     }
 

@@ -9,6 +9,8 @@ use App\Application\Service\ProcessResearchQueue;
 use App\Application\Service\ProcessShipBuildQueue;
 use App\Domain\Repository\BuildingStateRepositoryInterface;
 use App\Domain\Repository\BuildQueueRepositoryInterface;
+use App\Domain\Enum\FleetStatus;
+use App\Domain\Repository\FleetMovementRepositoryInterface;
 use App\Domain\Repository\FleetRepositoryInterface;
 use App\Domain\Repository\PlanetRepositoryInterface;
 use App\Domain\Repository\PlayerStatsRepositoryInterface;
@@ -32,6 +34,7 @@ class GetDashboard
         private readonly PlayerStatsRepositoryInterface $playerStats,
         private readonly ResearchStateRepositoryInterface $researchStates,
         private readonly FleetRepositoryInterface $fleets,
+        private readonly FleetMovementRepositoryInterface $fleetMovements,
         private readonly BuildingCatalog $catalog,
         private readonly ResearchCatalog $researchCatalog,
         private readonly ShipCatalog $shipCatalog,
@@ -55,7 +58,15 @@ class GetDashboard
      *             shipyard: array{count: int, next?: array{ship: string, label: string, quantity: int, endsAt: \DateTimeImmutable, remaining: int}|null}
      *         }
      *     }>,
-     *     totals: array{metal: int, crystal: int, hydrogen: int, energy: int}
+     *     totals: array{metal: int, crystal: int, hydrogen: int, energy: int},
+     *     movements: list<array{
+     *         id: int,
+     *         mission: string,
+     *         status: string,
+     *         origin: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+     *         destination: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+     *         eta: ?\DateTimeImmutable
+     *     }>
      * }
      */
     public function execute(int $userId): array
@@ -67,6 +78,7 @@ class GetDashboard
         $unlockedResearch = 0;
         $highestTech = ['label' => 'Aucune technologie', 'level' => 0];
         $militaryPower = 0;
+        $planetsById = [];
 
         foreach ($planets as $planet) {
             $planetId = $planet->getId();
@@ -76,6 +88,7 @@ class GetDashboard
             $this->processShipQueue->process($planetId);
 
             $planet = $this->planets->find($planetId) ?? $planet;
+            $planetsById[$planetId] = $planet;
             $levels = $this->buildingStates->getLevels($planetId);
             $researchLevels = $this->researchStates->getLevels($planetId);
             $production = ['metal' => 0, 'crystal' => 0, 'hydrogen' => 0, 'energy' => 0];
@@ -180,6 +193,8 @@ class GetDashboard
             ];
         }
 
+        $movementSummaries = $this->summarizeFleetMovements($userId, $planetsById);
+
         $buildingSpent = $this->playerStats->getBuildingSpending($userId);
         $scienceSpent = $this->playerStats->getScienceSpending($userId);
         $fleetSpent = $this->playerStats->getFleetSpending($userId);
@@ -211,7 +226,81 @@ class GetDashboard
                 'fleetSpent' => $fleetSpent,
                 'sciencePower' => $sciencePower,
             ],
+            'movements' => $movementSummaries,
         ];
+    }
+
+    /**
+     * @param array<int, \App\Domain\Entity\Planet> $planetsById
+     *
+     * @return list<array{
+     *     id: int,
+     *     mission: string,
+     *     status: string,
+     *     origin: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+     *     destination: array{name: string, coordinates: array{galaxy: int, system: int, position: int}},
+     *     eta: ?\DateTimeImmutable
+     * }>
+     */
+    private function summarizeFleetMovements(int $userId, array $planetsById): array
+    {
+        $movements = $this->fleetMovements->findActiveByPlayer($userId);
+        if ($movements === []) {
+            return [];
+        }
+
+        $destinationCache = [];
+        $summaries = [];
+
+        foreach ($movements as $movement) {
+            $originPlanetId = $movement->getOriginPlanetId();
+            $originPlanet = $planetsById[$originPlanetId] ?? $this->planets->find($originPlanetId);
+            $originCoordinates = $movement->getOrigin()->toArray();
+            $originName = $originPlanet?->getName()
+                ?? $this->formatCoordinates($originCoordinates);
+
+            $destinationPlanetId = $movement->getDestinationPlanetId();
+            $destinationPlanet = null;
+            if ($destinationPlanetId !== null) {
+                if (!isset($destinationCache[$destinationPlanetId])) {
+                    $destinationCache[$destinationPlanetId] = $this->planets->find($destinationPlanetId);
+                }
+                $destinationPlanet = $destinationCache[$destinationPlanetId];
+            }
+
+            $destinationCoordinates = $movement->getDestination()->toArray();
+            $destinationName = $destinationPlanet?->getName()
+                ?? $this->formatCoordinates($destinationCoordinates);
+
+            $eta = $movement->getStatus() === FleetStatus::Returning
+                ? $movement->getReturnAt()
+                : $movement->getArrivalAt();
+
+            $summaries[] = [
+                'id' => $movement->getId(),
+                'mission' => $movement->getMission()->value,
+                'status' => $movement->getStatus()->value,
+                'origin' => [
+                    'name' => $originName,
+                    'coordinates' => $originCoordinates,
+                ],
+                'destination' => [
+                    'name' => $destinationName,
+                    'coordinates' => $destinationCoordinates,
+                ],
+                'eta' => $eta,
+            ];
+        }
+
+        return $summaries;
+    }
+
+    /**
+     * @param array{galaxy: int, system: int, position: int} $coordinates
+     */
+    private function formatCoordinates(array $coordinates): string
+    {
+        return sprintf('(%d:%d:%d)', $coordinates['galaxy'], $coordinates['system'], $coordinates['position']);
     }
 
     /**
