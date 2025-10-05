@@ -146,10 +146,6 @@ ob_start();
                             ): void {
 
                                 echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
-                                echo '<div class="tech-card__progress">';
-                                echo '<div class="progress-bar"><span class="progress-bar__value" style="width: ' . $progress . '%"></span></div>';
-                                echo '<p class="tech-card__level">Niveau actuel ' . $level . ($maxLevel > 0 ? ' / ' . $maxLevel : '') . '</p>';
-                                echo '</div>';
                                 echo '<div class="tech-card__section">';
                                 echo '<h3>Prochaine amélioration</h3>';
                                 echo '<ul class="resource-list">';
