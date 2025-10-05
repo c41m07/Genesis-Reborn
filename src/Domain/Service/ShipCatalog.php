@@ -38,7 +38,8 @@ class ShipCatalog
                 $config->getBuildTime(),
                 $config->getStats(),
                 $config->getRequiresResearch(),
-                $config->getImage() ?? ''
+                $config->getImage() ?? '',
+                $config->getLogistics()
             );
 
             $this->definitions[$key] = $definition;

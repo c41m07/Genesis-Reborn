@@ -2,8 +2,8 @@
 /**
  * @var array<int, \App\Domain\Entity\Planet> $planets
  * @var int|null $selectedPlanetId
- * @var array{ships: array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speed: int, category: string, role: string, image: string|null, fuelRate: int}>, totalShips: int, power: int, origin?: array{galaxy: int, system: int, position: int}} $fleetOverview
- * @var array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speed: int, category: string, role: string, image: string|null, fuelRate: int}> $availableShips
+ * @var array{ships: array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speedUa: float, category: string, role: string, image: string|null, fuelRate: float, cargo: int}>, totalShips: int, power: int, origin?: array{galaxy: int, system: int, position: int}} $fleetOverview
+ * @var array<int, array{key: string, label: string, quantity: int, attack: int, defense: int, speedUa: float, category: string, role: string, image: string|null, fuelRate: float, cargo: int}> $availableShips
  * @var array<int, array{id: int, label: string, name: string|null, total: int, is_garrison: bool, ships: array<int, array{key: string, label: string, quantity: int, role: string, image: string|null}>, ships_raw: array<string, int>}> $idleFleets
  * @var int|null $selectedFleetId
  * @var array{id: int, label: string, name: string|null, total: int, is_garrison: bool, ships: array<int, array{key: string, label: string, quantity: int, role: string, image: string|null}>, ships_raw: array<string, int>}|null $selectedFleet

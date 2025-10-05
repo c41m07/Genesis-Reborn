@@ -75,6 +75,34 @@ if (!function_exists('format_number')) {
     }
 }
 
+if (!function_exists('format_decimal')) {
+    function format_decimal(float $value, int $precision = 2): string
+    {
+        $formatted = number_format($value, $precision, ',', ' ');
+        if (str_contains($formatted, ',')) {
+            $formatted = rtrim(rtrim($formatted, '0'), ',');
+        }
+
+        return $formatted;
+    }
+}
+
+if (!function_exists('format_speed_ua')) {
+    function format_speed_ua(float $unitsPerHour): string
+    {
+        $uaPerHour = $unitsPerHour / 16.0;
+
+        return format_decimal($uaPerHour, 2);
+    }
+}
+
+if (!function_exists('format_fuel_consumption')) {
+    function format_fuel_consumption(float $value): string
+    {
+        return format_number($value);
+    }
+}
+
 if (!function_exists('asset_url')) {
     /**
      * Build an absolute asset URL based on the provided base URL.

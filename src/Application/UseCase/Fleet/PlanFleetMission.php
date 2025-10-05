@@ -15,6 +15,8 @@ use DateTimeImmutable;
 
 class PlanFleetMission
 {
+    private const UNITS_PER_ASTRONOMICAL_UNIT = 16.0;
+
     public function __construct(
         private readonly PlanetRepositoryInterface        $planets,
         private readonly BuildingStateRepositoryInterface $buildingStates,
@@ -28,7 +30,7 @@ class PlanFleetMission
      * @param array<string, int> $composition
      * @param array{galaxy?: int, system?: int, position?: int} $destination
      *
-     * @return array{success: bool, errors: list<string>, mission: string, composition: array<string, int>, destination: array{galaxy: int, system: int, position: int}, plan: ?array{distance: int, speed: int, travel_time: int, arrival_time: DateTimeImmutable, fuel: int}}
+     * @return array{success: bool, errors: list<string>, mission: string, composition: array<string, int>, destination: array{galaxy: int, system: int, position: int}, plan: ?array{distance: float, speed: float, travel_time: int, arrival_time: DateTimeImmutable, fuel: int}}
      */
     public function execute(
         int $userId,
@@ -168,7 +170,7 @@ class PlanFleetMission
     /**
      * @param array<string, int> $composition
      *
-     * @return array<string, array{speed: int, fuel_per_distance?: float}>
+     * @return array<string, array{speed: float, fuel_per_hour?: float}>
      */
     private function buildShipStats(array $composition): array
     {
@@ -179,14 +181,18 @@ class PlanFleetMission
             }
 
             $definition = $this->shipCatalog->get($shipKey);
-            $shipStats = $definition->getStats();
-            $speed = (int)($shipStats['vitesse'] ?? 0);
-            $baseCost = $definition->getBaseCost();
-            $fuelRate = (int)max(1, ceil(($baseCost['hydrogen'] ?? 0) / 25));
+            $logistics = $definition->getLogistics();
+            $speedUnitsPerHour = (float)($logistics['speed'] ?? ($definition->getStats()['vitesse'] ?? 0));
+            if ($speedUnitsPerHour <= 0) {
+                $speedUnitsPerHour = 1.0;
+            }
+
+            $uaSpeed = $speedUnitsPerHour / self::UNITS_PER_ASTRONOMICAL_UNIT;
+            $consumption = max(0.0, (float)($logistics['consumption'] ?? 0.0));
 
             $stats[$shipKey] = [
-                'speed' => $speed > 0 ? $speed : max(1, $fuelRate * 2),
-                'fuel_per_distance' => max(0.1, $fuelRate ?: 1),
+                'speed' => max(0.01, $uaSpeed),
+                'fuel_per_hour' => $consumption,
             ];
         }
 

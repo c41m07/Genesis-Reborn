@@ -158,15 +158,13 @@ class FleetController extends AbstractController
             $stats = $definition ? $definition->getStats() : [];
             $attack = (int)($stats['attaque'] ?? 0);
             $defense = (int)($stats['défense'] ?? 0);
-            $speed = (int)($stats['vitesse'] ?? 0);
+            $speedUnits = $definition ? $definition->getBaseSpeedUPerHour() : (float)($stats['vitesse'] ?? 0);
+            $speedUa = $speedUnits > 0 ? $speedUnits / 16.0 : 0.0;
             $category = $definition ? $definition->getCategory() : 'Divers';
             $role = $definition ? $definition->getRole() : '';
             $image = $definition ? $definition->getImage() : null;
-            $fuelRate = 0;
-            if ($definition) {
-                $baseCost = $definition->getBaseCost();
-                $fuelRate = (int)max(1, ceil(($baseCost['hydrogen'] ?? 0) / 25));
-            }
+            $fuelRate = $definition ? $definition->getFuelConsumptionPerHour() : 0.0;
+            $cargoCapacity = $definition ? $definition->getCargoCapacity() : 0;
 
             $power = max(0, ($attack + $defense) * $quantity);
             $totalPower += $power;
@@ -178,11 +176,12 @@ class FleetController extends AbstractController
                 'quantity' => $quantity,
                 'attack' => $attack,
                 'defense' => $defense,
-                'speed' => $speed,
+                'speedUa' => round($speedUa, 2),
                 'category' => $category,
                 'role' => $role,
                 'image' => $image,
-                'fuelRate' => $fuelRate,
+                'fuelRate' => round($fuelRate, 2),
+                'cargo' => $cargoCapacity,
             ];
 
             $fleetShips[] = $entry;

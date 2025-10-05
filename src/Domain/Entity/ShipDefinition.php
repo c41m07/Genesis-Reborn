@@ -9,7 +9,8 @@ class ShipDefinition
     /**
      * @param array<string, int> $baseCost
      * @param array<string, int> $stats
-     * @param array<string, int> $requiresResearch
+     * @param array<string, int>        $requiresResearch
+     * @param array<string, int|float>  $logistics
      */
     public function __construct(
         private readonly string $key,
@@ -21,7 +22,8 @@ class ShipDefinition
         private readonly int    $buildTime,
         private readonly array  $stats,
         private readonly array  $requiresResearch,
-        private readonly string $image
+        private readonly string $image,
+        private readonly array  $logistics = []
     ) {
     }
 
@@ -82,5 +84,28 @@ class ShipDefinition
     public function getImage(): string
     {
         return $this->image;
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    public function getLogistics(): array
+    {
+        return $this->logistics;
+    }
+
+    public function getBaseSpeedUPerHour(): float
+    {
+        return (float)($this->logistics['speed'] ?? 0.0);
+    }
+
+    public function getFuelConsumptionPerHour(): float
+    {
+        return (float)($this->logistics['consumption'] ?? 0.0);
+    }
+
+    public function getCargoCapacity(): int
+    {
+        return (int)($this->logistics['cargo'] ?? 0);
     }
 }

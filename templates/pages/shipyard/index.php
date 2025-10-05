@@ -155,9 +155,13 @@ ob_start();
                                 echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
 
                                 $stats = $definition->getStats();
-                                if (!empty($stats)) {
-                                    echo '<div class="ship-card__stats row row-cols-4">';
-                                    foreach ($stats as $label => $value) {
+                                $combatStats = array_intersect_key(
+                                    $stats,
+                                    array_flip(['attaque', 'défense'])
+                                );
+                                if (!empty($combatStats)) {
+                                    echo '<div class="ship-card__stats row row-cols-2">';
+                                    foreach ($combatStats as $label => $value) {
                                         echo '<div class="mini-stat">';
                                         echo '<span class="mini-stat__label">' . htmlspecialchars(ucfirst((string)$label)) . '</span>';
                                         echo '<strong class="mini-stat__value">' . format_number((int)$value) . '</strong>';
@@ -165,6 +169,25 @@ ob_start();
                                     }
                                     echo '</div>';
                                 }
+
+                                $logistics = $definition->getLogistics();
+                                $speedUnits = (float)($logistics['speed'] ?? 0);
+                                $consumption = (float)($logistics['consumption'] ?? 0);
+                                $cargoCapacity = (int)($logistics['cargo'] ?? 0);
+                                echo '<div class="ship-card__stats ship-card__stats--logistics row row-cols-3">';
+                                echo '<div class="mini-stat">';
+                                echo '<span class="mini-stat__label">Vitesse</span>';
+                                echo '<strong class="mini-stat__value">' . htmlspecialchars(format_speed_ua($speedUnits)) . ' UA/h</strong>';
+                                echo '</div>';
+                                echo '<div class="mini-stat">';
+                                echo '<span class="mini-stat__label">Conso H₂</span>';
+                                echo '<strong class="mini-stat__value">' . htmlspecialchars(format_fuel_consumption($consumption)) . ' /h</strong>';
+                                echo '</div>';
+                                echo '<div class="mini-stat">';
+                                echo '<span class="mini-stat__label">Soute</span>';
+                                echo '<strong class="mini-stat__value">' . htmlspecialchars(format_number($cargoCapacity)) . '</strong>';
+                                echo '</div>';
+                                echo '</div>';
 
                                 echo '<div class="ship-card__content">';
                                 echo '<div class="ship-card__section ship-card__section--costs">';

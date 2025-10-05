@@ -26,6 +26,9 @@ final class ShipConfig
     /** @var array<string, int> */
     private array $stats = [];
 
+    /** @var array<string, int|float> */
+    private array $logistics = [];
+
     /** @var array<string, int> */
     private array $requiresResearch = [];
 
@@ -69,6 +72,15 @@ final class ShipConfig
 
         foreach ($requiresResearch as $researchKey => $level) {
             $this->requiresResearch[$researchKey] = max(0, (int)$level);
+        }
+
+        $logistics = $data['logistics'] ?? [];
+        if (!is_array($logistics)) {
+            throw new InvalidArgumentException(sprintf('Invalid logistics definition for ship "%s".', $key));
+        }
+
+        foreach ($logistics as $logisticsKey => $value) {
+            $this->logistics[$logisticsKey] = is_int($value) ? $value : (float)$value;
         }
 
         if (!empty($data['image'])) {
@@ -122,6 +134,12 @@ final class ShipConfig
     public function getRequiresResearch(): array
     {
         return $this->requiresResearch;
+    }
+
+    /** @return array<string, int|float> */
+    public function getLogistics(): array
+    {
+        return $this->logistics;
     }
 
     public function getImage(): ?string

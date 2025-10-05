@@ -93,6 +93,7 @@ tests (PHPUnit)
 - `FleetNavigationService` normalise les coordonnées (grâce au VO `Coordinates`) et calcule vitesse, consommation et ETA.
 - Use cases dédiés : planification (`PlanFleetMission`), lancement (`LaunchFleetMission`), traitement des arrivées (`ProcessFleetArrivals`).
 - Module JS `fleet-planner.js` gère les appels AJAX (`/fleet/plan`, `/fleet/launch`) et garde un repli sans JavaScript.
+- Les distances sont exprimées en unités astronomiques (UA) : déplacement intra-système = |Δposition| ÷ 16, changement de système = 10 UA (après passage par la position 16) et changement de galaxie = 100 UA par saut. La vitesse des vaisseaux est convertie en UA/h en prenant leur vitesse YAML (u/h) ÷ 16 et la consommation utilise des valeurs horaires explicites.
 
 ---
 
@@ -102,7 +103,7 @@ Les fichiers YAML se trouvent dans `config/balance/` :
 
 - **`buildings.yaml`** : coûts (`base_cost`, `growth_cost`), temps (`base_time`, `growth_time`), production, énergie, bonus (recherche, chantier, construction), stockage et entretien. Chaque entrée est normalisée en `BuildingDefinition`.
 - **`research.yaml`** : catégories, prérequis (`requires`, `requires_lab`), multiplicateurs (`growth_cost`, `growth_time`), niveau maximum et illustrations. Le loader applique des images par défaut selon la catégorie.
-- **`ships.yaml`** : catégories, rôles, statistiques (`attack`, `defense`, `speed`…), prérequis de recherche et temps de construction. Les catégories fournissent aussi les illustrations par défaut.
+- **`ships.yaml`** : catégories, rôles, statistiques (`attack`, `defense`…), bloc `logistics` (`speed` en u/h, `consumption` en H₂/h, `cargo` en unités), prérequis de recherche et temps de construction. Les catégories fournissent aussi les illustrations par défaut.
 
 `BalanceConfigLoader` vérifie les champs, applique les valeurs par défaut et transmet les données aux catalogues pour les cas d'usage (survol, fiches, files d'attente).
 

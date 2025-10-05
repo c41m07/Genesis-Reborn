@@ -47,9 +47,10 @@ final class PlanFleetMissionTest extends TestCase
             'Unité polyvalente',
             ['metal' => 100, 'hydrogen' => 50],
             60,
-            ['vitesse' => 12],
+            ['vitesse' => 360],
             [],
-            'fighter.png'
+            'fighter.png',
+            ['speed' => 360, 'consumption' => 9, 'cargo' => 60]
         );
 
         $shipCatalog = $this->createMock(ShipCatalog::class);

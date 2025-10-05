@@ -876,15 +876,15 @@ class QueueProcessingTest extends TestCase
         $destination = ['galaxy' => 1, 'system' => 21, 'position' => 10];
         $composition = ['fighter' => 3];
         $shipStats = [
-            'fighter' => ['speed' => 12000, 'fuel_per_distance' => 0.4],
+            'fighter' => ['speed' => 22.5, 'fuel_per_hour' => 9.0],
         ];
 
         $plan = $navigation->plan($origin, $destination, $composition, $shipStats, $departure);
 
-        self::assertSame(120, $plan['distance']);
-        self::assertSame(12000, $plan['speed']);
-        self::assertSame(36, $plan['travel_time']);
-        self::assertSame(144, $plan['fuel']);
+        self::assertEqualsWithDelta(10.9375, $plan['distance'], 1e-4);
+        self::assertEqualsWithDelta(22.5, $plan['speed'], 1e-4);
+        self::assertSame(1750, $plan['travel_time']);
+        self::assertSame(14, $plan['fuel']);
     }
 }
 
