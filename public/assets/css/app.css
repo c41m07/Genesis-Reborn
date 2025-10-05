@@ -2731,6 +2731,293 @@ body.is-bootstrapized .btn-warning:disabled {
   color: var(--color-muted);
 }
 
+.ship-card__collapsible,
+.tech-card__collapsible {
+  background: var(--surface-tint-faint);
+  border: 1px solid var(--surface-tint-soft);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+}
+
+.ship-card__collapsible + .ship-card__collapsible,
+.ship-card__collapsible + .ship-card__content,
+.tech-card__collapsible + .tech-card__section {
+  margin-top: var(--space-3);
+}
+
+.ship-card__collapsible-summary,
+.tech-card__collapsible-summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  list-style: none;
+  margin: 0;
+  position: relative;
+  padding: 0;
+}
+
+.ship-card__collapsible-summary::-webkit-details-marker,
+.tech-card__collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.ship-card__collapsible-summary::after,
+.tech-card__collapsible-summary::after {
+  content: '\25BC';
+  font-size: 0.75rem;
+  margin-left: auto;
+  transition: transform var(--transition);
+}
+
+.ship-card__collapsible[open] > .ship-card__collapsible-summary::after,
+.tech-card__collapsible[open] > .tech-card__collapsible-summary::after {
+  transform: rotate(-180deg);
+}
+
+.ship-card__collapsible[open],
+.tech-card__collapsible[open] {
+  background: var(--surface-tint-soft);
+}
+
+.ship-card__collapsible,
+.tech-card__collapsible {
+  display: block;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+  overflow: hidden;
+}
+
+.ship-card__collapsible:hover,
+.tech-card__collapsible:hover {
+  border-color: var(--color-border);
+}
+
+.ship-card__collapsible[open],
+.tech-card__collapsible[open] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--glow-secondary-soft);
+}
+
+.ship-card__collapsible + .ship-card__collapsible,
+.ship-card__collapsible + .ship-card__content,
+.tech-card__collapsible + .tech-card__section {
+  margin-top: var(--space-3);
+}
+
+.ship-card__collapsible-summary,
+.tech-card__collapsible-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color var(--transition-base);
+  user-select: none;
+}
+
+.ship-card__collapsible-summary::-webkit-details-marker,
+.tech-card__collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.ship-card__collapsible-summary:focus-visible,
+.tech-card__collapsible-summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: inherit;
+}
+
+.ship-card__collapsible-summary:hover,
+.tech-card__collapsible-summary:hover {
+  color: var(--accent);
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-summary,
+.tech-card__collapsible[open] .tech-card__collapsible-summary {
+  color: var(--accent);
+}
+
+.ship-card__collapsible-title,
+.tech-card__collapsible-title {
+  flex: 1;
+}
+
+.ship-card__collapsible-chevron,
+.tech-card__collapsible-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-muted);
+  transition:
+    transform var(--transition-base),
+    color var(--transition-base);
+}
+
+.ship-card__collapsible-chevron::before,
+.tech-card__collapsible-chevron::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  display: block;
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-chevron,
+.tech-card__collapsible[open] .tech-card__collapsible-chevron {
+  transform: rotate(-135deg);
+  color: var(--accent);
+}
+
+.ship-card__collapsible-content,
+.tech-card__collapsible-content {
+  padding: 0 var(--space-3) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-content,
+.tech-card__collapsible[open] .tech-card__collapsible-content {
+  animation: requirements-panel-reveal var(--transition-base) ease;
+}
+
+.ship-card__collapsible,
+.tech-card__collapsible {
+  display: block;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+  overflow: hidden;
+}
+
+.ship-card__collapsible:hover,
+.tech-card__collapsible:hover {
+  border-color: var(--color-border);
+}
+
+.ship-card__collapsible[open],
+.tech-card__collapsible[open] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--glow-secondary-soft);
+}
+
+.ship-card__sections,
+.tech-card__sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ship-card__collapsible-summary,
+.tech-card__collapsible-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  list-style: none;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: color var(--transition-base);
+  user-select: none;
+}
+
+.ship-card__collapsible-summary::-webkit-details-marker,
+.tech-card__collapsible-summary::-webkit-details-marker {
+  display: none;
+}
+
+.ship-card__collapsible-summary:focus-visible,
+.tech-card__collapsible-summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: inherit;
+}
+
+.ship-card__collapsible-summary:hover,
+.tech-card__collapsible-summary:hover {
+  color: var(--accent);
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-summary,
+.tech-card__collapsible[open] .tech-card__collapsible-summary {
+  color: var(--accent);
+}
+
+.ship-card__collapsible-title,
+.tech-card__collapsible-title {
+  flex: 1;
+}
+
+.ship-card__collapsible-chevron,
+.tech-card__collapsible-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  color: var(--color-muted);
+  transition:
+    transform var(--transition-base),
+    color var(--transition-base);
+}
+
+.ship-card__collapsible-chevron::before,
+.tech-card__collapsible-chevron::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  display: block;
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-chevron,
+.tech-card__collapsible[open] .tech-card__collapsible-chevron {
+  transform: rotate(-135deg);
+  color: var(--accent);
+}
+
+.ship-card__collapsible-content,
+.tech-card__collapsible-content {
+  padding: 0 var(--space-3) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border-soft);
+}
+
+.ship-card__collapsible[open] .ship-card__collapsible-content,
+.tech-card__collapsible[open] .tech-card__collapsible-content {
+  animation: requirements-panel-reveal var(--transition-base) ease;
+}
+
 .ship-card__stats {
   display: flex;
   flex-wrap: wrap;

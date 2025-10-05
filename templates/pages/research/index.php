@@ -145,7 +145,16 @@ ob_start();
                                 $missingResources
                             ): void {
 
+                                echo '<div class="tech-card__sections">';
+                                echo '<details class="tech-card__collapsible tech-card__collapsible--description">';
+                                echo '<summary class="tech-card__collapsible-summary">';
+                                echo '<span class="tech-card__collapsible-title">Description</span>';
+                                echo '<span class="tech-card__collapsible-chevron" aria-hidden="true"></span>';
+                                echo '</summary>';
+                                echo '<div class="tech-card__collapsible-content">';
                                 echo '<p class="tech-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
+                                echo '</div>';
+                                echo '</details>';
                                 echo '<div class="tech-card__section">';
                                 echo '<h3>Prochaine amélioration</h3>';
                                 echo '<ul class="resource-list">';
@@ -198,6 +207,7 @@ ob_start();
                                         echo '</div>';
                                     }
                                 }
+                                echo '</div>';
                             },
                             'footer' => static function () use (
                                 $baseUrl,

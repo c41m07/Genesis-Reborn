@@ -152,15 +152,37 @@ ob_start();
                                 $requirements,
                                 $missingResources
                             ): void {
+                                echo '<div class="ship-card__sections">';
+                                echo '<details class="ship-card__collapsible ship-card__collapsible--description">';
+                                echo '<summary class="ship-card__collapsible-summary">';
+                                echo '<span class="ship-card__collapsible-title">Description</span>';
+                                echo '<span class="ship-card__collapsible-chevron" aria-hidden="true"></span>';
+                                echo '</summary>';
+                                echo '<div class="ship-card__collapsible-content">';
                                 echo '<p class="ship-card__description">' . htmlspecialchars($definition->getDescription()) . '</p>';
+                                echo '</div>';
+                                echo '</details>';
 
                                 $stats = $definition->getStats();
                                 $combatStats = array_intersect_key(
                                     $stats,
                                     array_flip(['attaque', 'défense'])
                                 );
+
+                                $logistics = $definition->getLogistics();
+                                $speedUnits = (float)($logistics['speed'] ?? 0);
+                                $consumption = (float)($logistics['consumption'] ?? 0);
+                                $cargoCapacity = (int)($logistics['cargo'] ?? 0);
+
+                                echo '<details class="ship-card__collapsible ship-card__collapsible--stats">';
+                                echo '<summary class="ship-card__collapsible-summary">';
+                                echo '<span class="ship-card__collapsible-title">Statistiques</span>';
+                                echo '<span class="ship-card__collapsible-chevron" aria-hidden="true"></span>';
+                                echo '</summary>';
+                                echo '<div class="ship-card__collapsible-content">';
+
                                 if (!empty($combatStats)) {
-                                    echo '<div class="ship-card__stats row row-cols-2">';
+                                    echo '<div class="ship-card__stats ship-card__stats--combat">';
                                     foreach ($combatStats as $label => $value) {
                                         echo '<div class="mini-stat">';
                                         echo '<span class="mini-stat__label">' . htmlspecialchars(ucfirst((string)$label)) . '</span>';
@@ -170,11 +192,7 @@ ob_start();
                                     echo '</div>';
                                 }
 
-                                $logistics = $definition->getLogistics();
-                                $speedUnits = (float)($logistics['speed'] ?? 0);
-                                $consumption = (float)($logistics['consumption'] ?? 0);
-                                $cargoCapacity = (int)($logistics['cargo'] ?? 0);
-                                echo '<div class="ship-card__stats ship-card__stats--logistics row row-cols-3">';
+                                echo '<div class="ship-card__stats ship-card__stats--logistics">';
                                 echo '<div class="mini-stat">';
                                 echo '<span class="mini-stat__label">Vitesse</span>';
                                 echo '<strong class="mini-stat__value">' . htmlspecialchars(format_speed_ua($speedUnits)) . ' UA/h</strong>';
@@ -188,6 +206,9 @@ ob_start();
                                 echo '<strong class="mini-stat__value">' . htmlspecialchars(format_number($cargoCapacity)) . '</strong>';
                                 echo '</div>';
                                 echo '</div>';
+
+                                echo '</div>';
+                                echo '</details>';
 
                                 echo '<div class="ship-card__content">';
                                 echo '<div class="ship-card__section ship-card__section--costs">';
@@ -239,6 +260,7 @@ ob_start();
                                         echo '</div>';
                                     }
                                 }
+                                echo '</div>';
                                 echo '</div>';
                             },
                             'footer' => static function () use (
