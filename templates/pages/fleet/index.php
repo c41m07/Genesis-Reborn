@@ -402,8 +402,14 @@ ob_start();
                                     if ($shouldCheck) {
                                         $hasCheckedMission = true;
                                     }
+                                    $description = trim((string)($config['description'] ?? ''));
+                                    $descriptionId = $description !== '' ? $inputId . '-description' : null;
                                     ?>
-                                    <label class="<?= $optionClasses ?>" for="<?= htmlspecialchars($inputId, ENT_QUOTES) ?>">
+                                    <label
+                                        class="<?= $optionClasses ?>"
+                                        for="<?= htmlspecialchars($inputId, ENT_QUOTES) ?>"
+                                        <?= $description !== '' ? 'data-tooltip="' . htmlspecialchars($description, ENT_QUOTES) . '"' : '' ?>
+                                    >
                                         <input
                                             class="mission-form__radio"
                                             type="radio"
@@ -412,6 +418,7 @@ ob_start();
                                             value="<?= htmlspecialchars($value, ENT_QUOTES) ?>"
                                             <?= $isAvailable ? '' : 'disabled' ?>
                                             <?= $shouldCheck ? 'checked' : '' ?>
+                                            <?= $descriptionId !== null ? 'aria-describedby="' . htmlspecialchars($descriptionId, ENT_QUOTES) . '"' : '' ?>
                                         >
                                         <div class="mission-form__option-body">
                                             <div class="mission-form__option-header">
@@ -419,16 +426,20 @@ ob_start();
                                                     class="mission-form__option-icon mission-form__option-icon--<?= htmlspecialchars($config['icon'] ?? 'default', ENT_QUOTES) ?>"
                                                     aria-hidden="true"
                                                 ><?= htmlspecialchars($config['symbol'] ?? '✦', ENT_QUOTES) ?></span>
-                                                <?php if (!$isAvailable): ?>
-                                                    <span class="mission-form__tag"><?= htmlspecialchars($config['badge'] ?? 'WIP', ENT_QUOTES) ?></span>
-                                                <?php endif; ?>
                                             </div>
                                             <div class="mission-form__option-content">
-                                                <span class="mission-form__option-title"><?= htmlspecialchars($config['label'], ENT_QUOTES) ?></span>
-                                                <?php if (!empty($config['description'])): ?>
-                                                    <p class="mission-form__option-hint"><?= htmlspecialchars($config['description'], ENT_QUOTES) ?></p>
-                                                <?php endif; ?>
+                                                <span class="mission-form__option-title">
+                                                    <?= htmlspecialchars($config['label'], ENT_QUOTES) ?>
+                                                </span>
                                             </div>
+                                            <?php if (!$isAvailable): ?>
+                                                <span class="mission-form__tag"><?= htmlspecialchars($config['badge'] ?? 'WIP', ENT_QUOTES) ?></span>
+                                            <?php endif; ?>
+                                            <?php if ($descriptionId !== null): ?>
+                                                <span class="visually-hidden mission-form__option-description" id="<?= htmlspecialchars($descriptionId, ENT_QUOTES) ?>">
+                                                    <?= htmlspecialchars($description, ENT_QUOTES) ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
                                     </label>
                                 <?php endforeach; ?>

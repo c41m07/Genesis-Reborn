@@ -752,6 +752,7 @@ body.is-bootstrapized .btn-warning:disabled {
   display: grid;
   gap: var(--space-3);
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: stretch;
 }
 
 @media (min-width: 1200px) {
@@ -765,9 +766,11 @@ body.is-bootstrapized .btn-warning:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-4) var(--space-3);
-  padding-left: calc(var(--space-3) + 26px);
-  min-height: 132px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-4);
+  min-height: 168px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--surface-input);
@@ -778,7 +781,7 @@ body.is-bootstrapized .btn-warning:disabled {
     transform var(--transition);
   cursor: not-allowed;
   color: var(--text-muted);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .mission-form__option:focus-within {
@@ -811,10 +814,6 @@ body.is-bootstrapized .btn-warning:disabled {
 
 .mission-form__option:has(.mission-form__radio:checked) .mission-form__option-title {
   color: var(--text-primary);
-}
-
-.mission-form__option:has(.mission-form__radio:checked) .mission-form__option-hint {
-  color: var(--text-secondary);
 }
 
 .mission-form__radio {
@@ -853,22 +852,20 @@ body.is-bootstrapized .btn-warning:disabled {
   flex-direction: column;
   gap: var(--space-3);
   min-height: 100%;
-}
-
-.mission-form__option--available .mission-form__option-body {
   align-items: center;
+  justify-content: center;
   text-align: center;
+  width: 100%;
+  margin-inline: auto;
 }
 
 .mission-form__option-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.mission-form__option--available .mission-form__option-header {
   justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
 }
 
 .mission-form__option-icon {
@@ -878,15 +875,8 @@ body.is-bootstrapized .btn-warning:disabled {
   width: 48px;
   height: 48px;
   border-radius: var(--radius-md);
-  background: var(--surface-card);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.08));
   color: var(--text-primary);
-  font-size: 1.75rem;
-  box-shadow: inset 0 0 0 1px var(--color-border);
-}
-
-.mission-form__option--available .mission-form__option-icon {
-  width: 42px;
-  height: 42px;
   font-size: 1.5rem;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
@@ -935,30 +925,88 @@ body.is-bootstrapized .btn-warning:disabled {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-
-.mission-form__option--available .mission-form__option-content {
   align-items: center;
+  width: 100%;
 }
 
 .mission-form__option-title {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
   font-size: var(--font-size-400);
   font-weight: var(--font-weight-semibold);
   color: currentColor;
 }
 
-.mission-form__option-hint {
-  display: none;
-  margin: 0;
-  color: var(--text-muted);
+.mission-form__option[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translate(-50%, 0.25rem);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(10, 16, 32, 0.9);
+  color: var(--text-on-dark, #f8fafc);
   font-size: var(--font-size-sm);
-  line-height: 1.5;
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4;
+  text-align: center;
+  box-shadow:
+    0 12px 32px -12px rgba(3, 8, 20, 0.65),
+    inset 0 0 0 1px rgba(116, 139, 196, 0.35);
+  max-width: 240px;
+  width: max-content;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--transition),
+    transform var(--transition);
+  z-index: 10;
+  white-space: normal;
+  backdrop-filter: blur(6px);
 }
 
-.mission-form__option:hover .mission-form__option-hint,
-.mission-form__option:focus-within .mission-form__option-hint,
-.mission-form__option:has(.mission-form__radio:checked) .mission-form__option-hint {
-  display: block;
+.mission-form__option[data-tooltip]::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 0.25rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  background: rgba(10, 16, 32, 0.9);
+  border-radius: 2px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition);
+  z-index: 9;
+  backdrop-filter: blur(6px);
+}
+
+.mission-form__option[data-tooltip]:hover::after,
+.mission-form__option[data-tooltip]:focus-within::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -0.25rem);
+}
+
+.mission-form__option[data-tooltip]:hover::before,
+.mission-form__option[data-tooltip]:focus-within::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mission-form__tag {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  padding: 0.2rem 0.6rem;
 }
 
 .mission-form__actions {
