@@ -751,17 +751,23 @@ body.is-bootstrapized .btn-warning:disabled {
 .mission-form__grid {
   display: grid;
   gap: var(--space-3);
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@media (min-width: 1200px) {
+  .mission-form__grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .mission-form__option {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-4) var(--space-4);
-  padding-left: calc(var(--space-4) + 30px);
-  min-height: 156px;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  padding-left: calc(var(--space-3) + 26px);
+  min-height: 132px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--surface-input);
@@ -772,6 +778,7 @@ body.is-bootstrapized .btn-warning:disabled {
     transform var(--transition);
   cursor: not-allowed;
   color: var(--text-muted);
+  overflow: hidden;
 }
 
 .mission-form__option:focus-within {
@@ -782,11 +789,16 @@ body.is-bootstrapized .btn-warning:disabled {
 .mission-form__option--available {
   cursor: pointer;
   color: var(--text-primary);
+  background: linear-gradient(180deg, var(--surface-input) 0%, var(--surface-card) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .mission-form__option--available:hover {
   border-color: var(--color-border-strong);
-  background: var(--surface-card);
+  background: linear-gradient(180deg, var(--surface-card) 0%, var(--surface-card) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 32px -24px rgba(0, 0, 0, 0.35);
   transform: translateY(-2px);
 }
 
@@ -818,7 +830,8 @@ body.is-bootstrapized .btn-warning:disabled {
   position: absolute;
   top: var(--space-4);
   left: var(--space-4);
-  margin: 0;
+    clip: rect(0, 0, 0, 0);
+    pointer-events: none;
 }
 
 .mission-form__radio::after {
@@ -842,11 +855,20 @@ body.is-bootstrapized .btn-warning:disabled {
   min-height: 100%;
 }
 
+.mission-form__option--available .mission-form__option-body {
+  align-items: center;
+  text-align: center;
+}
+
 .mission-form__option-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+}
+
+.mission-form__option--available .mission-form__option-header {
+  justify-content: center;
 }
 
 .mission-form__option-icon {
@@ -860,6 +882,13 @@ body.is-bootstrapized .btn-warning:disabled {
   color: var(--text-primary);
   font-size: 1.75rem;
   box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.mission-form__option--available .mission-form__option-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 1.5rem;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .mission-form__option-icon--cargo {
@@ -908,6 +937,10 @@ body.is-bootstrapized .btn-warning:disabled {
   gap: var(--space-2);
 }
 
+.mission-form__option--available .mission-form__option-content {
+  align-items: center;
+}
+
 .mission-form__option-title {
   font-size: var(--font-size-400);
   font-weight: var(--font-weight-semibold);
@@ -915,10 +948,17 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .mission-form__option-hint {
+  display: none;
   margin: 0;
   color: var(--text-muted);
   font-size: var(--font-size-sm);
   line-height: 1.5;
+}
+
+.mission-form__option:hover .mission-form__option-hint,
+.mission-form__option:focus-within .mission-form__option-hint,
+.mission-form__option:has(.mission-form__radio:checked) .mission-form__option-hint {
+  display: block;
 }
 
 .mission-form__actions {
