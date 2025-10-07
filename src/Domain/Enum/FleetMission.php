@@ -16,6 +16,7 @@ enum FleetMission: string
     case Expedition = 'expedition';
     case Pve = 'pve';
     case Explore = 'explore';
+    case Colonize = 'colonize';
 
     public static function fromString(string $value): self
     {

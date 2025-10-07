@@ -886,6 +886,11 @@ body.is-bootstrapized .btn-warning:disabled {
   color: #3a6ff3;
 }
 
+.mission-form__option-icon--colonize {
+  background: linear-gradient(135deg, rgba(255, 180, 123, 0.15), rgba(255, 180, 123, 0.35));
+  color: #d96c1a;
+}
+
 .mission-form__option-icon--garrison {
   background: linear-gradient(135deg, rgba(176, 118, 255, 0.15), rgba(176, 118, 255, 0.35));
   color: #7f3df3;

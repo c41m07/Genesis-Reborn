@@ -19,6 +19,14 @@ final class FleetEnumTest extends TestCase
         self::assertFalse($mission->isIdle());
     }
 
+    public function testColonizeMissionFromString(): void
+    {
+        $mission = FleetMission::fromString('colonize');
+
+        self::assertSame(FleetMission::Colonize, $mission);
+        self::assertFalse($mission->isIdle());
+    }
+
     public function testStatusHelpers(): void
     {
         $status = FleetStatus::fromString('returning');

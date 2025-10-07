@@ -285,4 +285,187 @@ final class PlanFleetMissionTest extends TestCase
         self::assertNotEmpty($result['errors']);
         self::assertNull($result['plan']);
     }
+
+    public function testColonizationRequiresColonyShip(): void
+    {
+        $planet = new Planet(9, 51, 2, 4, 6, 'Origine', 9000, -10, 30, 3000, 3000, 3000, 0, 0, 0, 0, 0, 80000, 80000, 80000, 600);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->expects(self::once())->method('find')->with(9)->willReturn($planet);
+        $planetRepository->expects(self::once())->method('findByCoordinates')->with(4, 6)->willReturn([]);
+
+        $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
+        $buildingStates->expects(self::once())->method('getLevels')->with(9)->willReturn(['shipyard' => 3]);
+
+        $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetRepository->expects(self::once())
+            ->method('findIdleFleet')
+            ->with(21)
+            ->willReturn([
+                'id' => 21,
+                'player_id' => 51,
+                'origin_planet_id' => 9,
+                'ships' => ['fighter' => 5],
+            ]);
+
+        $shipCatalog = $this->createMock(ShipCatalog::class);
+
+        $useCase = new PlanFleetMission(
+            $planetRepository,
+            $buildingStates,
+            $fleetRepository,
+            $shipCatalog,
+            new FleetNavigationService()
+        );
+
+        $result = $useCase->execute(
+            51,
+            9,
+            [],
+            ['galaxy' => 2, 'system' => 4, 'position' => 6],
+            1.0,
+            'colonize',
+            [],
+            21
+        );
+
+        self::assertFalse($result['success']);
+        self::assertContains(
+            'Un vaisseau de colonisation est requis pour établir une nouvelle colonie.',
+            $result['errors']
+        );
+        self::assertSame('colonize', $result['mission']);
+    }
+
+    public function testColonizationFailsWhenTargetOccupied(): void
+    {
+        $planet = new Planet(5, 7, 1, 2, 3, 'Origine', 9000, -20, 20, 2000, 2000, 2000, 0, 0, 0, 0, 0, 60000, 60000, 60000, 500);
+        $occupied = new Planet(18, 999, 2, 5, 8, 'Gaïa Prime', 11000, -15, 25, 1000, 1000, 1000, 0, 0, 0, 0, 0, 40000, 40000, 40000, 300);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->expects(self::once())->method('find')->with(5)->willReturn($planet);
+        $planetRepository->expects(self::once())->method('findByCoordinates')->with(5, 8)->willReturn([$occupied]);
+
+        $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
+        $buildingStates->expects(self::once())->method('getLevels')->with(5)->willReturn(['shipyard' => 4]);
+
+        $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetRepository->expects(self::once())
+            ->method('findIdleFleet')
+            ->with(14)
+            ->willReturn([
+                'id' => 14,
+                'player_id' => 7,
+                'origin_planet_id' => 5,
+                'ships' => ['colony_ship' => 1],
+            ]);
+
+        $colonyDefinition = new ShipDefinition(
+            'colony_ship',
+            'Arche',
+            'utility',
+            'Colonisation',
+            'Déploie des modules de colonie.',
+            ['metal' => 1000],
+            3600,
+            ['vitesse' => 160],
+            [],
+            'colony.svg',
+            ['speed' => 160, 'consumption' => 420, 'cargo' => 2500]
+        );
+
+        $shipCatalog = $this->createMock(ShipCatalog::class);
+        $shipCatalog->expects(self::once())->method('get')->with('colony_ship')->willReturn($colonyDefinition);
+
+        $useCase = new PlanFleetMission(
+            $planetRepository,
+            $buildingStates,
+            $fleetRepository,
+            $shipCatalog,
+            new FleetNavigationService()
+        );
+
+        $result = $useCase->execute(
+            7,
+            5,
+            ['colony_ship' => 1],
+            ['galaxy' => 2, 'system' => 5, 'position' => 8],
+            1.0,
+            'colonize',
+            [],
+            14
+        );
+
+        self::assertFalse($result['success']);
+        self::assertContains(
+            'La position ciblée est déjà occupée : impossible de coloniser.',
+            $result['errors']
+        );
+    }
+
+    public function testColonizationPlanSucceedsWithAvailableColonyShip(): void
+    {
+        $planet = new Planet(6, 11, 1, 3, 7, 'Origine', 9500, -12, 28, 4000, 4000, 4000, 0, 0, 0, 0, 0, 75000, 75000, 75000, 650);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->expects(self::once())->method('find')->with(6)->willReturn($planet);
+        $planetRepository->expects(self::once())->method('findByCoordinates')->with(3, 7)->willReturn([]);
+
+        $buildingStates = $this->createMock(BuildingStateRepositoryInterface::class);
+        $buildingStates->expects(self::once())->method('getLevels')->with(6)->willReturn(['shipyard' => 5]);
+
+        $fleetRepository = $this->createMock(FleetRepositoryInterface::class);
+        $fleetRepository->expects(self::once())
+            ->method('findIdleFleet')
+            ->with(33)
+            ->willReturn([
+                'id' => 33,
+                'player_id' => 11,
+                'origin_planet_id' => 6,
+                'ships' => ['colony_ship' => 1],
+            ]);
+
+        $colonyDefinition = new ShipDefinition(
+            'colony_ship',
+            'Arche',
+            'utility',
+            'Colonisation',
+            'Déploie des modules de colonie.',
+            ['metal' => 1000],
+            3600,
+            ['vitesse' => 160],
+            [],
+            'colony.svg',
+            ['speed' => 160, 'consumption' => 420, 'cargo' => 2500]
+        );
+
+        $shipCatalog = $this->createMock(ShipCatalog::class);
+        $shipCatalog->expects(self::once())->method('get')->with('colony_ship')->willReturn($colonyDefinition);
+
+        $useCase = new PlanFleetMission(
+            $planetRepository,
+            $buildingStates,
+            $fleetRepository,
+            $shipCatalog,
+            new FleetNavigationService()
+        );
+
+        $result = $useCase->execute(
+            11,
+            6,
+            ['colony_ship' => 1],
+            ['galaxy' => 2, 'system' => 3, 'position' => 9],
+            1.0,
+            'colonize',
+            [],
+            33
+        );
+
+        self::assertTrue($result['success']);
+        self::assertSame('colonize', $result['mission']);
+        self::assertSame(['colony_ship' => 1], $result['composition']);
+        self::assertNull($result['destination_planet_id']);
+        self::assertNotNull($result['plan']);
+        self::assertArrayHasKey('remaining_cargo', $result['plan']);
+    }
 }

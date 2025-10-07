@@ -160,7 +160,7 @@ CREATE TABLE fleets (
     origin_planet_id BIGINT UNSIGNED NOT NULL,
     destination_planet_id BIGINT UNSIGNED NULL,
     name VARCHAR(100) NULL,
-    mission_type ENUM('idle','transport','attack','harvest','expedition','pve','explore') NOT NULL DEFAULT 'idle',
+    mission_type ENUM('idle','transport','attack','harvest','expedition','pve','explore','colonize') NOT NULL DEFAULT 'idle',
     status ENUM('idle','outbound','returning','holding','completed','failed') NOT NULL DEFAULT 'idle',
     mission_payload JSON NULL,
     departure_at DATETIME NULL,

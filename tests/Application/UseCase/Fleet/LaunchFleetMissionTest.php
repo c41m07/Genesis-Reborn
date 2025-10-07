@@ -207,4 +207,103 @@ final class LaunchFleetMissionTest extends TestCase
         self::assertFalse($result['success']);
         self::assertNotEmpty($result['errors']);
     }
+
+    public function testLaunchSupportsColonizationMission(): void
+    {
+        $planUseCase = $this->createMock(PlanFleetMission::class);
+        $arrival = new DateTimeImmutable('+2 hours');
+        $planUseCase->expects(self::once())
+            ->method('execute')
+            ->with(
+                77,
+                4,
+                ['colony_ship' => 1],
+                ['galaxy' => 3, 'system' => 6, 'position' => 12],
+                0.75,
+                'colonize',
+                [],
+                9
+            )
+            ->willReturn([
+                'success' => true,
+                'errors' => [],
+                'mission' => 'colonize',
+                'composition' => ['colony_ship' => 1],
+                'destination' => ['galaxy' => 3, 'system' => 6, 'position' => 12],
+                'resources' => [],
+                'destination_planet_id' => null,
+                'plan' => [
+                    'distance' => 1800,
+                    'speed' => 8,
+                    'travel_time' => 7200,
+                    'arrival_time' => $arrival,
+                    'fuel' => 180,
+                    'cargo_capacity' => 2500,
+                    'cargo_used' => 180,
+                    'remaining_cargo' => 2320,
+                ],
+            ]);
+
+        $planet = new Planet(4, 77, 1, 2, 3, 'Origine', 11000, -15, 30, 6000, 5000, 600, 0, 0, 0, 0, 0, 90000, 90000, 90000, 700);
+
+        $planetRepository = $this->createMock(PlanetRepositoryInterface::class);
+        $planetRepository->method('find')->with(4)->willReturn($planet);
+        $planetRepository->expects(self::once())->method('update')->with(self::identicalTo($planet));
+
+        $movement = new FleetMovement(
+            28,
+            77,
+            4,
+            null,
+            Coordinates::fromInts(1, 2, 3),
+            Coordinates::fromInts(3, 6, 12),
+            FleetMission::Colonize,
+            FleetStatus::Outbound,
+            ['colony_ship' => 1],
+            new DateTimeImmutable(),
+            $arrival,
+            null,
+            7200,
+            180,
+            []
+        );
+
+        $movementRepository = $this->createMock(FleetMovementRepositoryInterface::class);
+        $movementRepository->expects(self::once())
+            ->method('launchMission')
+            ->with(
+                77,
+                4,
+                9,
+                null,
+                self::callback(static function ($coordinates) {
+                    return $coordinates instanceof Coordinates
+                        && $coordinates->toArray() === ['galaxy' => 3, 'system' => 6, 'position' => 12];
+                }),
+                FleetMission::Colonize,
+                FleetStatus::Outbound,
+                ['colony_ship' => 1],
+                180,
+                self::isInstanceOf(DateTimeImmutable::class),
+                $arrival,
+                7200,
+                self::callback(static function (array $payload): bool {
+                    self::assertSame(9, $payload['source_fleet_id']);
+                    self::assertSame(180, $payload['cargo']['fuel']);
+                    self::assertSame([], $payload['cargo']['resources']);
+
+                    return true;
+                })
+            )
+            ->willReturn($movement);
+
+        $useCase = new LaunchFleetMission($planUseCase, $planetRepository, $movementRepository);
+        $result = $useCase->execute(77, 4, ['colony_ship' => 1], ['galaxy' => 3, 'system' => 6, 'position' => 12], 0.75, 'colonize', [], 9);
+
+        self::assertTrue($result['success']);
+        self::assertSame('colonize', $result['mission']['mission'] ?? null);
+        self::assertSame(6000, $planet->getMetal());
+        self::assertSame(5000, $planet->getCrystal());
+        self::assertSame(600 - 180, $planet->getHydrogen());
+    }
 }

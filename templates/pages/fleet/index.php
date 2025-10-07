@@ -299,6 +299,13 @@ ob_start();
                         'icon' => 'cargo',
                         'symbol' => '🚚',
                     ],
+                    'colonize' => [
+                        'label' => 'Colonisation',
+                        'description' => 'Établir une nouvelle colonie sur une planète libre grâce à une arche d’expansion.',
+                        'available' => true,
+                        'icon' => 'colonize',
+                        'symbol' => '🪐',
+                    ],
                     'stationnement' => [
                         'label' => 'Stationnement',
                         'description' => 'Déployer temporairement la flotte sur une planète alliée (bientôt disponible).',

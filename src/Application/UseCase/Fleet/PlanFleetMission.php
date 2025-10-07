@@ -16,6 +16,7 @@ use DateTimeImmutable;
 class PlanFleetMission
 {
     private const UNITS_PER_ASTRONOMICAL_UNIT = 16.0;
+    private const COLONY_SHIP_KEY = 'colony_ship';
 
     public function __construct(
         private readonly PlanetRepositoryInterface        $planets,
@@ -99,6 +100,16 @@ class PlanFleetMission
         $sanitizedResources = $this->sanitizeResources($resources);
         $speedFactor = max(0.1, min(1.0, $speedFactor));
         $destinationPlanetId = $this->resolveDestinationPlanetId($targetCoordinates);
+
+        if ($missionEnum === FleetMission::Colonize) {
+            if (($missionComposition[self::COLONY_SHIP_KEY] ?? 0) <= 0) {
+                $errors[] = 'Un vaisseau de colonisation est requis pour établir une nouvelle colonie.';
+            }
+
+            if ($destinationPlanetId !== null) {
+                $errors[] = 'La position ciblée est déjà occupée : impossible de coloniser.';
+            }
+        }
 
         if ($errors !== []) {
             return [

@@ -94,6 +94,7 @@ ob_start();
                                 $destination = $movement['destination'];
                                 $missionLabel = match ($movement['mission']) {
                                     'transport' => 'Transport',
+                                    'colonize' => 'Colonisation',
                                     default => ucfirst((string)$movement['mission']),
                                 };
                                 $statusLabel = match ($movement['status']) {

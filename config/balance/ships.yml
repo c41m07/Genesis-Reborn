@@ -415,6 +415,32 @@ carrier:
     speed: 100
     consumption: 1040
     cargo: 6000
+colony_ship:
+  label: 'Arche Horizon'
+  category: 'Capitaux spécialisés'
+  role: 'Vaisseau de colonisation modulaire'
+  description: 'Déploie habitats, générateurs et équipes pionnières pour établir une nouvelle colonie autonome.'
+  base_cost:
+    metal: 9600
+    crystal: 7200
+    hydrogen: 5400
+  build_time: 3600
+  stats:
+    attaque: 12
+    défense: 220
+    vitesse: 160
+  requires_research:
+    logistics: 4
+    life_support: 5
+    engineering_heavy: 2
+    propulsion_basic: 5
+    shield_energy: 2
+  image: assets/svg/illustrations/ships/ship-generic.svg
+
+  logistics:
+    speed: 160
+    consumption: 420
+    cargo: 2500
 heavy_transport:
   label: 'Transporteur Atlas'
   category: 'Capitaux spécialisés'
