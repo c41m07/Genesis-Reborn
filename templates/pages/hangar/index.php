@@ -35,29 +35,29 @@ $basePath = rtrim((string) ($baseUrl ?? ''), '/');
 
 ob_start();
 ?>
-<header class="ui-page-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title">Hangar planétaire</h1>
+<header class="page-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title">Hangar planétaire</h1>
         <?php if ($selectedPlanetId !== null && !empty($planets)): ?>
-            <p class="ui-page-header__subtitle">Organisez les vaisseaux stationnés pour former rapidement vos flottes opérationnelles.</p>
+            <p class="page-header__subtitle">Organisez les vaisseaux stationnés pour former rapidement vos flottes opérationnelles.</p>
         <?php else: ?>
-            <p class="ui-page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour afficher le contenu de son hangar.</p>
+            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour afficher le contenu de son hangar.</p>
         <?php endif; ?>
     </div>
-    <div class="ui-page-header__actions">
+    <div class="page-header__actions">
         <?php if ($selectedPlanetId !== null): ?>
-            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($basePath, ENT_QUOTES) ?>/fleet?planet=<?= (int) $selectedPlanetId ?>">
-                <span class="ui-button__label">Voir les flottes</span>
+            <a class="btn btn-ghost btn-sm" href="<?= htmlspecialchars($basePath, ENT_QUOTES) ?>/fleet?planet=<?= (int) $selectedPlanetId ?>">
+                <span class="btn__label">Voir les flottes</span>
             </a>
         <?php endif; ?>
     </div>
 </header>
 
 <?= $card([
-    'baseClass' => 'ui-card',
+    'baseClass' => 'card',
     'title' => 'Gestion des vaisseaux disponibles',
     'subtitle' => 'Affectez vos unités aux flottes en attente pour les mobiliser rapidement.',
-    'bodyClass' => 'ui-card__body hangar-transfer',
+    'bodyClass' => 'card-body hangar-transfer',
     'body' => static function () use (
         $hangarEntries,
         $idleFleets,
@@ -158,9 +158,9 @@ ob_start();
 
         echo '<div class="hangar-transfer__footer">';
         if (!empty($idleFleets)) {
-            echo '<div class="ui-field hangar-transfer__field">';
-            echo '<label class="ui-field__label" for="' . htmlspecialchars($formId, ENT_QUOTES) . '-fleet">Ajouter à la flotte</label>';
-            echo '<select class="ui-select" id="' . htmlspecialchars($formId, ENT_QUOTES) . '-fleet" name="fleet_id" required>';
+            echo '<div class="mb-3 hangar-transfer__field">';
+            echo '<label class="form-label" for="' . htmlspecialchars($formId, ENT_QUOTES) . '-fleet">Ajouter à la flotte</label>';
+            echo '<select class="form-select" id="' . htmlspecialchars($formId, ENT_QUOTES) . '-fleet" name="fleet_id" required>';
             echo '<option value="">Sélectionnez une flotte</option>';
             foreach ($idleFleets as $fleet) {
                 $fleetId = (int) ($fleet['id'] ?? 0);
@@ -180,8 +180,8 @@ ob_start();
         }
 
         echo '<div class="hangar-transfer__actions">';
-        echo '<button class="ui-button ui-button--primary ui-button--sm" type="submit">';
-        echo '<span class="ui-button__label">Ajouter à la flotte sélectionnée</span>';
+        echo '<button class="btn btn-primary btn-sm" type="submit">';
+        echo '<span class="btn__label">Ajouter à la flotte sélectionnée</span>';
         echo '</button>';
         echo '</div>';
         echo '</div>';

@@ -46,34 +46,34 @@ $now = new DateTimeImmutable();
 
 ob_start();
 ?>
-<header class="ui-page-header galaxy-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title">Carte galaxie</h1>
-        <p class="ui-page-header__subtitle">Analyse des positions du système <?= htmlspecialchars($summary['galaxy']) ?>:<?= htmlspecialchars($summary['system']) ?>.</p>
+<header class="page-header galaxy-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title">Carte galaxie</h1>
+        <p class="page-header__subtitle">Analyse des positions du système <?= htmlspecialchars($summary['galaxy']) ?>:<?= htmlspecialchars($summary['system']) ?>.</p>
     </div>
     <form class="galaxy-controls" method="get" action="<?= htmlspecialchars($baseUrl) ?>/galaxy">
         <div class="galaxy-controls__fields">
-            <div class="ui-field galaxy-controls__field">
-                <label class="ui-field__label" for="galaxy-input">Galaxie</label>
-                <input class="ui-input" id="galaxy-input" type="number" name="galaxy" min="1"
+            <div class="mb-3 galaxy-controls__field">
+                <label class="form-label" for="galaxy-input">Galaxie</label>
+                <input class="form-control" id="galaxy-input" type="number" name="galaxy" min="1"
                        value="<?= htmlspecialchars((string)($filters['galaxy'] ?? 1)) ?>">
             </div>
-            <div class="ui-field galaxy-controls__field">
-                <label class="ui-field__label" for="system-input">Système</label>
-                <input class="ui-input" id="system-input" type="number" name="system" min="1"
+            <div class="mb-3 galaxy-controls__field">
+                <label class="form-label" for="system-input">Système</label>
+                <input class="form-control" id="system-input" type="number" name="system" min="1"
                        value="<?= htmlspecialchars((string)($filters['system'] ?? 1)) ?>">
             </div>
-            <div class="ui-field galaxy-controls__field">
-                <label class="ui-field__label" for="view-select">Filtrer</label>
-                <select class="ui-select" id="view-select" name="view">
+            <div class="mb-3 galaxy-controls__field">
+                <label class="form-label" for="view-select">Filtrer</label>
+                <select class="form-select" id="view-select" name="view">
                     <?php foreach (($filters['options'] ?? []) as $value => $label): ?>
                         <option value="<?= htmlspecialchars($value) ?>"<?= (($filters['view'] ?? 'all') === $value) ? ' selected' : '' ?>><?= htmlspecialchars($label) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="ui-field galaxy-controls__field galaxy-controls__field--search">
-                <label class="ui-field__label" for="galaxy-search">Recherche</label>
-                <input class="ui-input" id="galaxy-search" type="search" name="q" placeholder="Nom, joueur ou coordonnées"
+            <div class="mb-3 galaxy-controls__field galaxy-controls__field--search">
+                <label class="form-label" for="galaxy-search">Recherche</label>
+                <input class="form-control" id="galaxy-search" type="search" name="q" placeholder="Nom, joueur ou coordonnées"
                        value="<?= htmlspecialchars((string)($filters['query'] ?? '')) ?>">
             </div>
             <?php if ($selectedPlanetId !== null): ?>
@@ -81,17 +81,17 @@ ob_start();
             <?php endif; ?>
         </div>
         <div class="galaxy-controls__actions">
-            <button class="ui-button ui-button--primary ui-button--sm" type="submit">
-                <span class="ui-button__label">Afficher</span>
+            <button class="btn btn-primary btn-sm" type="submit">
+                <span class="btn__label">Afficher</span>
             </button>
         </div>
     </form>
 </header>
 
 <?= $card([
-        'baseClass' => 'ui-card',
+        'baseClass' => 'card',
         'title' => 'Synthèse du système',
-        'bodyClass' => 'ui-card__body galaxy-summary',
+        'bodyClass' => 'card-body galaxy-summary',
         'body' => static function () use ($summary): void {
             echo '<div class="metrics metrics--compact">';
             echo '<div class="metric"><span class="metric__label">Positions occupées</span><strong class="metric__value">' . format_number((int)($summary['occupied'] ?? 0)) . '</strong></div>';
@@ -105,10 +105,10 @@ ob_start();
 ]) ?>
 
 <?= $card([
-        'baseClass' => 'ui-card',
+        'baseClass' => 'card',
         'title' => sprintf('Système %d:%d', (int)($summary['galaxy'] ?? 0), (int)($summary['system'] ?? 0)),
         'subtitle' => 'Visualisation détaillée des orbites et des dernières activités',
-        'bodyClass' => 'ui-card__body galaxy-system-card',
+        'bodyClass' => 'card-body galaxy-system-card',
         'body' => static function () use ($slots, $baseUrl, $now, $spriteIcon): void {
             if ($slots === []) {
                 echo '<p class="empty-state">Aucune donnée disponible pour ce système.</p>';
@@ -175,10 +175,10 @@ ob_start();
 ]) ?>
 
 <?= $card([
-        'baseClass' => 'ui-card',
+        'baseClass' => 'card',
         'title' => 'Statistiques des joueurs',
         'subtitle' => 'Profil des commandants présents dans ce système',
-        'bodyClass' => 'ui-card__body galaxy-players-card',
+        'bodyClass' => 'card-body galaxy-players-card',
         'body' => static function () use ($players, $now): void {
             if ($players === []) {
                 echo '<p class="empty-state">Aucune présence détectée dans ce système.</p>';

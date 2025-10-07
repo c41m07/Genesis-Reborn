@@ -6,220 +6,7 @@
  * templates can progressively adopt them without breaking legacy markup.
  */
 
-.ui-button {
-  --ui-button-bg: var(--bg-surface-soft);
-  --ui-button-bg-hover: var(--color-primary-soft);
-  --ui-button-bg-active: var(--color-primary-soft);
-  --ui-button-fg: var(--text-primary);
-  --ui-button-fg-hover: var(--text-primary);
-  --ui-button-fg-active: var(--text-primary);
-  --ui-button-border: var(--color-border);
-  --ui-button-border-hover: var(--color-border-strong);
-  --ui-button-border-active: var(--color-primary);
-  --ui-button-shadow: none;
-  --ui-button-shadow-hover: var(--shadow-sm);
-
-  align-items: center;
-  background: var(--ui-button-bg);
-  border: 1px solid var(--ui-button-border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--ui-button-shadow);
-  color: var(--ui-button-fg);
-  cursor: pointer;
-  display: inline-flex;
-  font-family: var(--font-family-base);
-  font-size: var(--font-size-200);
-  font-weight: var(--font-weight-semibold);
-  gap: var(--space-2);
-  justify-content: center;
-  line-height: var(--line-height-base);
-  min-height: calc(var(--line-height-base) * 1em + var(--space-2) * 2);
-  padding: var(--space-2) var(--space-4);
-  position: relative;
-  text-decoration: none;
-  transition:
-    background-color var(--transition-base),
-    color var(--transition-base),
-    box-shadow var(--transition-base),
-    border-color var(--transition-base),
-    transform var(--transition-base);
-}
-
-.ui-button:hover,
-.ui-button:focus-visible {
-  background: var(--ui-button-bg-hover);
-  border-color: var(--ui-button-border-hover);
-  box-shadow: var(--ui-button-shadow-hover);
-  color: var(--ui-button-fg-hover);
-}
-
-.ui-button:focus-visible {
-  box-shadow: var(--ui-button-shadow-hover), var(--focus-ring);
-  outline: none;
-}
-
-.ui-button:active {
-  background: var(--ui-button-bg-active);
-  border-color: var(--ui-button-border-active);
-  box-shadow: var(--ui-button-shadow);
-  color: var(--ui-button-fg-active);
-  transform: translateY(1px);
-}
-
-.ui-button:disabled,
-.ui-button[aria-disabled='true'],
-.ui-button.is-loading {
-  box-shadow: none;
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.ui-button.is-loading {
-  position: relative;
-}
-
-.ui-button.is-loading > .ui-button__label {
-  visibility: hidden;
-}
-
-.ui-button.is-loading > .ui-button__spinner {
-  animation: ui-button-spin var(--duration-base) linear infinite;
-  border: 2px solid transparent;
-  border-radius: 50%;
-  border-right-color: var(--ui-button-fg);
-  border-top-color: var(--ui-button-fg);
-  height: 1.25rem;
-  inset: 50%;
-  margin: -0.625rem;
-  position: absolute;
-  width: 1.25rem;
-}
-
-@keyframes ui-button-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.ui-button--sm {
-  font-size: var(--font-size-200);
-  min-height: calc(var(--line-height-base) * 1em + var(--space-1) * 2);
-  padding: var(--space-1) var(--space-3);
-}
-
-.ui-button--lg {
-  font-size: var(--font-size-300);
-  min-height: calc(var(--line-height-base) * 1em + var(--space-3) * 2);
-  padding: var(--space-3) var(--space-5);
-}
-
-.ui-button--icon {
-  min-width: 2.5rem;
-  padding-inline: var(--space-2);
-}
-
-.ui-button--primary {
-  --ui-button-bg: var(--color-primary);
-  --ui-button-bg-hover: var(--color-primary-hover);
-  --ui-button-bg-active: var(--color-primary-active);
-  --ui-button-fg: var(--color-primary-on);
-  --ui-button-fg-hover: var(--color-primary-on);
-  --ui-button-fg-active: var(--color-primary-on);
-  --ui-button-border: var(--color-primary);
-  --ui-button-border-hover: var(--color-primary-hover);
-  --ui-button-border-active: var(--color-primary-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--secondary {
-  --ui-button-bg: var(--color-secondary);
-  --ui-button-bg-hover: var(--color-secondary-hover);
-  --ui-button-bg-active: var(--color-secondary-active);
-  --ui-button-fg: var(--color-secondary-on);
-  --ui-button-border: var(--color-secondary);
-  --ui-button-border-hover: var(--color-secondary-hover);
-  --ui-button-border-active: var(--color-secondary-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--neutral {
-  --ui-button-bg: var(--bg-surface);
-  --ui-button-bg-hover: var(--bg-surface-alt);
-  --ui-button-bg-active: var(--color-surface-soft);
-  --ui-button-fg: var(--text-primary);
-  --ui-button-border: var(--color-border);
-  --ui-button-border-hover: var(--color-border-strong);
-  --ui-button-border-active: var(--color-border-strong);
-}
-
-.ui-button--info {
-  --ui-button-bg: var(--color-info);
-  --ui-button-bg-hover: var(--color-info-hover);
-  --ui-button-bg-active: var(--color-info-active);
-  --ui-button-fg: var(--color-info-on);
-  --ui-button-border: var(--color-info);
-  --ui-button-border-hover: var(--color-info-hover);
-  --ui-button-border-active: var(--color-info-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--success {
-  --ui-button-bg: var(--color-success);
-  --ui-button-bg-hover: var(--color-success-hover);
-  --ui-button-bg-active: var(--color-success-active);
-  --ui-button-fg: var(--color-success-on);
-  --ui-button-border: var(--color-success);
-  --ui-button-border-hover: var(--color-success-hover);
-  --ui-button-border-active: var(--color-success-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--warning {
-  --ui-button-bg: var(--color-warning);
-  --ui-button-bg-hover: var(--color-warning-hover);
-  --ui-button-bg-active: var(--color-warning-active);
-  --ui-button-fg: var(--color-warning-on);
-  --ui-button-border: var(--color-warning);
-  --ui-button-border-hover: var(--color-warning-hover);
-  --ui-button-border-active: var(--color-warning-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--danger {
-  --ui-button-bg: var(--color-danger);
-  --ui-button-bg-hover: var(--color-danger-hover);
-  --ui-button-bg-active: var(--color-danger-active);
-  --ui-button-fg: var(--color-danger-on);
-  --ui-button-border: var(--color-danger);
-  --ui-button-border-hover: var(--color-danger-hover);
-  --ui-button-border-active: var(--color-danger-active);
-  --ui-button-shadow: var(--shadow-sm);
-}
-
-.ui-button--ghost {
-  --ui-button-bg: transparent;
-  --ui-button-bg-hover: var(--color-primary-soft);
-  --ui-button-bg-active: var(--color-primary-soft);
-  --ui-button-fg: var(--color-primary);
-  --ui-button-fg-hover: var(--color-primary-hover);
-  --ui-button-fg-active: var(--color-primary-active);
-  --ui-button-border: transparent;
-  --ui-button-border-hover: var(--color-primary-border);
-  --ui-button-border-active: var(--color-primary);
-}
-
-.ui-button--outline {
-  --ui-button-bg: transparent;
-  --ui-button-bg-hover: transparent;
-  --ui-button-bg-active: transparent;
-  --ui-button-fg-hover: var(--color-primary-hover);
-  --ui-button-fg-active: var(--color-primary-active);
-  --ui-button-border: var(--color-primary-border);
-  --ui-button-border-hover: var(--color-primary-hover);
-  --ui-button-border-active: var(--color-primary-active);
-}
-
-.ui-card {
+.ui-card, .card {
   background: var(--bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -231,71 +18,73 @@
   padding: var(--space-6);
 }
 
-.ui-card--bleed {
+.ui-card--bleed, .card.card-bleed {
   padding: 0;
 }
 
-.ui-card--compact {
+.ui-card--compact, .card.card-compact {
   gap: var(--space-4);
   padding: var(--space-5);
 }
 
-.ui-card--primary {
+.ui-card--primary, .card.card-primary {
   border-color: var(--color-primary-border);
   box-shadow: var(--shadow-lg);
 }
 
-.ui-card--secondary {
+.ui-card--secondary, .card.card-secondary {
   border-color: var(--color-secondary-border);
 }
 
-.ui-card--info {
+.ui-card--info, .card.card-info {
   border-color: var(--color-info-border);
 }
 
-.ui-card--success {
+.ui-card--success, .card.card-success {
   border-color: var(--color-success-border);
 }
 
-.ui-card--warning {
+.ui-card--warning, .card.card-warning {
   border-color: var(--color-warning-border);
 }
 
-.ui-card--danger {
+.ui-card--danger, .card.card-danger {
   border-color: var(--color-danger-border);
 }
 
-.ui-card--surface {
+.ui-card--surface, .card.card-surface {
   background: var(--bg-surface-alt);
 }
 
 .ui-card__header,
-.ui-card__footer {
+.card-header,
+.ui-card__footer, .card-footer {
   align-items: center;
   display: flex;
   gap: var(--space-4);
   justify-content: space-between;
 }
 
-.ui-card__header--with-media {
+.ui-card__header--with-media, .card-header--with-media {
   align-items: center;
   flex-direction: column;
   justify-content: flex-start;
   text-align: center;
 }
 
-.ui-card__header--with-media .ui-card__meta {
+.ui-card__header--with-media .ui-card__meta,
+.card-header--with-media .card-meta {
   align-items: center;
   text-align: center;
 }
 
-.ui-card__meta {
+.ui-card__meta, .card-meta {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.ui-card__eyebrow {
+.ui-card__eyebrow, .card-eyebrow {
   color: var(--text-muted);
   font-size: var(--font-size-100);
   font-weight: var(--font-weight-semibold);
@@ -303,17 +92,17 @@
   text-transform: uppercase;
 }
 
-.ui-card__header {
+.ui-card__header, .card-header {
   border-bottom: 1px solid var(--border-soft);
   padding-bottom: var(--space-4);
 }
 
-.ui-card__footer {
+.ui-card__footer, .card-footer {
   border-top: 1px solid var(--border-soft);
   padding-top: var(--space-4);
 }
 
-.ui-card__badge {
+.ui-card__badge, .card-badge {
   background: var(--color-secondary-soft);
   border-radius: var(--radius-pill);
   color: var(--color-secondary-on);
@@ -323,30 +112,30 @@
   padding: var(--space-1) var(--space-2);
 }
 
-.ui-card__actions {
+.ui-card__actions, .card-actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
   justify-content: flex-end;
 }
 
-.ui-card__media {
+.ui-card__media, .card-illustration {
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
   max-width: 160px;
 }
 
-.ui-card__title {
+.ui-card__title, .card-title {
   font-size: var(--font-size-400);
   font-weight: var(--font-weight-semibold);
 }
 
-.ui-card__subtitle {
+.ui-card__subtitle, .card-subtitle {
   color: var(--text-muted);
   font-size: var(--font-size-200);
 }
 
-.ui-card__body {
+.ui-card__body, .card-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -358,7 +147,7 @@
   gap: var(--space-2);
 }
 
-.ui-field__label {
+.ui-field__label, .form-label {
   color: var(--text-primary);
   font-size: var(--font-size-200);
   font-weight: var(--font-weight-medium);
@@ -370,7 +159,9 @@
 }
 
 .ui-input,
+.form-control,
 .ui-select,
+.form-select,
 .ui-textarea {
   background: var(--bg-surface-soft);
   border: 1px solid var(--color-border);
@@ -389,19 +180,25 @@
 }
 
 .ui-input::placeholder,
+.form-control::placeholder,
 .ui-select::placeholder,
+.form-select::placeholder,
 .ui-textarea::placeholder {
   color: var(--text-subtle);
 }
 
 .ui-input:hover,
+.form-control:hover,
 .ui-select:hover,
+.form-select:hover,
 .ui-textarea:hover {
   border-color: var(--color-border-strong);
 }
 
 .ui-input:focus-visible,
+.form-control:focus-visible,
 .ui-select:focus-visible,
+.form-select:focus-visible,
 .ui-textarea:focus-visible {
   background: var(--bg-surface);
   border-color: var(--color-primary);
@@ -410,24 +207,32 @@
 }
 
 .ui-input:disabled,
+.form-control:disabled,
 .ui-select:disabled,
+.form-select:disabled,
 .ui-textarea:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .ui-input[aria-invalid='true'],
+.form-control[aria-invalid='true'],
 .ui-select[aria-invalid='true'],
+.form-select[aria-invalid='true'],
 .ui-textarea[aria-invalid='true'],
 .ui-input--invalid,
 .ui-select--invalid,
-.ui-textarea--invalid {
+.ui-textarea--invalid,
+.form-control.is-invalid,
+.form-select.is-invalid {
   border-color: var(--color-danger);
 }
 
 .ui-input--success,
 .ui-select--success,
-.ui-textarea--success {
+.ui-textarea--success,
+.form-control.is-valid,
+.form-select.is-valid {
   border-color: var(--color-success);
 }
 

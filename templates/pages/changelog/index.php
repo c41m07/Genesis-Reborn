@@ -12,21 +12,21 @@ $activeSection = $activeSection ?? 'changelog';
 
 ob_start();
 ?>
-<header class="ui-page-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title"><?= htmlspecialchars($title, ENT_QUOTES) ?></h1>
-        <p class="ui-page-header__subtitle">Consultez l’historique des versions et des évolutions du projet.</p>
+<header class="page-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title"><?= htmlspecialchars($title, ENT_QUOTES) ?></h1>
+        <p class="page-header__subtitle">Consultez l’historique des versions et des évolutions du projet.</p>
     </div>
 </header>
 
-<article class="ui-card changelog-card">
-    <header class="ui-card__header">
-        <div class="ui-card__meta">
-            <h2 class="ui-card__title">Historique des mises à jour</h2>
-            <p class="ui-card__subtitle">Parcourez les versions pour connaître les ajouts et correctifs.</p>
+<article class="card changelog-card">
+    <header class="card-header">
+        <div class="card-meta">
+            <h2 class="card-title">Historique des mises à jour</h2>
+            <p class="card-subtitle">Parcourez les versions pour connaître les ajouts et correctifs.</p>
         </div>
     </header>
-    <div class="ui-card__body changelog-card__body">
+    <div class="card-body changelog-card__body">
         <?php if (!empty($changelog)): ?>
             <?php foreach ($changelog as $entry): ?>
                 <?php

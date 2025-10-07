@@ -7,38 +7,39 @@ pur et peut être copié dans un template PHP.
 ## Boutons
 
 ```html
-<button type="button" class="ui-button ui-button--primary">
-  <span class="ui-button__label">Action principale</span>
+<button type="button" class="btn btn-primary">
+  <span class="btn__label">Action principale</span>
 </button>
-<button type="button" class="ui-button ui-button--secondary ui-button--sm">
-  <span class="ui-button__label">Action secondaire</span>
+<button type="button" class="btn btn-secondary btn-sm">
+  <span class="btn__label">Action secondaire</span>
 </button>
-<a href="#" class="ui-button ui-button--ghost ui-button--lg" role="button">
-  <span class="ui-button__label">Lien discret</span>
+<a href="#" class="btn btn-ghost btn-lg" role="button">
+  <span class="btn__label">Lien discret</span>
 </a>
-<button type="button" class="ui-button ui-button--danger is-loading" aria-live="polite" aria-busy="true">
-  <span class="ui-button__label">Suppression</span>
-  <span class="ui-button__spinner" aria-hidden="true"></span>
+<button type="button" class="btn btn-danger is-loading" aria-live="polite" aria-busy="true">
+  <span class="btn__label">Suppression</span>
+  <span class="btn__spinner" aria-hidden="true"></span>
 </button>
 ```
 
 ## Cartes
 
 ```html
-<article class="ui-card ui-card--surface" role="group" aria-labelledby="card-title">
-  <header class="ui-card__header">
-    <div>
-      <h2 id="card-title" class="ui-card__title">Rapport de flotte</h2>
-      <p class="ui-card__subtitle">Dernière mise à jour il y a 5 minutes</p>
+<article class="card card-surface" role="group" aria-labelledby="card-title">
+  <header class="card-header d-flex flex-column flex-lg-row gap-4 align-items-start align-items-lg-center">
+    <div class="card-meta d-flex flex-column gap-2">
+      <span class="card-eyebrow text-uppercase text-secondary-emphasis">Rapport prioritaire</span>
+      <h2 id="card-title" class="card-title">Rapport de flotte</h2>
+      <p class="card-subtitle">Dernière mise à jour il y a 5 minutes</p>
     </div>
-    <span class="ui-badge ui-badge--info">En cours</span>
+    <span class="badge card-badge ms-lg-auto text-uppercase">En cours</span>
   </header>
-  <div class="ui-card__body">
+  <div class="card-body d-flex flex-column gap-3">
     <p>Préparez votre flotte pour l'expédition suivante.</p>
   </div>
-  <footer class="ui-card__footer">
-    <button type="button" class="ui-button ui-button--primary ui-button--sm">Lancer la mission</button>
-    <button type="button" class="ui-button ui-button--neutral ui-button--sm">Voir les détails</button>
+  <footer class="card-footer d-flex flex-wrap gap-2 justify-content-end">
+    <button type="button" class="btn btn-primary btn-sm">Lancer la mission</button>
+    <button type="button" class="btn btn-neutral btn-sm">Voir les détails</button>
   </footer>
 </article>
 ```
@@ -46,80 +47,88 @@ pur et peut être copié dans un template PHP.
 ## Contrôles de formulaire
 
 ```html
-<div class="ui-field">
-  <label class="ui-field__label" for="field-planet">Nom de la planète</label>
-  <input id="field-planet" name="planet" class="ui-input" type="text" placeholder="Ex : Andromède" autocomplete="off">
-  <p class="ui-field__hint">Utilisez un nom unique pour cette colonie.</p>
+<div class="mb-3">
+  <label class="form-label" for="field-planet">Nom de la planète</label>
+  <input id="field-planet" name="planet" class="form-control" type="text" placeholder="Ex : Andromède" autocomplete="off">
+  <p class="form-text">Utilisez un nom unique pour cette colonie.</p>
 </div>
-<div class="ui-field">
-  <label class="ui-field__label" for="field-type">Type de mission</label>
-  <select id="field-type" name="mission" class="ui-select">
+<div class="mb-3">
+  <label class="form-label" for="field-type">Type de mission</label>
+  <select id="field-type" name="mission" class="form-select">
     <option>Exploration</option>
     <option>Commerce</option>
     <option>Combat</option>
   </select>
 </div>
-<div class="ui-field">
-  <label class="ui-field__label" for="field-notes">Instructions</label>
-  <textarea id="field-notes" name="notes" class="ui-textarea" rows="4" placeholder="Ajoutez des détails pour la flotte."></textarea>
+<div class="mb-3">
+  <label class="form-label" for="field-notes">Instructions</label>
+  <textarea id="field-notes" name="notes" class="form-control" rows="4" placeholder="Ajoutez des détails pour la flotte."></textarea>
 </div>
-<div class="ui-field">
-  <label class="ui-field__label" for="field-capacity">Capacité restante</label>
-  <input id="field-capacity" name="capacity" class="ui-input ui-input--success" type="number" value="85" aria-describedby="capacity-help">
-  <p id="capacity-help" class="ui-field__hint">Vos cargos sont prêts à 85&nbsp;%.</p>
+<div class="mb-3">
+  <label class="form-label" for="field-capacity">Capacité restante</label>
+  <input id="field-capacity" name="capacity" class="form-control is-valid" type="number" value="85" aria-describedby="capacity-help">
+  <p id="capacity-help" class="form-text">Vos cargos sont prêts à 85&nbsp;%.</p>
 </div>
-<div class="ui-field">
-  <label class="ui-field__label" for="field-error">Code d'autorisation</label>
-  <input id="field-error" name="auth" class="ui-input ui-input--invalid" type="password" aria-invalid="true" aria-describedby="auth-error">
-  <p id="auth-error" class="ui-field__hint" role="alert">Le code fourni est invalide.</p>
+<div class="mb-3">
+  <label class="form-label" for="field-error">Code d'autorisation</label>
+  <input id="field-error" name="auth" class="form-control is-invalid" type="password" aria-invalid="true" aria-describedby="auth-error">
+  <p id="auth-error" class="form-text text-danger" role="alert">Le code fourni est invalide.</p>
 </div>
 ```
 
 ## Badges
 
 ```html
-<span class="ui-badge ui-badge--primary">Nouveau</span>
-<span class="ui-badge ui-badge--warning">Alerte</span>
-<span class="ui-badge ui-badge--neutral">Neutre</span>
+<span class="badge text-bg-primary">Nouveau</span>
+<span class="badge text-bg-warning">Alerte</span>
+<span class="badge text-bg-secondary">Neutre</span>
 ```
 
 ## Alertes
 
 ```html
-<section class="ui-alert ui-alert--warning" role="alert" aria-live="assertive">
-  <svg class="ui-alert__icon" aria-hidden="true">
+<div class="alert alert-warning d-flex gap-3 align-items-start" role="alert" aria-live="assertive">
+  <svg class="flex-shrink-0" aria-hidden="true">
     <use href="/assets/svg/sprite.svg#icon-warning"></use>
   </svg>
   <div>
-    <h3 class="ui-alert__title">Tempête solaire détectée</h3>
-    <p class="ui-alert__description">Renforcez les boucliers des colonies exposées avant la prochaine heure galactique.</p>
+    <h3 class="alert-heading mb-1">Tempête solaire détectée</h3>
+    <p class="mb-0">Renforcez les boucliers des colonies exposées avant la prochaine heure galactique.</p>
   </div>
-</section>
+</div>
 ```
 
 ## Onglets / Navigation
 
 ```html
-<div class="ui-tabs" data-controller="tabs">
-  <div role="tablist" class="ui-tabs__list" aria-label="Gestion de flotte">
-    <button type="button" class="ui-tabs__trigger" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">
-      Aperçu
-    </button>
-    <button type="button" class="ui-tabs__trigger" role="tab" id="tab-fleet" aria-controls="panel-fleet" aria-selected="false">
-      Flotte
-    </button>
-    <button type="button" class="ui-tabs__trigger" role="tab" id="tab-log" aria-controls="panel-log" aria-selected="false">
-      Journal
-    </button>
-  </div>
-  <div id="panel-overview" class="ui-tabs__panel" role="tabpanel" aria-labelledby="tab-overview" aria-hidden="false">
-    <p>Résumé de mission et indicateurs principaux.</p>
-  </div>
-  <div id="panel-fleet" class="ui-tabs__panel" role="tabpanel" aria-labelledby="tab-fleet" aria-hidden="true">
-    <p>Composition détaillée de la flotte.</p>
-  </div>
-  <div id="panel-log" class="ui-tabs__panel" role="tabpanel" aria-labelledby="tab-log" aria-hidden="true">
-    <p>Historique des événements récents.</p>
+<div>
+  <ul class="nav nav-pills" id="fleet-tabs" role="tablist" aria-label="Gestion de flotte">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-overview" data-bs-toggle="pill" data-bs-target="#panel-overview" type="button" role="tab" aria-controls="panel-overview" aria-selected="true">
+        Aperçu
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-fleet" data-bs-toggle="pill" data-bs-target="#panel-fleet" type="button" role="tab" aria-controls="panel-fleet" aria-selected="false">
+        Flotte
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-log" data-bs-toggle="pill" data-bs-target="#panel-log" type="button" role="tab" aria-controls="panel-log" aria-selected="false">
+        Journal
+      </button>
+    </li>
+  </ul>
+  <div class="tab-content mt-3">
+    <div id="panel-overview" class="tab-pane fade show active" role="tabpanel" aria-labelledby="tab-overview">
+      <p>Résumé de mission et indicateurs principaux.</p>
+    </div>
+    <div id="panel-fleet" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-fleet">
+      <p>Composition détaillée de la flotte.</p>
+    </div>
+    <div id="panel-log" class="tab-pane fade" role="tabpanel" aria-labelledby="tab-log">
+      <p>Historique des événements récents.</p>
+    </div>
   </div>
 </div>
 ```
@@ -127,52 +136,60 @@ pur et peut être copié dans un template PHP.
 ## Pagination
 
 ```html
-<nav class="ui-pagination" role="navigation" aria-label="Pagination des rapports">
-  <button type="button" class="ui-pagination__item" aria-label="Page précédente" aria-disabled="true">«</button>
-  <button type="button" class="ui-pagination__item" aria-current="page">1</button>
-  <button type="button" class="ui-pagination__item">2</button>
-  <button type="button" class="ui-pagination__item">3</button>
-  <button type="button" class="ui-pagination__item" aria-label="Page suivante">»</button>
+<nav aria-label="Pagination des rapports">
+  <ul class="pagination">
+    <li class="page-item disabled">
+      <button type="button" class="page-link" aria-label="Page précédente">«</button>
+    </li>
+    <li class="page-item active" aria-current="page">
+      <button type="button" class="page-link">1</button>
+    </li>
+    <li class="page-item">
+      <button type="button" class="page-link">2</button>
+    </li>
+    <li class="page-item">
+      <button type="button" class="page-link">3</button>
+    </li>
+    <li class="page-item">
+      <button type="button" class="page-link" aria-label="Page suivante">»</button>
+    </li>
+  </ul>
 </nav>
 ```
 
 ## Modale avec focus trap
 
 ```html
-<div
-  class="ui-modal is-open"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="fleet-modal-title"
-  data-focus-trap
->
-  <div class="ui-modal__header">
-    <h2 id="fleet-modal-title">Planifier une mission</h2>
-    <button type="button" class="ui-button ui-button--ghost" data-modal-dismiss>
-      <span class="ui-button__label">Fermer</span>
-    </button>
-  </div>
-  <div class="ui-modal__body">
-    <p>Définissez la planète cible et le type de mission souhaité.</p>
-    <label class="ui-field">
-      <span class="ui-field__label">Destination</span>
-      <input class="ui-input" type="text" name="target" required>
-    </label>
-    <label class="ui-field">
-      <span class="ui-field__label">Mission</span>
-      <select class="ui-select" name="mission" required>
-        <option value="transport">Transport</option>
-        <option value="attack">Attaque</option>
-      </select>
-    </label>
-  </div>
-  <div class="ui-modal__footer">
-    <button type="button" class="ui-button ui-button--ghost" data-modal-dismiss>
-      <span class="ui-button__label">Annuler</span>
-    </button>
-    <button type="submit" class="ui-button ui-button--primary">
-      <span class="ui-button__label">Lancer</span>
-    </button>
+<div class="modal fade show d-block" role="dialog" aria-modal="true" aria-labelledby="fleet-modal-title">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="fleet-modal-title" class="modal-title h4">Planifier une mission</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <p>Définissez la planète cible et le type de mission souhaité.</p>
+        <div class="mb-3">
+          <label class="form-label" for="modal-target-input">Destination</label>
+          <input class="form-control" type="text" name="target" id="modal-target-input" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="modal-mission-select">Mission</label>
+          <select class="form-select" name="mission" id="modal-mission-select" required>
+            <option value="transport">Transport</option>
+            <option value="attack">Attaque</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-neutral" data-bs-dismiss="modal">
+          <span class="btn__label">Annuler</span>
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <span class="btn__label">Lancer</span>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 ```

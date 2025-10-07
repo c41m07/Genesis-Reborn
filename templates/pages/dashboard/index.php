@@ -59,16 +59,16 @@ $movingFleets = $dashboard['movements'] ?? [];
 $layoutBodyClasses = 'is-bootstrapized';
 ob_start();
 ?>
-<section class="ui-page container-xxl py-5 d-flex flex-column gap-5">
-    <article class="ui-card ui-card--surface dashboard-hero">
-        <header class="ui-card__header">
-            <div class="ui-card__meta">
-                <span class="ui-card__eyebrow">Empire galactique</span>
-                <h1 class="ui-card__title">Tableau de bord</h1>
-                <p class="ui-card__subtitle">Vue synthétique de l’état de votre empire et de vos priorités en cours.</p>
+<section class="container-xxl py-5 d-flex flex-column gap-5">
+    <article class="card card-surface dashboard-hero">
+        <header class="card-header">
+            <div class="card-meta">
+                <span class="card-eyebrow">Empire galactique</span>
+                <h1 class="card-title">Tableau de bord</h1>
+                <p class="card-subtitle">Vue synthétique de l’état de votre empire et de vos priorités en cours.</p>
             </div>
         </header>
-        <div class="ui-card__body">
+        <div class="card-body">
             <dl class="dashboard-hero__stats">
                 <div class="dashboard-hero__stat">
                     <dt class="dashboard-hero__label">Planète active</dt>
@@ -138,14 +138,14 @@ ob_start();
     </article>
     <div class="row g-4 g-xl-5 align-items-start">
         <div class="col-12 col-xl-8 d-flex flex-column gap-4 gap-xl-5">
-            <article class="ui-card dashboard-overview">
-                <header class="ui-card__header">
-                    <div class="ui-card__meta">
-                        <h2 class="ui-card__title">Vue d’ensemble</h2>
-                        <p class="ui-card__subtitle">Synthèse des forces civiles, scientifiques et militaires.</p>
+            <article class="card dashboard-overview">
+                <header class="card-header">
+                    <div class="card-meta">
+                        <h2 class="card-title">Vue d’ensemble</h2>
+                        <p class="card-subtitle">Synthèse des forces civiles, scientifiques et militaires.</p>
                     </div>
                 </header>
-                <div class="ui-card__body">
+                <div class="card-body">
                     <dl class="metric-grid" role="list">
                         <div class="metric-grid__item" role="listitem">
                             <dt class="metric-grid__label">Points d’infrastructure</dt>
@@ -162,14 +162,14 @@ ob_start();
                     </dl>
                 </div>
             </article>
-            <article class="ui-card dashboard-production">
-                <header class="ui-card__header">
-                    <div class="ui-card__meta">
-                        <h2 class="ui-card__title">Production en cours</h2>
-                        <p class="ui-card__subtitle">Bâtiments, recherches et chantiers spatiaux alignés.</p>
+            <article class="card dashboard-production">
+                <header class="card-header">
+                    <div class="card-meta">
+                        <h2 class="card-title">Production en cours</h2>
+                        <p class="card-subtitle">Bâtiments, recherches et chantiers spatiaux alignés.</p>
                     </div>
                 </header>
-                <div class="ui-card__body">
+                <div class="card-body">
                     <div class="production-groups">
                         <?php $buildJob = $queues['buildings']['next'] ?? null; ?>
                         <?php
@@ -182,14 +182,14 @@ if ($buildJob) {
     }
 }
 ?>
-                        <article class="ui-card ui-card--compact production-card">
-                            <header class="ui-card__header">
-                                <div class="ui-card__meta">
-                                    <h3 class="ui-card__title">Bâtiments</h3>
+                        <article class="card card-compact production-card">
+                            <header class="card-header">
+                                <div class="card-meta">
+                                    <h3 class="card-title">Bâtiments</h3>
                                 </div>
                                 <span class="production-card__badge"><?= format_number($queues['buildings']['count'] ?? 0) ?> en attente</span>
                             </header>
-                            <div class="ui-card__body">
+                            <div class="card-body">
                                 <?php if (($queues['buildings']['count'] ?? 0) === 0 || !$buildJob): ?>
                                     <p class="production-card__empty">Aucune amélioration planifiée.</p>
                                 <?php else: ?>
@@ -203,9 +203,9 @@ if ($buildJob) {
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
-                            <footer class="ui-card__footer production-card__footer">
-                                <a class="ui-button ui-button--neutral ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">
-                                    <span class="ui-button__label">Ouvrir la colonie</span>
+                            <footer class="card-footer production-card__footer">
+                                <a class="btn btn-neutral btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/colony?planet=<?= $selectedPlanetId ?>">
+                                    <span class="btn__label">Ouvrir la colonie</span>
                                 </a>
                             </footer>
                         </article>
@@ -220,14 +220,14 @@ if ($researchJob) {
     }
 }
 ?>
-                        <article class="ui-card ui-card--compact production-card">
-                            <header class="ui-card__header">
-                                <div class="ui-card__meta">
-                                    <h3 class="ui-card__title">Recherches</h3>
+                        <article class="card card-compact production-card">
+                            <header class="card-header">
+                                <div class="card-meta">
+                                    <h3 class="card-title">Recherches</h3>
                                 </div>
                                 <span class="production-card__badge"><?= format_number($queues['research']['count'] ?? 0) ?> prévues</span>
                             </header>
-                            <div class="ui-card__body">
+                            <div class="card-body">
                                 <?php if (($queues['research']['count'] ?? 0) === 0 || !$researchJob): ?>
                                     <p class="production-card__empty">Aucune étude active pour le moment.</p>
                                 <?php else: ?>
@@ -241,9 +241,9 @@ if ($researchJob) {
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
-                            <footer class="ui-card__footer production-card__footer">
-                                <a class="ui-button ui-button--neutral ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">
-                                    <span class="ui-button__label">Accéder au laboratoire</span>
+                            <footer class="card-footer production-card__footer">
+                                <a class="btn btn-neutral btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">
+                                    <span class="btn__label">Accéder au laboratoire</span>
                                 </a>
                             </footer>
                         </article>
@@ -258,14 +258,14 @@ if ($shipJob) {
     }
 }
 ?>
-                        <article class="ui-card ui-card--compact production-card">
-                            <header class="ui-card__header">
-                                <div class="ui-card__meta">
-                                    <h3 class="ui-card__title">Chantier spatial</h3>
+                        <article class="card card-compact production-card">
+                            <header class="card-header">
+                                <div class="card-meta">
+                                    <h3 class="card-title">Chantier spatial</h3>
                                 </div>
                                 <span class="production-card__badge"><?= format_number($queues['shipyard']['count'] ?? 0) ?> commandes</span>
                             </header>
-                            <div class="ui-card__body">
+                            <div class="card-body">
                                 <?php if (($queues['shipyard']['count'] ?? 0) === 0 || !$shipJob): ?>
                                     <p class="production-card__empty">Aucune commande de vaisseau en file.</p>
                                 <?php else: ?>
@@ -279,9 +279,9 @@ if ($shipJob) {
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
-                            <footer class="ui-card__footer production-card__footer">
-                                <a class="ui-button ui-button--neutral ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/shipyard?planet=<?= $selectedPlanetId ?>">
-                                    <span class="ui-button__label">Accéder au chantier</span>
+                            <footer class="card-footer production-card__footer">
+                                <a class="btn btn-neutral btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/shipyard?planet=<?= $selectedPlanetId ?>">
+                                    <span class="btn__label">Accéder au chantier</span>
                                 </a>
                             </footer>
                         </article>
@@ -290,14 +290,14 @@ if ($shipJob) {
             </article>
         </div>
         <aside class="col-12 col-xl-4 d-flex flex-column gap-4 gap-xl-5">
-            <article class="ui-card planet-summary">
-                <header class="ui-card__header">
-                    <div class="ui-card__meta">
-                        <h2 class="ui-card__title">Planète sélectionnée</h2>
-                        <p class="ui-card__subtitle">Caractéristiques planétaires essentielles.</p>
+            <article class="card planet-summary">
+                <header class="card-header">
+                    <div class="card-meta">
+                        <h2 class="card-title">Planète sélectionnée</h2>
+                        <p class="card-subtitle">Caractéristiques planétaires essentielles.</p>
                     </div>
                 </header>
-                <div class="ui-card__body planet-summary__body">
+                <div class="card-body planet-summary__body">
                     <div class="planet-summary__preview" aria-hidden="true"></div>
                     <?php if ($activePlanet): ?>
                         <h3 class="planet-summary__name"><?= htmlspecialchars($activePlanet->getName()) ?></h3>

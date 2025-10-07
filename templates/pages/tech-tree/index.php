@@ -113,15 +113,15 @@ $nodesJson = $nodesJson !== false ? $nodesJson : '{}';
 $hasNodes = !empty($nodes);
 ob_start();
 ?>
-<header class="ui-page-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title">Arbre technologique</h1>
-        <p class="ui-page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs prérequis.</p>
+<header class="page-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title">Arbre technologique</h1>
+        <p class="page-header__subtitle">Visualisez bâtiments, recherches et vaisseaux ainsi que leurs prérequis.</p>
     </div>
-    <div class="ui-page-header__actions">
+    <div class="page-header__actions">
         <?php if ($selectedPlanetId): ?>
-            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">
-                <span class="ui-button__label">Retour au laboratoire</span>
+            <a class="btn btn-ghost btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/research?planet=<?= $selectedPlanetId ?>">
+                <span class="btn__label">Retour au laboratoire</span>
             </a>
         <?php endif; ?>
     </div>
@@ -129,9 +129,9 @@ ob_start();
 
 <?php if (!$hasNodes): ?>
     <?= $card([
-        'baseClass' => 'ui-card',
+        'baseClass' => 'card',
         'title' => 'Données indisponibles',
-        'bodyClass' => 'ui-card__body',
+        'bodyClass' => 'card-body',
         'body' => static function (): void {
             echo '<p>Aucune donnée technologique disponible pour cette planète.</p>';
         },
@@ -140,14 +140,14 @@ ob_start();
     <section class="tech-tree" data-base-url="<?= htmlspecialchars($baseUrl) ?>">
         <div class="tech-tree__layout">
             <aside class="tech-tree__sidebar">
-                <article class="ui-card tech-tree__navigator">
-                    <header class="ui-card__header">
-                        <div class="ui-card__meta">
-                            <h2 class="ui-card__title">Navigation technologique</h2>
-                            <p class="ui-card__subtitle">Parcourez les domaines et débloquez leurs prérequis.</p>
+                <article class="card tech-tree__navigator">
+                    <header class="card-header">
+                        <div class="card-meta">
+                            <h2 class="card-title">Navigation technologique</h2>
+                            <p class="card-subtitle">Parcourez les domaines et débloquez leurs prérequis.</p>
                         </div>
                     </header>
-                    <div class="ui-card__body tech-tree__navigator-body">
+                    <div class="card-body tech-tree__navigator-body">
                         <?php foreach ($groups as $group): ?>
                             <?php $groupKey = (string)($group['key'] ?? ''); ?>
                             <?php $groupLabel = (string)($group['label'] ?? ''); ?>
@@ -212,15 +212,15 @@ ob_start();
                 </article>
             </aside>
             <div class="tech-tree__details-column">
-                <article class="ui-card tech-tree__details tech-tree__details--sticky">
-                    <header class="ui-card__header">
-                        <div class="ui-card__meta">
-                            <h2 class="ui-card__title">Détails de la technologie</h2>
-                            <p class="ui-card__subtitle">Recherchez les informations et prérequis d’un élément.</p>
+                <article class="card tech-tree__details tech-tree__details--sticky">
+                    <header class="card-header">
+                        <div class="card-meta">
+                            <h2 class="card-title">Détails de la technologie</h2>
+                            <p class="card-subtitle">Recherchez les informations et prérequis d’un élément.</p>
                         </div>
                     </header>
                     <div
-                            class="ui-card__body tech-tree__details-body"
+                            class="card-body tech-tree__details-body"
                             id="tech-tree-detail"
                             data-initial="<?= htmlspecialchars($initialNodeId ?? '') ?>"
                             data-base-url="<?= htmlspecialchars($baseUrl) ?>"

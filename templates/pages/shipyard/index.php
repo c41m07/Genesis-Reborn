@@ -31,19 +31,19 @@ $assetBase = rtrim($baseUrl, '/');
 
 ob_start();
 ?>
-<header class="ui-page-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title">Chantier spatial</h1>
+<header class="page-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title">Chantier spatial</h1>
         <?php if ($overview): ?>
-            <p class="ui-page-header__subtitle">Organisez la production de vos vaisseaux et renforcez votre flotte orbitale.</p>
+            <p class="page-header__subtitle">Organisez la production de vos vaisseaux et renforcez votre flotte orbitale.</p>
         <?php else: ?>
-            <p class="ui-page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses hangars.</p>
+            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses hangars.</p>
         <?php endif; ?>
     </div>
-    <div class="ui-page-header__actions">
+    <div class="page-header__actions">
         <?php if ($overview): ?>
-            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/fleet?planet=<?= (int)$selectedPlanetId ?>">
-                <span class="ui-button__label">Voir la flotte</span>
+            <a class="btn btn-ghost btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/fleet?planet=<?= (int)$selectedPlanetId ?>">
+                <span class="btn__label">Voir la flotte</span>
             </a>
         <?php endif; ?>
     </div>
@@ -51,20 +51,20 @@ ob_start();
 
 <?php if ($overview === null): ?>
     <?= $card([
-            'baseClass' => 'ui-card',
+            'baseClass' => 'card',
             'title' => 'Aucun chantier actif',
-            'bodyClass' => 'ui-card__body',
+            'bodyClass' => 'card-body',
             'body' => static function (): void {
                 echo '<p>Sélectionnez une planète équipée d’un chantier spatial pour lancer la production.</p>';
             },
     ]) ?>
 <?php else: ?>
     <?= $card([
-            'baseClass' => 'ui-card',
+            'baseClass' => 'card',
             'class' => 'shipyard-queue',
             'title' => 'Commandes de vaisseaux',
             'subtitle' => 'Suivi des constructions orbitales',
-            'bodyClass' => 'ui-card__body shipyard-queue__body',
+            'bodyClass' => 'card-body shipyard-queue__body',
             'body' => static function () use ($queue, $shipyardBonus, $fleetCount): void {
                 $emptyMessage = 'Aucune commande de vaisseau n’est en file. Lancez une production pour étoffer votre flotte.';
                 echo '<p class="metric-line"><span class="metric-line__label">Stock du hangar</span><span class="metric-line__value">' . format_number((int)$fleetCount) . ' unité(s)</span></p>';
@@ -106,11 +106,11 @@ ob_start();
         <?php if (empty($category['items'])) {
             continue;
         } ?>
-        <section class="ui-section shipyard-section">
-            <header class="ui-section__header">
+        <section class="page-section shipyard-section">
+            <header class="page-section__header">
                 <h2><?= htmlspecialchars($category['label']) ?></h2>
             </header>
-            <div class="ui-card-grid ui-card-grid--quad">
+            <div class="card-grid card-grid--quad">
                 <?php foreach ($category['items'] as $item): ?>
                     <?php
                     $definition = $item['definition'];
@@ -129,7 +129,7 @@ ob_start();
                     $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
-                            'baseClass' => 'ui-card',
+                            'baseClass' => 'card',
                             'title' => $definition->getLabel(),
                             'badge' => $definition->getRole(),
                             'status' => $status,
@@ -138,9 +138,9 @@ ob_start();
                                     'data-ship-card' => $definition->getKey(),
                             ],
                             'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
-                            'headerClass' => 'ui-card__header ship-card__header',
-                            'bodyClass' => 'ui-card__body ship-card__body',
-                            'footerClass' => 'ui-card__footer ship-card__footer',
+                            'headerClass' => 'card-header ship-card__header',
+                            'bodyClass' => 'card-body ship-card__body',
+                            'footerClass' => 'card-footer ship-card__footer',
                             'body' => static function () use (
                                 $definition,
                                 $item,
@@ -276,9 +276,9 @@ ob_start();
                                 echo '<form method="post" action="' . htmlspecialchars($baseUrl) . '/shipyard?planet=' . (int)$selectedPlanetId . '" data-async="queue" data-queue-target="shipyard">';
                                 echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars((string)$csrf_shipyard) . '">';
                                 echo '<input type="hidden" name="ship" value="' . htmlspecialchars($definition->getKey()) . '">';
-                                echo '<div class="ui-field ship-card__quantity">';
-                                echo '<label class="ui-field__label" for="' . htmlspecialchars($fieldId, ENT_QUOTES) . '">Quantité</label>';
-                                echo '<input class="ui-input" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '" type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '>';
+                                echo '<div class="mb-3 ship-card__quantity">';
+                                echo '<label class="form-label" for="' . htmlspecialchars($fieldId, ENT_QUOTES) . '">Quantité</label>';
+                                echo '<input class="form-control" id="' . htmlspecialchars($fieldId, ENT_QUOTES) . '" type="number" name="quantity" min="1" value="1"' . ($canBuild ? '' : ' disabled') . '>';
                                 echo '</div>';
                                 if ($canBuild) {
                                     $label = 'Construire';
@@ -287,14 +287,14 @@ ob_start();
                                 } else {
                                     $label = 'Pré-requis manquants';
                                 }
-                                $buttonClasses = 'ui-button ui-button--primary ui-button--sm';
+                                $buttonClasses = 'btn btn-primary btn-sm';
                                 if ($requirementsOk && !$affordable) {
-                                    $buttonClasses = 'ui-button ui-button--warning ui-button--sm';
+                                    $buttonClasses = 'btn btn-warning btn-sm';
                                 } elseif (!$requirementsOk) {
-                                    $buttonClasses = 'ui-button ui-button--neutral ui-button--sm';
+                                    $buttonClasses = 'btn btn-neutral btn-sm';
                                 }
                                 echo '<button class="' . $buttonClasses . '" type="submit"' . ($canBuild ? '' : ' disabled') . '>';
-                                echo '<span class="ui-button__label">' . htmlspecialchars($label) . '</span>';
+                                echo '<span class="btn__label">' . htmlspecialchars($label) . '</span>';
                                 echo '</button>';
                                 echo '</form>';
                             },

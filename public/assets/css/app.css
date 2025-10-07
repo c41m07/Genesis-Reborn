@@ -1093,7 +1093,7 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .fleet-table [data-fleet-action="manage"][data-disabled="true"],
-.fleet-table .ui-button--disabled[data-fleet-action="manage"] {
+.fleet-table .disabled[data-fleet-action="manage"] {
   pointer-events: none;
   opacity: 0.6;
   cursor: not-allowed;
@@ -1412,7 +1412,7 @@ body.is-bootstrapized .btn-warning:disabled {
   flex-wrap: wrap;
 }
 
-.ui-page-header {
+.page-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1422,25 +1422,25 @@ body.is-bootstrapized .btn-warning:disabled {
   border-bottom: 1px solid var(--border-soft);
 }
 
-.ui-page-header__titles {
+.page-header__titles {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
 }
 
-.ui-page-header__title {
+.page-header__title {
   margin: 0;
   font-size: var(--font-size-500);
   font-weight: var(--font-weight-semibold);
 }
 
-.ui-page-header__subtitle {
+.page-header__subtitle {
   margin: 0;
   font-size: var(--font-size-200);
   color: var(--text-muted);
 }
 
-.ui-page-header__actions {
+.page-header__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -1479,7 +1479,7 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .content-section,
-.ui-section {
+.page-section {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -1487,12 +1487,12 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .content-section:first-of-type,
-.ui-section:first-of-type {
+.page-section:first-of-type {
   margin-top: 0;
 }
 
 .content-section__header,
-.ui-section__header {
+.page-section__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1500,7 +1500,7 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .content-section__header h2,
-.ui-section__header h2 {
+.page-section__header h2 {
   margin: 0;
   font-size: 1.50rem;
 }
@@ -1511,7 +1511,7 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .building-card__header .panel__title,
-.building-card__header .ui-card__title {
+.building-card__header .card-title {
   margin: 0;
   font-size: var(--font-size-400);
 }
@@ -1521,21 +1521,18 @@ body.is-bootstrapized .btn-warning:disabled {
   font-size: var(--font-size-300);
 }
 
-.card-grid,
-.ui-card-grid {
+.card-grid {
   display: grid;
   gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-.card-grid--quad,
-.ui-card-grid--quad {
+.card-grid--quad {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 @media (min-width: 1200px) {
-  .card-grid--quad,
-  .ui-card-grid--quad {
+  .card-grid--quad {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
@@ -1555,15 +1552,19 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .building-card .panel__body,
-.building-card .ui-card__body {
+.building-card .card-body {
   flex: 1;
   gap: var(--space-4);
 }
 
 .building-card .ui-card__header,
+.building-card .card-header,
 .colony-queue .ui-card__header,
+.colony-queue .card-header,
 .research-queue .ui-card__header,
-.shipyard-queue .ui-card__header {
+.research-queue .card-header,
+.shipyard-queue .ui-card__header,
+.shipyard-queue .card-header {
   align-items: center;
   flex-direction: column;
   gap: var(--space-3);
@@ -1572,45 +1573,61 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .building-card .ui-card__meta,
+.building-card .card-meta,
 .colony-queue .ui-card__meta,
+.colony-queue .card-meta,
 .research-queue .ui-card__meta,
+.research-queue .card-meta,
 .shipyard-queue .ui-card__meta,
+.shipyard-queue .card-meta,
 .tech-card .ui-card__meta,
-.ship-card .ui-card__meta {
+.tech-card .card-meta,
+.ship-card .ui-card__meta,
+.ship-card .card-meta {
   align-items: center;
   text-align: center;
 }
 
-.building-card .ui-card__title,
-.colony-queue .ui-card__title,
-.research-queue .ui-card__title,
-.shipyard-queue .ui-card__title,
-.tech-card .ui-card__title,
-.ship-card .ui-card__title {
+.building-card .card-title,
+.colony-queue .card-title,
+.research-queue .card-title,
+.shipyard-queue .card-title,
+.tech-card .card-title,
+.ship-card .card-title {
   text-align: center;
   width: 100%;
 }
 
 .building-card .ui-card__media,
+.building-card .card-illustration,
 .tech-card .ui-card__media,
-.ship-card .ui-card__media {
+.tech-card .card-illustration,
+.ship-card .ui-card__media,
+.ship-card .card-illustration {
   margin-left: auto;
   margin-right: auto;
   display: block;
 }
 
-.ship-card .ui-card__media {
+.ship-card .ui-card__media,
+.ship-card .card-illustration {
   width: 160px;
   height: 160px;
   object-fit: contain;
 }
 
 .building-card .ui-card__badge,
+.building-card .card-badge,
 .colony-queue .ui-card__badge,
+.colony-queue .card-badge,
 .research-queue .ui-card__badge,
+.research-queue .card-badge,
 .shipyard-queue .ui-card__badge,
+.shipyard-queue .card-badge,
 .tech-card .ui-card__badge,
-.ship-card .ui-card__badge {
+.tech-card .card-badge,
+.ship-card .ui-card__badge,
+.ship-card .card-badge {
   align-self: center;
   color: var(--text-primary);
   margin-left: 0;
@@ -1618,7 +1635,8 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .building-card .panel__footer,
-.building-card .ui-card__footer {
+.building-card .ui-card__footer,
+.building-card .card-footer {
   margin-top: auto;
 }
 
@@ -2248,7 +2266,8 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .tech-card .panel__header,
-.tech-card .ui-card__header {
+.tech-card .ui-card__header,
+.tech-card .card-header {
   align-items: center;
   flex-direction: column;
   gap: var(--space-3);
@@ -2257,13 +2276,14 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .tech-card .panel__body,
-.tech-card .ui-card__body {
+.tech-card .card-body {
   flex: 1;
   gap: var(--space-3);
 }
 
 .tech-card .panel__footer,
-.tech-card .ui-card__footer {
+.tech-card .ui-card__footer,
+.tech-card .card-footer {
   margin-top: auto;
 }
 
@@ -3246,7 +3266,8 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .ship-card .panel__header,
-.ship-card .ui-card__header {
+.ship-card .ui-card__header,
+.ship-card .card-header {
   align-items: center;
   flex-direction: column;
   gap: var(--space-3);
@@ -3255,13 +3276,14 @@ body.is-bootstrapized .btn-warning:disabled {
 }
 
 .ship-card .panel__body,
-.ship-card .ui-card__body {
+.ship-card .card-body {
   flex: 1;
   gap: var(--space-4);
 }
 
 .ship-card .panel__footer,
-.ship-card .ui-card__footer {
+.ship-card .ui-card__footer,
+.ship-card .card-footer {
   margin-top: auto;
 }
 
@@ -3610,13 +3632,15 @@ body.is-bootstrapized .btn-warning:disabled {
   max-width: 120px;
 }
 
-.ship-card__quantity .ui-field__label {
+.ship-card__quantity .ui-field__label,
+.ship-card__quantity .form-label {
   color: var(--color-muted);
   font-size: var(--font-size-100);
   text-transform: uppercase;
 }
 
-.ship-card__quantity .ui-input {
+.ship-card__quantity .ui-input,
+.ship-card__quantity .form-control {
   width: 100%;
 }
 

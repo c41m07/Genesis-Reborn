@@ -38,8 +38,8 @@ beforeEach(() => {
               Flotte opérationnelle
             </td>
             <td class="fleet-table__actions">
-              <a class="ui-button ui-button--neutral ui-button--sm" data-fleet-action="manage" href="/fleet?fleet=42">
-                <span class="ui-button__label">Gérer</span>
+              <a class="btn btn-neutral btn-sm" data-fleet-action="manage" href="/fleet?fleet=42">
+                <span class="btn__label">Gérer</span>
               </a>
             </td>
           </tr>

@@ -20,19 +20,19 @@ $assetBase = rtrim($baseUrl, '/');
 
 ob_start();
 ?>
-<header class="ui-page-header">
-    <div class="ui-page-header__titles">
-        <h1 class="ui-page-header__title">Laboratoire de recherche</h1>
+<header class="page-header">
+    <div class="page-header__titles">
+        <h1 class="page-header__title">Laboratoire de recherche</h1>
         <?php if ($overview): ?>
-            <p class="ui-page-header__subtitle">Développez les technologies clés pour soutenir votre expansion interstellaire.</p>
+            <p class="page-header__subtitle">Développez les technologies clés pour soutenir votre expansion interstellaire.</p>
         <?php else: ?>
-            <p class="ui-page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses laboratoires.</p>
+            <p class="page-header__subtitle">Sélectionnez une planète depuis l’en-tête pour accéder à ses laboratoires.</p>
         <?php endif; ?>
     </div>
-    <div class="ui-page-header__actions">
+    <div class="page-header__actions">
         <?php if ($overview): ?>
-            <a class="ui-button ui-button--ghost ui-button--sm" href="<?= htmlspecialchars($baseUrl) ?>/tech-tree?planet=<?= (int)$selectedPlanetId ?>">
-                <span class="ui-button__label">Voir l’arbre technologique</span>
+            <a class="btn btn-ghost btn-sm" href="<?= htmlspecialchars($baseUrl) ?>/tech-tree?planet=<?= (int)$selectedPlanetId ?>">
+                <span class="btn__label">Voir l’arbre technologique</span>
             </a>
         <?php endif; ?>
     </div>
@@ -40,20 +40,20 @@ ob_start();
 
 <?php if ($overview === null): ?>
     <?= $card([
-            'baseClass' => 'ui-card',
+            'baseClass' => 'card',
             'title' => 'Aucune recherche active',
-            'bodyClass' => 'ui-card__body',
+            'bodyClass' => 'card-body',
             'body' => static function (): void {
                 echo '<p>Sélectionnez une planète via le sélecteur supérieur pour planifier vos programmes scientifiques.</p>';
             },
     ]) ?>
 <?php else: ?>
     <?= $card([
-            'baseClass' => 'ui-card',
+            'baseClass' => 'card',
             'class' => 'research-queue',
             'title' => 'Recherches en cours',
             'subtitle' => 'Suivi des programmes scientifiques actifs',
-            'bodyClass' => 'ui-card__body research-queue__body',
+            'bodyClass' => 'card-body research-queue__body',
             'body' => static function () use ($queue, $labBonus): void {
                 $emptyMessage = 'Aucune recherche n’est en cours. Lancez une étude pour étendre vos connaissances.';
                 if ($labBonus > 0) {
@@ -94,11 +94,11 @@ ob_start();
         <?php if (empty($category['items'])) {
             continue;
         } ?>
-        <section class="ui-section research-section">
-            <header class="ui-section__header">
+        <section class="page-section research-section">
+            <header class="page-section__header">
                 <h2><?= htmlspecialchars($category['label']) ?></h2>
             </header>
-            <div class="ui-card-grid ui-card-grid--quad">
+            <div class="card-grid card-grid--quad">
                 <?php foreach ($category['items'] as $item): ?>
                     <?php
                     $definition = $item['definition'];
@@ -119,7 +119,7 @@ ob_start();
                     $imagePath = $definition->getImage();
                     ?>
                     <?= $card([
-                            'baseClass' => 'ui-card',
+                            'baseClass' => 'card',
                             'title' => $definition->getLabel(),
                             'badge' => 'Niveau ' . $level . ' / ' . ($maxLevel > 0 ? $maxLevel : '∞'),
                             'status' => $status,
@@ -129,9 +129,9 @@ ob_start();
                                     'data-research-card' => $definition->getKey(),
                             ],
                             'illustration' => $imagePath ? $assetBase . '/' . ltrim($imagePath, '/') : null,
-                            'headerClass' => 'ui-card__header tech-card__header',
-                            'bodyClass' => 'ui-card__body tech-card__body',
-                            'footerClass' => 'ui-card__footer tech-card__footer',
+                            'headerClass' => 'card-header tech-card__header',
+                            'bodyClass' => 'card-body tech-card__body',
+                            'footerClass' => 'card-footer tech-card__footer',
                             'body' => static function () use (
                                 $definition,
                                 $item,
@@ -229,14 +229,14 @@ ob_start();
                                     $label = 'Pré-requis manquants';
                                 }
                                 $disabled = $canResearch ? '' : ' disabled';
-                                $buttonClasses = 'ui-button ui-button--primary ui-button--sm';
+                                $buttonClasses = 'btn btn-primary btn-sm';
                                 if ($requirementsOk && !$affordable) {
-                                    $buttonClasses = 'ui-button ui-button--warning ui-button--sm';
+                                    $buttonClasses = 'btn btn-warning btn-sm';
                                 } elseif (!$requirementsOk) {
-                                    $buttonClasses = 'ui-button ui-button--neutral ui-button--sm';
+                                    $buttonClasses = 'btn btn-neutral btn-sm';
                                 }
                                 echo '<button class="' . $buttonClasses . '" type="submit"' . $disabled . '>';
-                                echo '<span class="ui-button__label">' . htmlspecialchars($label) . '</span>';
+                                echo '<span class="btn__label">' . htmlspecialchars($label) . '</span>';
                                 echo '</button>';
                                 echo '</form>';
                             },

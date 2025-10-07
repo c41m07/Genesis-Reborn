@@ -29,14 +29,14 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
             <span class="metric-line__label">Statut</span>
             <span class="metric-line__value metric-line__value--neutral" data-building-level="metal_mine">Non construit</span>
         </p>
-        <article class="ui-card building-card" data-building-card="metal_mine">
-            <header class="ui-card__header building-card__header">
-                <div class="ui-card__meta">
-                    <h2 class="ui-card__title">Mine de métal</h2>
+        <article class="card building-card" data-building-card="metal_mine">
+            <header class="card-header building-card__header">
+                <div class="card-meta">
+                    <h2 class="card-title">Mine de métal</h2>
                 </div>
-                <span class="ui-card__badge">Niveau actuel 1</span>
+                <span class="badge card-badge">Niveau actuel 1</span>
             </header>
-            <div class="ui-card__body building-card__body">
+            <div class="card-body building-card__body">
                 <div class="building-card__sections">
                     <div class="building-card__block">
                         <h3>Prochaine amélioration</h3>
@@ -55,10 +55,10 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
                     </details>
                 </div>
             </div>
-            <footer class="ui-card__footer building-card__footer">
+            <footer class="card-footer building-card__footer">
                 <form data-async="queue">
-                    <button type="submit" class="ui-button ui-button--primary ui-button--sm">
-                        <span class="ui-button__label">Améliorer</span>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <span class="btn__label">Améliorer</span>
                     </button>
                 </form>
             </footer>
@@ -84,7 +84,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
   const card = document.querySelector('[data-building-card="metal_mine"]');
   assert(card?.classList.contains('is-locked'));
 
-  const badge = card?.querySelector('.ui-card__badge');
+  const badge = card?.querySelector('.card-badge');
   assert.equal(badge?.textContent, 'Niveau actuel 3');
 
   let costList = card?.querySelector('.building-card__sections .resource-list');
@@ -113,10 +113,10 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
   assert.ok(requirements?.textContent?.includes('Laboratoire de recherche'));
 
   const button = card?.querySelector('button[type="submit"]');
-  const buttonLabel = button?.querySelector('.ui-button__label');
+  const buttonLabel = button?.querySelector('.btn__label');
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Conditions non remplies');
-  assert(button?.classList.contains('ui-button--neutral'));
+  assert(button?.classList.contains('btn-neutral'));
 
   updateBuildingCard({
     key: 'metal_mine',
@@ -145,7 +145,7 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
 
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Ressources insuffisantes');
-  assert(button?.classList.contains('ui-button--warning'));
+  assert(button?.classList.contains('btn-warning'));
 
   const levelDisplay = document.querySelector('[data-building-level="metal_mine"]');
   assert.equal(levelDisplay?.textContent, 'Niveau 3');
@@ -155,14 +155,14 @@ test('updateBuildingCard refreshes level, costs and requirements', () => {
 
 test('updateResearchCard syncs progress, costs and availability', () => {
   document.body.innerHTML = `
-        <article class="ui-card tech-card is-locked" data-research-card="energy_tech">
-            <header class="ui-card__header tech-card__header">
-                <div class="ui-card__meta">
-                    <h2 class="ui-card__title">Technologie énergétique</h2>
-                    <span class="ui-card__badge">Niveau 0 / ∞</span>
+        <article class="card tech-card is-locked" data-research-card="energy_tech">
+            <header class="card-header tech-card__header">
+                <div class="card-meta">
+                    <h2 class="card-title">Technologie énergétique</h2>
+                    <span class="badge card-badge">Niveau 0 / ∞</span>
                 </div>
             </header>
-            <div class="ui-card__body tech-card__body">
+            <div class="card-body tech-card__body">
                 <div class="tech-card__progress">
                     <div class="progress-bar"><span class="progress-bar__value" style="width: 0"></span></div>
                     <p class="tech-card__level">Niveau actuel 0</p>
@@ -174,10 +174,10 @@ test('updateResearchCard syncs progress, costs and availability', () => {
                     </ul>
                 </div>
             </div>
-            <footer class="ui-card__footer tech-card__footer">
+            <footer class="card-footer tech-card__footer">
                 <form data-async="queue">
-                    <button type="submit" class="ui-button ui-button--neutral ui-button--sm" disabled>
-                        <span class="ui-button__label">Pré-requis manquants</span>
+                    <button type="submit" class="btn btn-neutral btn-sm" disabled>
+                        <span class="btn__label">Pré-requis manquants</span>
                     </button>
                 </form>
             </footer>
@@ -200,7 +200,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
   const card = document.querySelector('[data-research-card="energy_tech"]');
   assert(card && !card.classList.contains('is-locked'));
 
-  const badge = card?.querySelector('.ui-card__badge');
+  const badge = card?.querySelector('.card-badge');
   assert.equal(badge?.textContent, 'Niveau 2 / 5');
 
   const level = card?.querySelector('.tech-card__level');
@@ -224,10 +224,10 @@ test('updateResearchCard syncs progress, costs and availability', () => {
   assert.equal(requirements, null);
 
   const button = card?.querySelector('button[type="submit"]');
-  const buttonLabel = button?.querySelector('.ui-button__label');
+  const buttonLabel = button?.querySelector('.btn__label');
   assert.equal(button?.disabled, false);
   assert.equal(buttonLabel?.textContent, 'Lancer la recherche');
-  assert(button?.classList.contains('ui-button--primary'));
+  assert(button?.classList.contains('btn-primary'));
 
   updateResearchCard({
     key: 'energy_tech',
@@ -250,7 +250,7 @@ test('updateResearchCard syncs progress, costs and availability', () => {
   assert(updatedCrystalCost?.classList.contains('resource-list__item--missing'));
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Ressources insuffisantes');
-  assert(button?.classList.contains('ui-button--warning'));
+  assert(button?.classList.contains('btn-warning'));
 
   updateResearchCard({
     key: 'energy_tech',
@@ -274,13 +274,13 @@ test('updateResearchCard syncs progress, costs and availability', () => {
   assert.ok(requirementsAfter?.textContent?.includes('Laboratoire'));
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Pré-requis manquants');
-  assert(button?.classList.contains('ui-button--neutral'));
+  assert(button?.classList.contains('btn-neutral'));
 });
 
 test('updateShipCard toggles availability and requirements', () => {
   document.body.innerHTML = `
-        <article class="ui-card ship-card is-locked" data-ship-card="fighter">
-            <div class="ui-card__body ship-card__body">
+        <article class="card ship-card is-locked" data-ship-card="fighter">
+            <div class="card-body ship-card__body">
                 <div class="ship-card__content">
                     <div class="ship-card__section ship-card__section--costs">
                         <ul class="resource-list">
@@ -291,14 +291,14 @@ test('updateShipCard toggles availability and requirements', () => {
                     </div>
                 </div>
             </div>
-            <footer class="ui-card__footer ship-card__footer">
+            <footer class="card-footer ship-card__footer">
                 <form data-async="queue">
-                    <div class="ui-field ship-card__quantity">
-                        <label class="ui-field__label" for="ship-qty-test">Quantité</label>
-                        <input class="ui-input" id="ship-qty-test" type="number" name="quantity" value="1" disabled>
+                    <div class="mb-3 ship-card__quantity">
+                        <label class="form-label" for="ship-qty-test">Quantité</label>
+                        <input class="form-control" id="ship-qty-test" type="number" name="quantity" value="1" disabled>
                     </div>
-                    <button type="submit" class="ui-button ui-button--neutral ui-button--sm" disabled>
-                        <span class="ui-button__label">Pré-requis manquants</span>
+                    <button type="submit" class="btn btn-neutral btn-sm" disabled>
+                        <span class="btn__label">Pré-requis manquants</span>
                     </button>
                 </form>
             </footer>
@@ -319,10 +319,10 @@ test('updateShipCard toggles availability and requirements', () => {
   assert.equal(input?.disabled, false);
 
   const button = card?.querySelector('button[type="submit"]');
-  const buttonLabel = button?.querySelector('.ui-button__label');
+  const buttonLabel = button?.querySelector('.btn__label');
   assert.equal(button?.disabled, false);
   assert.equal(buttonLabel?.textContent, 'Construire');
-  assert(button?.classList.contains('ui-button--primary'));
+  assert(button?.classList.contains('btn-primary'));
 
   const costList = card?.querySelector('.ship-card__section--costs .resource-list');
   const metalCost = costList?.querySelector('[data-resource="metal"]');
@@ -341,7 +341,7 @@ test('updateShipCard toggles availability and requirements', () => {
   assert.equal(input?.disabled, true);
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Ressources insuffisantes');
-  assert(button?.classList.contains('ui-button--warning'));
+  assert(button?.classList.contains('btn-warning'));
 
   const updatedMetalCost = card?.querySelector('[data-resource="metal"]');
   const updatedCrystalCost = card?.querySelector('[data-resource="crystal"]');
@@ -363,7 +363,7 @@ test('updateShipCard toggles availability and requirements', () => {
   assert.equal(input?.disabled, true);
   assert.equal(button?.disabled, true);
   assert.equal(buttonLabel?.textContent, 'Pré-requis manquants');
-  assert(button?.classList.contains('ui-button--neutral'));
+  assert(button?.classList.contains('btn-neutral'));
 
   const normalizedMetalCost = card?.querySelector('[data-resource="metal"]');
   const normalizedCrystalCost = card?.querySelector('[data-resource="crystal"]');

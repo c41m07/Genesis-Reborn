@@ -16,9 +16,9 @@ test('base layout exposes live regions and focus traps', () => {
   assert(layout.includes('aria-controls="primary-sidebar"'));
 });
 
-test('dashboard page uses tokenised ui-card components', () => {
+test('dashboard page uses bootstrap card components', () => {
   const dashboard = read('templates/pages/dashboard/index.php');
-  assert(dashboard.includes('class="ui-card'));
+  assert(dashboard.includes('class="card'));
   assert(dashboard.includes('dashboard-hero__stats'));
   assert(dashboard.includes('role="list"'));
 });
@@ -33,6 +33,6 @@ test('colony page renders queue data hooks', () => {
 test('fleet page keeps mission forms accessible', () => {
   const fleet = read('templates/pages/fleet/index.php');
   assert(fleet.includes('mission-form'));
-  assert(fleet.includes('ui-card'));
+  assert(fleet.includes('card'));
   assert(fleet.includes('data-async="queue"') || fleet.includes('csrf_token'));
 });

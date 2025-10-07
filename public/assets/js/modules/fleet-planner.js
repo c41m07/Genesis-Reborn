@@ -101,7 +101,7 @@ const disableFleetManageAction = (element) => {
 
   element.dataset.disabled = 'true';
   element.setAttribute('aria-disabled', 'true');
-  element.classList.add('ui-button--disabled');
+  element.classList.add('disabled');
   if (element instanceof HTMLAnchorElement) {
     if (!element.dataset.originalHref) {
       const href = element.getAttribute('href');
@@ -122,7 +122,7 @@ const enableFleetManageAction = (element) => {
 
   delete element.dataset.disabled;
   element.removeAttribute('aria-disabled');
-  element.classList.remove('ui-button--disabled');
+  element.classList.remove('disabled');
   if (element instanceof HTMLAnchorElement) {
     const originalHref = element.dataset.originalHref;
     if (originalHref) {
